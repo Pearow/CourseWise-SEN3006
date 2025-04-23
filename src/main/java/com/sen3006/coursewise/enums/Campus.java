@@ -16,6 +16,6 @@ public enum Campus {
                 return campus;
             }
         }
-        throw new IllegalArgumentException("Invalid weekday: " + input);
+        throw new IllegalArgumentException("Invalid Campus: " + input);
     }
 }

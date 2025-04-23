@@ -55,7 +55,7 @@ public class Section
 
     public void  show_section_info()
     {
-        System.out.println("Class : " + classroom);
+        System.out.println("Class : " + classroom.getClass_id());
         System.out.println("The lesson starts on " + this.section_day + " at " + start_time);
         System.out.println("The lesson ends on " + this.section_day + " at " + end_time);
         System.out.println("Duration (minutes): " + lesson_duration.toMinutes());
