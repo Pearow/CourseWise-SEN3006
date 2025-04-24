@@ -1,17 +1,17 @@
 package com.sen3006.coursewise.models;
 
-public class Professor
+public class Professor extends User
 {
-    private String prof_id;
+    private int prof_id;
     private int prof_rating;
     private int prof_rating_count;
     private int total_rating;
     private String prof_name;
 
-    public Professor(String prof_id,String prof_name)
+    public Professor(int prof_id,String prof_name, String prof_surname, String prof_email)
     {
+        super(prof_id, prof_name, prof_surname, prof_email);
         this.prof_id = prof_id;
-        this.prof_name = prof_name;
         this.prof_rating = 0;
         this.prof_rating_count = 0;
         this.total_rating = 0;
@@ -25,11 +25,11 @@ public class Professor
         this.prof_name = prof_name;
     }
 
-    public String getProf_id() {
+    public int getProf_id() {
         return prof_id;
     }
 
-    public void setProf_id(String prof_id) {
+    public void setProf_id(int prof_id) {
         this.prof_id = prof_id;
     }
 
