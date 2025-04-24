@@ -7,6 +7,23 @@ public enum Weekday {
     Thursday,
     Friday;
 
+    public int Weekday(Weekday day) {
+        switch (day) {
+            case Monday:
+                return 0;
+            case Tuesday:
+                return 1;
+            case Wednesday:
+                return 2;
+            case Thursday:
+                return 3;
+            case Friday:
+                return 4;
+            default:
+                return -1;
+        }
+    }
+
     public static Weekday fromString(String input) {
         for (Weekday day : Weekday.values()) {
             if (day.name().equalsIgnoreCase(input)) {
@@ -22,4 +39,5 @@ public enum Weekday {
         }
         throw new IllegalArgumentException("Invalid weekday index: " + index);
     }
+
 }
