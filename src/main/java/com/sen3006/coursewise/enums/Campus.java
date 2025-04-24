@@ -17,5 +17,13 @@ public enum Campus {
             }
         }
         throw new IllegalArgumentException("Invalid Campus: " + input);
+
+    }
+    public static Campus fromIndex(int index) {
+        Campus[] campus = Campus.values();
+        if (index >= 0 && index < campus.length) {
+            return campus[index];
+        }
+        throw new IllegalArgumentException("Invalid Campus index: " + index);
     }
 }

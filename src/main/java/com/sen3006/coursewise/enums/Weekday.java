@@ -15,4 +15,11 @@ public enum Weekday {
         }
         throw new IllegalArgumentException("Invalid weekday: " + input);
     }
+    public static Weekday fromIndex(int index) {
+        Weekday[] day = Weekday.values();
+        if (index >= 0 && index < day.length) {
+            return day[index];
+        }
+        throw new IllegalArgumentException("Invalid weekday index: " + index);
+    }
 }

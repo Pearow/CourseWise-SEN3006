@@ -6,9 +6,9 @@ public class Classroom
     private Campus campus;
     private String class_id;
 
-    public Classroom(String campus, String class_id)
+    public Classroom(int campus, String class_id)
     {
-        this.campus = Campus.fromString(campus);
+        this.campus = Campus.fromIndex(campus);
         this.class_id = class_id;
     }
 
@@ -16,8 +16,8 @@ public class Classroom
         return campus;
     }
 
-    public void setCampus(Campus campus) {
-        this.campus = campus;
+    public void setCampus(int campus) {
+        this.campus = Campus.fromIndex(campus);
     }
 
     public String getClass_id() {

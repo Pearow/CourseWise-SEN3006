@@ -12,10 +12,10 @@ public class Section
     private Classroom classroom;
     private final Duration lesson_duration;
 
-    public Section(LocalTime start_time, LocalTime end_time, String section_day, Classroom classroom) {
+    public Section(LocalTime start_time, LocalTime end_time, int section_day, Classroom classroom) {
         this.start_time = start_time;
         this.end_time = end_time;
-        this.section_day = Weekday.fromString(section_day);
+        this.section_day = Weekday.fromIndex(section_day);
         this.classroom = classroom;
         this.lesson_duration = Duration.between(start_time,end_time);
     }
@@ -41,8 +41,8 @@ public class Section
         return section_day;
     }
 
-    public void setSection_day(String section_day) {
-        this.section_day = Weekday.fromString(section_day);
+    public void setSection_day(int section_day) {
+        this.section_day = Weekday.fromIndex(section_day);
     }
 
     public Classroom getClassroom() {

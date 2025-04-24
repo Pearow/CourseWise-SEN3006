@@ -34,7 +34,7 @@ public class Professor
     }
 
     public boolean addRating(int newRating) {
-        if (newRating < 0 || newRating > 100) {
+        if (newRating <= 0 || newRating > 10) {
             System.out.println("Invalid rating: " + newRating);
             return false;
         }
@@ -56,7 +56,7 @@ public class Professor
     {
         System.out.println("Professor Name : " + prof_name);
         System.out.println("Professor Id : " + prof_id);
-        System.out.println("Professor Rating is " + this.prof_rating + "% based on " + this.prof_rating_count + " votes.");
+        System.out.println("Professor Rating is " + this.prof_rating + "/10 based on " + this.prof_rating_count + " votes.");
 
     }
 

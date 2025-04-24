@@ -13,4 +13,13 @@ public enum Type {
         }
         throw new IllegalArgumentException("Invalid type: " + input);
     }
+
+    public static Type fromIndex(int index) {
+        Type[] type = Type.values();
+        if (index >= 0 && index < type.length) {
+            return type[index];
+        }
+        throw new IllegalArgumentException("Invalid type index: " + index);
+    }
 }
+

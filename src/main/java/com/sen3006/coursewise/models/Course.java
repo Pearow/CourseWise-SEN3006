@@ -11,19 +11,19 @@ public class Course
     private int course_rating;
     private int total_course_rating;
 
-    public Course(String course_id, String course_name, Department department, String type)
+    public Course(String course_id, String course_name, Department department, int type)
     {
         this.course_id = course_id;
         this.course_name = course_name;
         this.department = department;
-        this.type = Type.fromString(type);
+        this.type = Type.fromIndex(type);
         this.course_rating_count = 0;
         this.course_rating = 0;
         this.total_course_rating = 0;
     }
 
     public boolean addRating(int newRating) {
-        if (newRating < 0 || newRating > 100) {
+        if (newRating <= 0 || newRating > 10) {
             System.out.println("Invalid rating: " + newRating);
             return false;
         }
@@ -46,8 +46,8 @@ public class Course
         return type;
     }
 
-    public void setType(String type) {
-        this.type = Type.fromString(type);
+    public void setType(int type) {
+        this.type = Type.fromIndex(type);
     }
 
     public Department getDepartment() {
@@ -79,7 +79,7 @@ public class Course
         System.out.println("Course Id : " + course_id);
         System.out.println("Department Name : " + department.getDepartment_name());
         System.out.println("Lesson Type : " + this.type);
-        System.out.println("Course Rating is " + this.course_rating + "% based on " + this.course_rating_count + " votes.");
+        System.out.println("Course Rating is " + this.course_rating + "/10 based on " + this.course_rating_count + " votes.");
     }
 
 }
