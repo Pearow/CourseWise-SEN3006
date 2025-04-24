@@ -7,8 +7,8 @@ public enum Weekday {
     Thursday,
     Friday;
 
-    public int Weekday(Weekday day) {
-        switch (day) {
+    public int Weekday() {
+        switch (this) {
             case Monday:
                 return 0;
             case Tuesday:

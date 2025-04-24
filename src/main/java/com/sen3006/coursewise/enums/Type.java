@@ -5,8 +5,8 @@ public enum Type {
     Online,
     Asynchronous;
 
-    public int Type(Type type) {
-        switch (type) {
+    public int Type() {
+        switch (this) {
             case FaceToFace:
                 return 0;
             case Online:

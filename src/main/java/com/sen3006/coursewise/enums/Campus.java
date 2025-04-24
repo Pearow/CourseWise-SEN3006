@@ -10,8 +10,8 @@ public enum Campus {
     PERA,
     FUTURE;
 
-    public int Campus(Campus campus) {
-        switch (campus) {
+    public int Campus() {
+        switch (this) {
             case SOUTH:
                 return 0;
             case NORTH:
