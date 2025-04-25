@@ -5,6 +5,19 @@ public enum Type {
     Online,
     Asynchronous;
 
+    public int Type() {
+        switch (this) {
+            case FaceToFace:
+                return 0;
+            case Online:
+                return 1;
+            case Asynchronous:
+                return 2;
+            default:
+                return -1;
+        }
+    }
+
     public static Type fromString(String input) {
         for (Type type : Type.values()) {
             if (type.name().equalsIgnoreCase(input)) {
@@ -21,5 +34,6 @@ public enum Type {
         }
         throw new IllegalArgumentException("Invalid type index: " + index);
     }
+
 }
 
