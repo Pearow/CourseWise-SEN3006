@@ -6,6 +6,7 @@ import java.time.Duration;
 
 public class Section
 {
+    private int section_id;
     private LocalTime start_time;
     private LocalTime end_time;
     private Weekday section_day;
@@ -13,7 +14,8 @@ public class Section
     private Course course;
     private final Duration lesson_duration;
 
-    public Section(LocalTime start_time, LocalTime end_time, int section_day, Classroom classroom, Course course) {
+    public Section(int section_id, LocalTime start_time, LocalTime end_time, int section_day, Classroom classroom, Course course) {
+        this.section_id = section_id;
         this.start_time = start_time;
         this.end_time = end_time;
         this.section_day = Weekday.fromIndex(section_day);
@@ -22,6 +24,13 @@ public class Section
         this.lesson_duration = Duration.between(start_time,end_time);
     }
 
+    public int getSection_id() {
+        return section_id;
+    }
+
+    public void setSection_id(int section_id) {
+        this.section_id = section_id;
+    }
 
     public LocalTime getEnd_time() {
         return end_time;
