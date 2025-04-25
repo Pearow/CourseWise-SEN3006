@@ -1,31 +1,29 @@
 package com.sen3006.coursewise;
 import com.google.gson.Gson;
-import com.sen3006.coursewise.enums.Campus;
 import com.sen3006.coursewise.models.*;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Hashtable;
 
 // API class for handling all the data
 public class API {
     private static API instance;
 
+    private Hashtable<String, Classroom> classrooms;
+    private Hashtable<String, Course> courses;
+    private Hashtable<Integer, User> users;
+    private Hashtable<Integer, Department> departments;
+    private Hashtable<Integer, Section> sections;
+    private Hashtable<Integer, Professor> professors;
+
     // Singleton pattern to ensure only one instance of API exists
     private API() {
         fetchPseudoTables();
 
     }
-
-    Hashtable<String, Classroom> classrooms;
-    Hashtable<String, Course> courses;
-    Hashtable<Integer, User> users;
-    Hashtable<Integer, Department> departments;
-    Hashtable<Integer, Section> sections;
-    Hashtable<Integer, Professor> professors;
 
     public static API getInstance() {
         if (instance == null) {
@@ -63,6 +61,7 @@ public class API {
                 }
             }
         } catch (IOException e) {
+            //TODO: Add a proper error message
             e.printStackTrace();
         }
     }
@@ -149,28 +148,58 @@ public class API {
     }
 
     public String[] getCredentials(String email) {
-        String[] result = new String[2];
-        for (User user : users.values()) {
-            if (user.getEmail().contentEquals(email)) {
-                result[0] = String.valueOf(user.getId());
-                result[1] = String.valueOf(user.getEmail());
-                break;
+        try {
+            String[] result = new String[2];
+            Gson gson = new Gson();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/users.json"), StandardCharsets.UTF_8));
+            String line;
+            StringBuilder sb = new StringBuilder();
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
             }
+            String json = sb.toString();
+            UserPassword[] userArray = gson.fromJson(json, UserPassword[].class);
+            for (UserPassword user : userArray) {
+                if (user.getEmail().contentEquals(email)) {
+                    result[0] = String.valueOf(user.getId());
+                    result[1] = String.valueOf(user.getEmail());
+                    break;
+                }
+            }
+            return result;
+        }catch (IOException e) {
+            e.printStackTrace();
+            return null;
         }
-        return result;
     }
 
+    public static void main(String[] args) throws IOException{
+        UserPassword[] users;
+        Gson gson = new Gson();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/users.json")));
+        String line;
+        StringBuilder sb = new StringBuilder();
+        while ((line = reader.readLine()) != null) {
+            sb.append(line);
+        }
+        String json = sb.toString();
+        users = gson.fromJson(json, UserPassword[].class);
+    }
+
+    //Create json objects
 //    public static void main(String[] args) throws IOException {
 //        FileOutputStream fos = new FileOutputStream("src/main/resources/users.json");
 //        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos, StandardCharsets.UTF_8));
-//        fos.write("".getBytes());
 //        Gson gson = new Gson();
-//        User[] users = new User[3];
-//        users[0] = new User(2200900, "Salim Mert", "Uçar", "salim.ucar@bahcesehir.edu.tr");
-//        users[1] = new User(2200780, "Azizcan", "Tam", "azizcan.tam@bahcesehir.edu.tr");
-//        users[2] = new User(2200870, "Murat Kerem", "Serter", "murat.serter@bahcesehir.edu.tr");
+//        UserPassword[] users = new UserPassword[3];
+//        users[0] = new UserPassword(2200900, "Salim Mert", "Uçar", "salim.ucar@bahcesehir.edu.tr", String.valueOf("123".hashCode()));
+//        users[1] = new UserPassword(2200780, "Azizcan", "Tam", "azizcan.tam@bahcesehir.edu.tr", String.valueOf("223".hashCode()));
+//        users[2] = new UserPassword(2200870, "Murat Kerem", "Serter", "murat.serter@bahcesehir.edu.tr", String.valueOf("323".hashCode()));
 //
-//        gson.toJson(users, User[].class, writer);
+//        String json = gson.toJson(users, User[].class);
+//        writer.write(json);
+//        writer.flush();
+//        writer.close();
 //    }
 }
 
@@ -203,10 +232,10 @@ class CourseSection {
     public int building_id;
     public int campus_id;
 
-    public CourseSection() {
+    CourseSection() {
     }
 
-    public CourseSection(int id, int section_id, int semester_id, String academic_year, String semester_name, String semester_name_en, int course_id, String course_code, String course_name, int section, int instructor_id, int classroom_id, int day, String day_name, String day_name_en, String start_time, String end_time, String instructor_name, String instructor_surname, String classroom_name, String building_name, String building_name_en, String campus_name, String campus_name_en, int building_id, int campus_id) {
+    CourseSection(int id, int section_id, int semester_id, String academic_year, String semester_name, String semester_name_en, int course_id, String course_code, String course_name, int section, int instructor_id, int classroom_id, int day, String day_name, String day_name_en, String start_time, String end_time, String instructor_name, String instructor_surname, String classroom_name, String building_name, String building_name_en, String campus_name, String campus_name_en, int building_id, int campus_id) {
         this.id = id;
         this.section_id = section_id;
         this.semester_id = semester_id;
@@ -235,7 +264,7 @@ class CourseSection {
         this.campus_id = campus_id;
     }
 
-    public static CourseSection[] getAllCourseSections(String fileName) throws IOException {
+    static CourseSection[] getAllCourseSections(String fileName) throws IOException {
         Gson gson = new Gson();
         BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), StandardCharsets.UTF_8));
         StringBuilder sb = new StringBuilder();
@@ -246,8 +275,50 @@ class CourseSection {
         String json = sb.toString();
         return gson.fromJson(json, CourseSection[].class);
     }
-    public static CourseSection[] getAllCourseSections() throws IOException {
+    static CourseSection[] getAllCourseSections() throws IOException {
         return getAllCourseSections("src/main/resources/all_course_schedules.json");
+    }
+}
+
+class UserPassword {
+    int id;
+    String name;
+    String surname;
+    String email;
+    String password;
+
+    public UserPassword(int id, String name, String surname, String email, String password) {
+        this.id = id;
+        this.name = name;
+        this.surname = surname;
+        this.email = email;
+        this.password = password;
+    }
+
+    public UserPassword(int id, String email, String password) {
+        this.id = id;
+        this.email = email;
+        this.password = password;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getSurname() {
+        return surname;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPassword() {
+        return password;
     }
 }
 
