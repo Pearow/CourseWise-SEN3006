@@ -5,7 +5,7 @@ public enum Role {
     ADMIN,
     ACADEMIC;
 
-    public int role() {
+    public int getIntRole() {
         switch (this) {
             case STUDENT:
                 return 0;

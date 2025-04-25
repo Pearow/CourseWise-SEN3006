@@ -5,7 +5,7 @@ public enum Type {
     Online,
     Asynchronous;
 
-    public int Type() {
+    public int getIntType() {
         switch (this) {
             case FaceToFace:
                 return 0;
