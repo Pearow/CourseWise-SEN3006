@@ -1,29 +1,31 @@
 package com.sen3006.coursewise;
-import com.google.gson.Gson;
+import com.google.gson.*;
 import com.sen3006.coursewise.enums.Campus;
 import com.sen3006.coursewise.models.*;
 
 import java.io.*;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
 // API class for handling all the data
+// TODO: Add observer pattern to all models
 public class API {
     private static API instance;
 
     private Hashtable<String, Classroom> classrooms;
     private Hashtable<String, Course> courses;
-    private Hashtable<Integer, User> users;
+    private Hashtable<Integer, UserPassword> users;
     private Hashtable<Integer, Department> departments;
     private Hashtable<Integer, Section> sections;
     private Hashtable<Integer, Professor> professors;
 
     // Singleton pattern to ensure only one instance of API exists
     private API() {
-        fetchPseudoTables();
-
+        loadAll();
     }
 
     public static API getInstance() {
@@ -58,7 +60,7 @@ public class API {
                 }
 
                 if (!sections.containsKey(cSection.section_id) && !cSection.classroom_name.contentEquals("ITSLEARNING1")) {
-                    sections.put(cSection.section_id, new Section(LocalTime.parse(cSection.start_time), LocalTime.parse(cSection.end_time), cSection.day - 1, getClassroom(cSection.classroom_name), getCourse(cSection.course_code)));
+                    sections.put(cSection.section_id, new Section(cSection.section, LocalTime.parse(cSection.start_time), LocalTime.parse(cSection.end_time), cSection.day - 1, getClassroom(cSection.classroom_name), getCourse(cSection.course_code)));
                 }
 
                 //Extract department abbreviation
@@ -73,22 +75,78 @@ public class API {
         }
     }
 
+    //TODO: Add save class by class
     private void saveAll(){
+        Hashtable[] tables = {classrooms, courses, departments, sections, professors};
+        String[] names = {"classrooms", "courses", "departments", "sections", "professors"};
 
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(LocalTime.class, new LocalTimeSerializer());
+        gsonBuilder.registerTypeAdapter(Duration.class, new DurationSerializer());
+
+        Gson gson = gsonBuilder.create();
+        for (int i = 0; i < tables.length; i++) {
+            try {
+                FileOutputStream fos = new FileOutputStream("src/main/resources/" + names[i] + ".json");
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos, StandardCharsets.UTF_8));
+
+                Object[] table = new Object[tables[i].size()];
+                tables[i].values().toArray(table);
+
+                String json = gson.toJson(table, table.getClass());
+                writer.write(json);
+                writer.flush();
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    private void fetchUsers() throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("src/main/java/resources/users.json"), StandardCharsets.UTF_8));
-        String line;
-        StringBuilder sb = new StringBuilder();
-        while ((line = reader.readLine()) != null) {
-            sb.append(line);
-        }
-        String json = sb.toString();
-        Gson gson = new Gson();
-        User[] userArray = gson.fromJson(json, User[].class);
-        for (User user : userArray) {
-            users.put(user.getId(), user);
+    private void loadAll(){
+        Gson gson = new GsonBuilder().registerTypeAdapter(LocalTime.class, new LocalTimeDeserializer()).registerTypeAdapter(Duration.class, new DurationDeserializer()).create();
+        try {
+            Classroom[] classrooms;
+            Course[] courses;
+            UserPassword[] users;
+            Department[] departments;
+            Section[] sections;
+            Professor[] professors;
+
+            classrooms = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/classrooms.json"), StandardCharsets.UTF_8)).readLine(), Classroom[].class);
+            courses = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/courses.json"), StandardCharsets.UTF_8)).readLine(), Course[].class);
+            users = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/users.json"), StandardCharsets.UTF_8)).readLine(), UserPassword[].class);
+            departments = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/departments.json"), StandardCharsets.UTF_8)).readLine(), Department[].class);
+            sections = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/sections.json"), StandardCharsets.UTF_8)).readLine(), Section[].class);
+            professors = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/professors.json"), StandardCharsets.UTF_8)).readLine(), Professor[].class);
+            this.classrooms = new Hashtable<>();
+            this.courses = new Hashtable<>();
+            this.users = new Hashtable<>();
+            this.departments = new Hashtable<>();
+            this.sections = new Hashtable<>();
+            this.professors = new Hashtable<>();
+
+            for (Classroom classroom : classrooms) {
+                this.classrooms.put(classroom.getClass_id(), classroom);
+            }
+            for (Course course : courses) {
+                this.courses.put(course.getCourse_id(), course);
+            }
+            for (UserPassword user : users) {
+                this.users.put(user.getId(), user);
+            }
+            for (Department department : departments) {
+                this.departments.put(department.getDepartment_id(), department);
+            }
+            for (Section section : sections) {
+                this.sections.put(section.getSection_id() + section.getCourse().getCourse_id().hashCode(), section);
+            }
+            for (Professor professor : professors) {
+                this.professors.put(professor.getId(), professor);
+            }
+
+        }catch (IOException e){
+            e.printStackTrace();
         }
     }
 
@@ -108,6 +166,7 @@ public class API {
         return departments.get(id);
     }
 
+    //TODO: Fix
     public Section getSection(int id, String courseId) {
         return sections.get(id);
     }
@@ -283,41 +342,12 @@ class CourseSection {
     }
 }
 
-class UserPassword {
-    int id;
-    String name;
-    String surname;
-    String email;
+class UserPassword extends User{
     String password;
 
     public UserPassword(int id, String name, String surname, String email, String password) {
-        this.id = id;
-        this.name = name;
-        this.surname = surname;
-        this.email = email;
+        super(id, name, surname, email);
         this.password = password;
-    }
-
-    public UserPassword(int id, String email, String password) {
-        this.id = id;
-        this.email = email;
-        this.password = password;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getSurname() {
-        return surname;
-    }
-
-    public String getEmail() {
-        return email;
     }
 
     public String getPassword() {
@@ -325,3 +355,30 @@ class UserPassword {
     }
 }
 
+class LocalTimeSerializer implements JsonSerializer<LocalTime> {
+    @Override
+    public JsonElement serialize(LocalTime localTime, Type typeOfSrc, JsonSerializationContext context) {
+        return new JsonPrimitive(localTime.toString());
+    }
+}
+
+class LocalTimeDeserializer implements JsonDeserializer<LocalTime> {
+    @Override
+    public LocalTime deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        return LocalTime.parse(json.getAsString());
+    }
+}
+
+class DurationSerializer implements JsonSerializer<Duration> {
+    @Override
+    public JsonElement serialize(Duration duration, Type typeOfSrc, JsonSerializationContext context) {
+        return new JsonPrimitive(duration.toString());
+    }
+}
+
+class DurationDeserializer implements JsonDeserializer<Duration> {
+    @Override
+    public Duration deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        return Duration.parse(json.getAsString());
+    }
+}

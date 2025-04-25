@@ -5,5 +5,7 @@ module com.sen3006.coursewise {
 
 
     opens com.sen3006.coursewise to javafx.fxml, com.google.gson;
+    opens com.sen3006.coursewise.models to com.google.gson;
+    opens com.sen3006.coursewise.enums to com.google.gson;
     exports com.sen3006.coursewise;
 }
