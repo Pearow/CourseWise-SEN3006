@@ -1,5 +1,6 @@
 package com.sen3006.coursewise;
 import com.google.gson.Gson;
+import com.sen3006.coursewise.enums.Campus;
 import com.sen3006.coursewise.models.*;
 
 import java.io.*;
@@ -44,8 +45,8 @@ public class API {
                 // Create and add objects to the respective arrays
                 // Use umis data to populate these objects
 
-                if (!classrooms.containsKey(cSection.classroom_name)) {
-                    classrooms.put(cSection.classroom_name, new Classroom(Campus.fromString(cSection.campus_name).Campus(), cSection.classroom_name)); // Campus won't be found
+                if (!classrooms.containsKey(cSection.classroom_name) && !cSection.classroom_name.contentEquals("MS TEAMS") && !cSection.classroom_name.contentEquals("ITSLEARNING1")) {
+                    classrooms.put(cSection.classroom_name, new Classroom(Campus.fromString(cSection.campus_name).getIntCampus(), cSection.classroom_name)); // Campus won't be found
                 }
 
                 if (!courses.containsKey(cSection.course_code)) {
@@ -56,14 +57,24 @@ public class API {
                     professors.put(cSection.instructor_id, new Professor(cSection.instructor_id, cSection.instructor_name, cSection.instructor_surname, ""));
                 }
 
-                if (!sections.containsKey(cSection.section_id)) {
-                    sections.put(cSection.section_id, new Section(LocalTime.parse(cSection.start_time), LocalTime.parse(cSection.end_time), cSection.day, getClassroom(cSection.classroom_name), getCourse(cSection.course_code)));
+                if (!sections.containsKey(cSection.section_id) && !cSection.classroom_name.contentEquals("ITSLEARNING1")) {
+                    sections.put(cSection.section_id, new Section(LocalTime.parse(cSection.start_time), LocalTime.parse(cSection.end_time), cSection.day - 1, getClassroom(cSection.classroom_name), getCourse(cSection.course_code)));
+                }
+
+                //Extract department abbreviation
+                String dep = cSection.course_code.replaceAll("[0-9]", "");
+                if (!departments.containsKey(dep.hashCode())){
+                    departments.put(dep.hashCode(), new Department(dep.hashCode(), dep, null));
                 }
             }
         } catch (IOException e) {
             //TODO: Add a proper error message
             e.printStackTrace();
         }
+    }
+
+    private void saveAll(){
+
     }
 
     private void fetchUsers() throws IOException {
@@ -148,8 +159,8 @@ public class API {
     }
 
     public String[] getCredentials(String email) {
+        String[] result = {"", ""}; // id, email TODO: Use a class instead
         try {
-            String[] result = new String[2];
             Gson gson = new Gson();
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/users.json"), StandardCharsets.UTF_8));
             String line;
@@ -169,21 +180,13 @@ public class API {
             return result;
         }catch (IOException e) {
             e.printStackTrace();
-            return null;
+            return result;
         }
     }
 
     public static void main(String[] args) throws IOException{
-        UserPassword[] users;
-        Gson gson = new Gson();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/users.json")));
-        String line;
-        StringBuilder sb = new StringBuilder();
-        while ((line = reader.readLine()) != null) {
-            sb.append(line);
-        }
-        String json = sb.toString();
-        users = gson.fromJson(json, UserPassword[].class);
+        API api = API.getInstance();
+        System.out.println("OK");
     }
 
     //Create json objects
