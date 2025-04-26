@@ -1,10 +1,12 @@
 package com.sen3006.coursewise.models;
+import com.sen3006.coursewise.API;
 import com.sen3006.coursewise.enums.Weekday;
 
 import java.time.LocalTime;
 import java.time.Duration;
+import java.util.Observable;
 
-public class Section
+public class Section extends Observable
 {
     private int section_id;
     private LocalTime start_time;
@@ -22,13 +24,16 @@ public class Section
         this.classroom = classroom;
         this.course = course;
         this.lesson_duration = Duration.between(start_time,end_time);
+
+        // Register this classroom as an observable to the API
+        this.addObserver(API.getInstance());
     }
 
     public int getSection_id() {
         return section_id;
     }
 
-    public void setSection_id(int section_id) {
+    private void setSection_id(int section_id) {
         this.section_id = section_id;
     }
 
@@ -38,6 +43,10 @@ public class Section
 
     public void setEnd_time(LocalTime end_time) {
         this.end_time = end_time;
+
+        // Notify observers about the change
+        setChanged();
+        notifyObservers();
     }
 
     public LocalTime getStart_time() {
@@ -46,6 +55,10 @@ public class Section
 
     public void setStart_time(LocalTime start_time) {
         this.start_time = start_time;
+
+        // Notify observers about the change
+        setChanged();
+        notifyObservers();
     }
 
     public Weekday getSection_day() {
@@ -54,6 +67,10 @@ public class Section
 
     public void setSection_day(int section_day) {
         this.section_day = Weekday.fromIndex(section_day);
+
+        // Notify observers about the change
+        setChanged();
+        notifyObservers();
     }
 
     public Classroom getClassroom() {
@@ -62,6 +79,10 @@ public class Section
 
     public void setClassroom(Classroom classroom) {
         this.classroom = classroom;
+
+        // Notify observers about the change
+        setChanged();
+        notifyObservers();
     }
 
     public Course getCourse() {
@@ -70,6 +91,10 @@ public class Section
 
     public void setCourse(Course course) {
         this.course = course;
+
+        // Notify observers about the change
+        setChanged();
+        notifyObservers();
     }
 
     public void  show_section_info()

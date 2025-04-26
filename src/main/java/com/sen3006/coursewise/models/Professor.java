@@ -1,5 +1,7 @@
 package com.sen3006.coursewise.models;
 
+import com.sen3006.coursewise.API;
+
 public class Professor extends User
 {
     private int prof_id;
@@ -15,6 +17,9 @@ public class Professor extends User
         this.prof_rating = 0;
         this.prof_rating_count = 0;
         this.total_rating = 0;
+
+        // Register this classroom as an observable to the API
+        this.addObserver(API.getInstance());
     }
 
     public String getProf_name() {
@@ -23,13 +28,17 @@ public class Professor extends User
 
     public void setProf_name(String prof_name) {
         this.prof_name = prof_name;
+
+        // Notify observers about the change
+        setChanged();
+        notifyObservers();
     }
 
     public int getProf_id() {
         return prof_id;
     }
 
-    public void setProf_id(int prof_id) {
+    private void setProf_id(int prof_id) {
         this.prof_id = prof_id;
     }
 
@@ -41,6 +50,11 @@ public class Professor extends User
         this.total_rating += newRating;
         this.prof_rating_count++;
         this.prof_rating = Math.round((float) total_rating / prof_rating_count);
+
+        // Notify observers about the change
+        setChanged();
+        notifyObservers();
+
         return true;
     }
 

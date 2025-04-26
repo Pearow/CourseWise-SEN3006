@@ -1,6 +1,10 @@
 package com.sen3006.coursewise.models;
 
-    public class User {
+import com.sen3006.coursewise.API;
+
+import java.util.Observable;
+
+public class User extends Observable {
         private int user_id;
         private String name;
         private String surname;
@@ -12,6 +16,9 @@ package com.sen3006.coursewise.models;
             this.name = name;
             this.surname = surname;
             this.email = email;
+
+            // Register this classroom as an observable to the API
+            this.addObserver(API.getInstance());
         }
 
 
@@ -19,7 +26,7 @@ package com.sen3006.coursewise.models;
         public int getId() {
             return user_id;
         }
-        public void setId(int id) {
+        private void setId(int id) {
             this.user_id = id;
         }
 
@@ -29,6 +36,10 @@ package com.sen3006.coursewise.models;
         }
         public void setName(String name) {
             this.name = name;
+
+            // Notify observers about the change
+            setChanged();
+            notifyObservers();
         }
 
         // Getter and Setter for surname
@@ -37,6 +48,10 @@ package com.sen3006.coursewise.models;
         }
         public void setSurname(String surname) {
             this.surname = surname;
+
+            // Notify observers about the change
+            setChanged();
+            notifyObservers();
         }
 
         // Getter and Setter for email
@@ -45,6 +60,10 @@ package com.sen3006.coursewise.models;
         }
         public void setEmail(String email) {
             this.email = email;
+
+            // Notify observers about the change
+            setChanged();
+            notifyObservers();
         }
     }
 
