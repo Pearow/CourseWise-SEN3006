@@ -218,7 +218,7 @@ public class API {
     }
 
     public String[] getCredentials(String email) {
-        String[] result = {"", ""}; // id, email TODO: Use a class instead
+        String[] result = {"", ""}; // id, password TODO: Use a class instead
         try {
             Gson gson = new Gson();
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/users.json"), StandardCharsets.UTF_8));
@@ -232,7 +232,7 @@ public class API {
             for (UserPassword user : userArray) {
                 if (user.getEmail().contentEquals(email)) {
                     result[0] = String.valueOf(user.getId());
-                    result[1] = String.valueOf(user.getEmail());
+                    result[1] = String.valueOf(user.getPassword());
                     break;
                 }
             }
