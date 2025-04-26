@@ -42,6 +42,13 @@ public class LoginScreenController {
 
             // Get the controller of the next scene
             GuiDeneme1 controller = loader.getController();
+            stage = (Stage) ((Node)event.getSource()).getScene().getWindow();
+            scene = new Scene(root);
+            stage.setScene(scene);
+            if(email.contentEquals("murat.serter@bahcesehir.edu.tr")){
+                stage.setTitle("THE BOZZER!!!!");
+            } else stage.setTitle("Coursewise - " + email);
+            stage.show();
 
         } else {
             // If login fails, show an error message
@@ -57,9 +64,5 @@ public class LoginScreenController {
 //        // Get the controller of the next scene
 //        GuiDeneme1 controller = loader.getController();
 
-        stage = (Stage) ((Node)event.getSource()).getScene().getWindow();
-        scene = new Scene(root);
-        stage.setScene(scene);
-        stage.show();
     }
 }
