@@ -2,8 +2,6 @@ package com.sen3006.coursewise.models;
 
 import com.sen3006.coursewise.API;
 
-import java.util.Scanner;
-
 public class CurrentUser extends User {
     private static CurrentUser currentUser; // Singleton instance
     private API api = API.getInstance();
