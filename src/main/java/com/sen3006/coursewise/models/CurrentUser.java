@@ -4,7 +4,6 @@ import com.sen3006.coursewise.API;
 
 public class CurrentUser extends User {
     private static CurrentUser currentUser; // Singleton instance
-    private API api = API.getInstance();
     // private int role; to be implemented later
 
     // Private constructor (for a singleton pattern)
