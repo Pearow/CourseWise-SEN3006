@@ -2,8 +2,6 @@ package com.sen3006.coursewise.models;
 
 import com.sen3006.coursewise.API;
 
-import java.util.Scanner;
-
 public class CurrentUser extends User {
     private static CurrentUser currentUser; // Singleton instance
     private API api = API.getInstance();
@@ -39,17 +37,21 @@ public class CurrentUser extends User {
     }
 
     public void login(String password) {
+        password = String.valueOf(password.hashCode()); // Hashing the password for security comparison from API;
         // Read email from user input
         String email = null; // to be replaced with actual input
         String[] credentials = api.getCredentials(email);
         // Assuming credentials[0] is the user ID, casting it to int
+        if (credentials[0].isBlank()) {
+            throw new IllegalArgumentException("User not found");
+        }
         int id = Integer.parseInt(credentials[0]);
         // Assuming credentials[1] is the password
         String passwordFromAPI = credentials[1];
 
         try{
             validateEmailFormat(email);
-            if (!password.equals(passwordFromAPI)) {
+            if (!password.contentEquals(passwordFromAPI)) {
                 throw new IllegalArgumentException("Invalid password");
             }
             else CurrentUser.getInstance(new User(id, currentUser.getName(), currentUser.getSurname(), email));
