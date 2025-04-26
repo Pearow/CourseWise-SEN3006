@@ -12,10 +12,11 @@ public class CurrentUser extends User {
     }
 
     // Singleton pattern implementation
-    public static CurrentUser getInstance(User user) {
-        if (currentUser == null) {
-            currentUser = new CurrentUser(user);
-        }
+    public static CurrentUser createInstance(User user) {
+        return currentUser = new CurrentUser(user);
+    }
+
+    public static CurrentUser getInstance() {
         return currentUser;
     }
 
@@ -73,7 +74,7 @@ public class CurrentUser extends User {
         }
         else {
             User instance = api.getUser(id);
-            CurrentUser.getInstance(instance);
+            CurrentUser.createInstance(instance);
             System.out.println("logged in as the user with id: " + id);
             System.out.println("Login successful, welcome " + currentUser.getName() + " " + currentUser.getSurname());
             return true;
