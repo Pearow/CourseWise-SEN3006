@@ -25,11 +25,12 @@
                </font>
             </Label>
             <PasswordField fx:id="passwordTextField" layoutX="136.0" layoutY="212.0" prefHeight="25.0" prefWidth="200.0" promptText="Enter your password" />
-            <Button layoutX="136.0" layoutY="265.0" mnemonicParsing="false" onAction="#login" prefHeight="30.0" prefWidth="200.0" style="-fx-background-color: #3498db;" text="Login" textFill="WHITE">
+            <Button layoutX="136.0" layoutY="273.0" mnemonicParsing="false" onAction="#login" prefHeight="30.0" prefWidth="200.0" style="-fx-background-color: #3498db;" text="Login" textFill="WHITE">
                <font>
                   <Font size="14.0" />
                </font>
             </Button>
+            <HBox fx:id="errorBox" layoutX="136.0" layoutY="245.0" prefHeight="20.0" prefWidth="200.0" />
          </children>
       </Pane>
    </children>

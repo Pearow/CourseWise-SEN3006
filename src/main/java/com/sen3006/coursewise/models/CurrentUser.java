@@ -28,35 +28,56 @@ public class CurrentUser extends User {
 //         this.role = role;
 //    }
 
-    public void validateEmailFormat(String email) {
-        String emailRegex = "[a-z0-9!#$%&'+/=?^_`{|}~-]+(?:.[a-z0-9!#$%&'+/=?^_`{|}~-]+)@(?:[a-z0-9](?:[a-z0-9-][a-z0-9])?.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?";
+    //        users[0] = new UserPassword(2200900, "Salim Mert", "Uçar", "salim.ucar@bahcesehir.edu.tr", String.valueOf("123".hashCode()));
+//        users[1] = new UserPassword(2200780, "Azizcan", "Tam", "azizcan.tam@bahcesehir.edu.tr", String.valueOf("223".hashCode()));
+//        users[2] = new UserPassword(2200870, "Murat Kerem", "Serter", "murat.serter@bahcesehir.edu.tr", String.valueOf("323".hashCode()));
+
+    public static boolean validateEmailFormat(String email) {
+        String emailRegex = "[a-z0-9!#$%&'+/=?^`{|}~-]+(?:.[a-z0-9!#$%&'+/=?^`{|}~-]+)@(?:[a-z0-9](?:[a-z0-9-][a-z0-9])?.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])+(?:.[a-z0-9!#$%&'+/=?^`{|}~-]+)(?:.[a-z0-9!#$%&'+/=?^`{|}~-]+)";
 
         if (email == null || !email.matches(emailRegex)) {
-            throw new IllegalArgumentException("Invalid email format: " + email);
+            //throw new IllegalArgumentException("Invalid email format");
+            System.out.println("Invalid email format");
+            return false;
+        } else {
+            // Email is valid
+            System.out.println("Valid email format");
+            return true;
         }
     }
 
-    public void login(String password) {
+    public static boolean login(String password, String email) {
+        API api = API.getInstance();
         password = String.valueOf(password.hashCode()); // Hashing the password for security comparison from API;
-        // Read email from user input
-        String email = null; // to be replaced with actual input
+
         String[] credentials = api.getCredentials(email);
-        // Assuming credentials[0] is the user ID, casting it to int
         if (credentials[0].isBlank()) {
-            throw new IllegalArgumentException("User not found");
+            //throw new IllegalArgumentException("User not found");
+            System.out.println("User not found");
+            return false;
         }
+
+        // Assuming credentials[0] is the user ID, casting it to int
         int id = Integer.parseInt(credentials[0]);
         // Assuming credentials[1] is the password
         String passwordFromAPI = credentials[1];
 
-        try{
-            validateEmailFormat(email);
-            if (!password.contentEquals(passwordFromAPI)) {
-                throw new IllegalArgumentException("Invalid password");
-            }
-            else CurrentUser.getInstance(new User(id, currentUser.getName(), currentUser.getSurname(), email));
-        }catch (IllegalArgumentException e){
-            System.out.println("Error: " + e.getMessage());
+        if (!validateEmailFormat(email)) {
+            //throw new IllegalArgumentException("Invalid email format");
+            return false;
+        }
+
+        if (!password.contentEquals(passwordFromAPI)) {
+            //throw new IllegalArgumentException("Invalid password");
+            System.out.println("Invalid password");
+            return false;
+        }
+        else {
+            User instance = api.getUser(id);
+            CurrentUser.getInstance(instance);
+            System.out.println("logged in as the user with id: " + id);
+            System.out.println("Login successful, welcome " + currentUser.getName() + " " + currentUser.getSurname());
+            return true;
         }
     }
 
