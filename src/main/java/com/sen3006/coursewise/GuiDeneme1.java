@@ -2,6 +2,7 @@ package com.sen3006.coursewise;
 
 import com.sen3006.coursewise.models.Course;
 import com.sen3006.coursewise.models.CurrentUser;
+import com.sen3006.coursewise.models.Professor;
 import com.sen3006.coursewise.models.Section;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -273,7 +274,7 @@ public class GuiDeneme1 implements Initializable {
                 durationLabel.setText(s.getStart_time().toString() + " - " + s.getEnd_time().toString());
                 roomLabel.setText(s.getClassroom().getClass_id());
                 profNameLabel.setText(s.getProfessor().getProf_name() + " " + s.getProfessor().getSurname()); // Placeholder, replace with actual professor name from API
-                profRatingLabel.setText("8/10"); // Placeholder, replace with actual rating from API
+                profRatingLabel.setText(s.getProfessor().getAvgRating() + "/10"); // Placeholder, replace with actual rating from API TODO: this resets the rating SHOWN to 8/10 every time a new section/course is selected
                 campusLabel.setText(String.valueOf(s.getClassroom().getCampus())); // Placeholder, replace with actual campus from API
             }
         }
@@ -638,15 +639,30 @@ public class GuiDeneme1 implements Initializable {
                 });
                 // Show dialog and process the result
                 Optional<ButtonType> result = dialog.showAndWait();
+                String courseCode = courseCodeLabel.getText();
+                String sectionCode = currentSectionCode;
+
+                int professorId = 0;
+
+                for (Section section : api.getSections(courseCode)) {
+                    if (section.getCourse().getCourse_id().equals(courseCode) && (String.valueOf(section.getSection_id())).equals(sectionCode)) {
+                        professorId = section.getProfessor().getProf_id();
+                        break;
+                    }
+                }
                 if (result.isPresent() && result.get() == ButtonType.OK) {
 
                     int rating = (int) ratingSlider.getValue();
+                    rating = updateProfessorRating(professorId, rating);
 
                     // Submit the review
                     String studentId = studentIdLabel.getText(); // Replace with actual student ID from the session
-                    submitRating(studentId, rating, ""); // Empty review text for professor rating
+                    submitRating(studentId, rating,String.valueOf(professorId)); // Empty review text for professor rating
                     System.out.println("Rating submitted: " + rating);
-                    }
+                    System.out.println(sectionCode);
+                    profRatingLabel.setText(rating + "/10");
+                }
+
 
 
                 System.out.println("Clicked");
@@ -670,5 +686,12 @@ public class GuiDeneme1 implements Initializable {
         alert.setHeaderText("Review Submitted");
         alert.setContentText("Your rating of " + profNameLabel.getText() + " has been submitted successfully.");
         alert.showAndWait();
+    }
+
+    private int updateProfessorRating(int profId, int rating) {
+        Professor professor = api.getProfessor(profId);
+        return professor.addRating(rating);
+
+        // Update the professor rating label
     }
 }

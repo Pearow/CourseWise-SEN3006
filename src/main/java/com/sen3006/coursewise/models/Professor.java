@@ -45,10 +45,10 @@ public class Professor extends User
         this.prof_id = prof_id;
     }
 
-    public boolean addRating(int newRating) {
+    public int addRating(int newRating) {
         if (newRating <= 0 || newRating > 10) {
             System.out.println("Invalid rating: " + newRating);
-            return false;
+            return -1;
         }
         this.total_rating += newRating;
         this.prof_rating_count++;
@@ -57,8 +57,7 @@ public class Professor extends User
         // Notify observers about the change
         setChanged();
         notifyObservers();
-
-        return true;
+        return this.prof_rating;
     }
 
     public int getAvgRating() {
