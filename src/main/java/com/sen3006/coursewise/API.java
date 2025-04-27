@@ -74,7 +74,7 @@ public class API implements Observer {
                 }
 
                 if (!sections.containsKey(cSection.section_id) && !cSection.classroom_name.contentEquals("ITSLEARNING1")) {
-                    sections.put(cSection.section_id, new Section(cSection.section, LocalTime.parse(cSection.start_time), LocalTime.parse(cSection.end_time), cSection.day - 1, getClassroom(cSection.classroom_name), getCourse(cSection.course_code), getProfessor(cSection.instructor_id)));
+                    sections.put(cSection.section + cSection.course_code.hashCode(), new Section(cSection.section, LocalTime.parse(cSection.start_time), LocalTime.parse(cSection.end_time), cSection.day - 1, getClassroom(cSection.classroom_name), getCourse(cSection.course_code), getProfessor(cSection.instructor_id)));
                     syncC++;
                 } else if (sections.containsKey(cSection.section_id)) {
                     //TODO: Find differences between duplicates
@@ -288,9 +288,8 @@ public class API implements Observer {
         return professors.get(id);
     }
 
-    //TODO: Fix
     public Section getSection(int id, String courseId) {
-        return sections.get(id);
+        return sections.get(id + courseId.hashCode());
     }
 
     //TODO: Add pagination support
@@ -407,9 +406,6 @@ public class API implements Observer {
     }
 
     public static void main(String[] args) throws IOException {
-        API api = API.getInstance();
-
-        System.out.println("OK");
     }
 }
 
