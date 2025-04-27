@@ -1,36 +1,41 @@
 package com.sen3006.coursewise;
 import com.google.gson.*;
 import com.sen3006.coursewise.enums.Campus;
+import com.sen3006.coursewise.json.PearowsGson;
+import com.sen3006.coursewise.json.UserPassword;
 import com.sen3006.coursewise.models.*;
 
 import java.io.*;
-import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Observable;
+import java.util.Observer;
 
 // API class for handling all the data
-// TODO: Add observer pattern to all models
-public class API {
+// TODO: Add reviews
+public class API implements Observer {
     private static API instance;
+    private final Gson gson;
 
     private Hashtable<String, Classroom> classrooms;
     private Hashtable<String, Course> courses;
     private Hashtable<Integer, UserPassword> users;
     private Hashtable<Integer, Department> departments;
-    private Hashtable<Integer, Section> sections;
     private Hashtable<Integer, Professor> professors;
+    private Hashtable<Integer, Section> sections;
 
     // Singleton pattern to ensure only one instance of API exists
     private API() {
+        gson = PearowsGson.getGson();
+        instance = this;
         loadAll();
     }
 
     public static API getInstance() {
         if (instance == null) {
-            instance = new API();
+            new API();
         }
         return instance;
     }
@@ -40,14 +45,16 @@ public class API {
         courses = new Hashtable<>();
         users = new Hashtable<>();
         departments = new Hashtable<>();
-        sections = new Hashtable<>();
         professors = new Hashtable<>();
+        sections = new Hashtable<>();
+        int sectionC = 0, asyncC = 0, syncC = 0;
         try {
             for (CourseSection cSection : CourseSection.getAllCourseSections()) {
                 // Create and add objects to the respective arrays
                 // Use umis data to populate these objects
+                sectionC++;
 
-                if (!classrooms.containsKey(cSection.classroom_name) && !cSection.classroom_name.contentEquals("MS TEAMS") && !cSection.classroom_name.contentEquals("ITSLEARNING1")) {
+                if (!classrooms.containsKey(cSection.classroom_name) && !cSection.classroom_name.contentEquals("ITSLEARNING1")) {
                     classrooms.put(cSection.classroom_name, new Classroom(Campus.fromString(cSection.campus_name).getIntCampus(), cSection.classroom_name)); // Campus won't be found
                 }
 
@@ -60,13 +67,31 @@ public class API {
                 }
 
                 if (!sections.containsKey(cSection.section_id) && !cSection.classroom_name.contentEquals("ITSLEARNING1")) {
-                    sections.put(cSection.section_id, new Section(cSection.section, LocalTime.parse(cSection.start_time), LocalTime.parse(cSection.end_time), cSection.day - 1, getClassroom(cSection.classroom_name), getCourse(cSection.course_code)));
+                    sections.put(cSection.section + cSection.course_code.hashCode(), new Section(cSection.section, LocalTime.parse(cSection.start_time), LocalTime.parse(cSection.end_time), cSection.day - 1, getClassroom(cSection.classroom_name), getCourse(cSection.course_code), getProfessor(cSection.instructor_id)));
+                    syncC++;
+                } else if (sections.containsKey(cSection.section_id)) {
+                    //TODO: Find differences between duplicates
+//                    System.out.println("Section already exists: " + cSection.section + " " + cSection.course_code + " " + cSection.classroom_name);
+                    Section dp = sections.get(cSection.section_id);
+//                    System.out.println("Is duplicate of: " + dp.getSection_id() + " " + dp.getCourse().getCourse_id() + " " + dp.getClassroom().getClass_id());
+                    asyncC++;
+                } else {
+                    asyncC++;
                 }
 
                 //Extract department abbreviation
                 String dep = cSection.course_code.replaceAll("[0-9]", "");
-                if (!departments.containsKey(dep.hashCode())){
+                if (!departments.containsKey(dep.hashCode())) {
                     departments.put(dep.hashCode(), new Department(dep.hashCode(), dep, null));
+                }
+            }
+            // Get user data
+            UserPassword[] userPasswords = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/users.json"), StandardCharsets.UTF_8)).readLine(), UserPassword[].class);
+            for (UserPassword user : userPasswords) {
+                if (!users.containsKey(user.getId())) {
+                    users.put(user.getId(), user);
+                }else {
+                    System.out.println("User already exists: " + user.getId() + " " + user.getName() + " " + user.getSurname());
                 }
             }
         } catch (IOException e) {
@@ -74,17 +99,10 @@ public class API {
             e.printStackTrace();
         }
     }
+    private void saveAll() {
+        Hashtable[] tables = {classrooms, courses, departments, professors, sections};
+        String[] names = {"classrooms", "courses", "departments", "professors", "sections"};
 
-    //TODO: Add save class by class
-    private void saveAll(){
-        Hashtable[] tables = {classrooms, courses, departments, sections, professors};
-        String[] names = {"classrooms", "courses", "departments", "sections", "professors"};
-
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(LocalTime.class, new LocalTimeSerializer());
-        gsonBuilder.registerTypeAdapter(Duration.class, new DurationSerializer());
-
-        Gson gson = gsonBuilder.create();
         for (int i = 0; i < tables.length; i++) {
             try {
                 FileOutputStream fos = new FileOutputStream("src/main/resources/" + names[i] + ".json");
@@ -103,49 +121,142 @@ public class API {
         }
     }
 
-    private void loadAll(){
-        Gson gson = new GsonBuilder().registerTypeAdapter(LocalTime.class, new LocalTimeDeserializer()).registerTypeAdapter(Duration.class, new DurationDeserializer()).create();
+    public void syncClassrooms() {
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/resources/classrooms.json"));
+            Classroom[] table = new Classroom[classrooms.size()];
+            classrooms.values().toArray(table);
+
+            String json = gson.toJson(table, Classroom[].class);
+            writer.write(json);
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void syncCourses() {
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/resources/courses.json"));
+            Course[] table = new Course[courses.size()];
+            courses.values().toArray(table);
+
+            String json = gson.toJson(table, Course[].class);
+            writer.write(json);
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void syncUsers() {
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/resources/users.json"));
+            UserPassword[] table = new UserPassword[users.size()];
+            users.values().toArray(table);
+
+            String json = gson.toJson(table, UserPassword[].class);
+            writer.write(json);
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void syncDepartments() {
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/resources/departments.json"));
+            Department[] table = new Department[departments.size()];
+            departments.values().toArray(table);
+
+            String json = gson.toJson(table, Department[].class);
+            writer.write(json);
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void syncProfessors() {
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/resources/professors.json"));
+            Professor[] table = new Professor[professors.size()];
+            professors.values().toArray(table);
+
+            String json = gson.toJson(table, Professor[].class);
+            writer.write(json);
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void syncSections() {
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/resources/sections.json"));
+            Section[] table = new Section[sections.size()];
+
+            sections.values().toArray(table);
+
+            String json = gson.toJson(table, Section[].class);
+            writer.write(json);
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadAll() {
         try {
             Classroom[] classrooms;
             Course[] courses;
             UserPassword[] users;
             Department[] departments;
-            Section[] sections;
             Professor[] professors;
+            Section[] sections;
 
             classrooms = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/classrooms.json"), StandardCharsets.UTF_8)).readLine(), Classroom[].class);
-            courses = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/courses.json"), StandardCharsets.UTF_8)).readLine(), Course[].class);
-            users = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/users.json"), StandardCharsets.UTF_8)).readLine(), UserPassword[].class);
-            departments = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/departments.json"), StandardCharsets.UTF_8)).readLine(), Department[].class);
-            sections = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/sections.json"), StandardCharsets.UTF_8)).readLine(), Section[].class);
-            professors = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/professors.json"), StandardCharsets.UTF_8)).readLine(), Professor[].class);
             this.classrooms = new Hashtable<>();
-            this.courses = new Hashtable<>();
-            this.users = new Hashtable<>();
-            this.departments = new Hashtable<>();
-            this.sections = new Hashtable<>();
-            this.professors = new Hashtable<>();
-
             for (Classroom classroom : classrooms) {
                 this.classrooms.put(classroom.getClass_id(), classroom);
             }
+
+            courses = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/courses.json"), StandardCharsets.UTF_8)).readLine(), Course[].class);
+            this.courses = new Hashtable<>();
             for (Course course : courses) {
                 this.courses.put(course.getCourse_id(), course);
             }
+
+            users = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/users.json"), StandardCharsets.UTF_8)).readLine(), UserPassword[].class);
+            this.users = new Hashtable<>();
             for (UserPassword user : users) {
                 this.users.put(user.getId(), user);
             }
+
+            departments = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/departments.json"), StandardCharsets.UTF_8)).readLine(), Department[].class);
+            this.departments = new Hashtable<>();
             for (Department department : departments) {
                 this.departments.put(department.getDepartment_id(), department);
             }
-            for (Section section : sections) {
-                this.sections.put(section.getSection_id() + section.getCourse().getCourse_id().hashCode(), section);
-            }
+
+            professors = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/professors.json"), StandardCharsets.UTF_8)).readLine(), Professor[].class);
+            this.professors = new Hashtable<>();
             for (Professor professor : professors) {
                 this.professors.put(professor.getId(), professor);
             }
 
-        }catch (IOException e){
+            sections = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/sections.json"), StandardCharsets.UTF_8)).readLine(), Section[].class);
+            this.sections = new Hashtable<>();
+            for (Section section : sections) {
+                this.sections.put(section.getSection_id() + section.getCourse().getCourse_id().hashCode(), section);
+            }
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -166,29 +277,29 @@ public class API {
         return departments.get(id);
     }
 
-    //TODO: Fix
-    public Section getSection(int id, String courseId) {
-        return sections.get(id);
-    }
-
     public Professor getProfessor(int id) {
         return professors.get(id);
     }
 
-    public Classroom[] getClassrooms(int count) {
-        Classroom[] result = new Classroom[count];
+    public Section getSection(int id, String courseId) {
+        return sections.get(id + courseId.hashCode());
+    }
+
+    //TODO: Add pagination support
+    public Classroom[] getClassrooms() {
+        Classroom[] result = new Classroom[classrooms.size()];
         classrooms.values().toArray(result);
         return result;
     }
 
-    public Course[] getCourses(int count) {
-        Course[] result = new Course[count];
+    public Course[] getCourses() {
+        Course[] result = new Course[courses.size()];
         courses.values().toArray(result);
         return result;
     }
 
-    public User[] getUsers(int count) {
-        User[] result = new User[count];
+    public User[] getUsers() {
+        User[] result = new User[users.size()];
         users.values().toArray(result);
         return result;
     }
@@ -196,6 +307,12 @@ public class API {
     public Department[] getDepartments() {
         Department[] result = new Department[departments.size()];
         departments.values().toArray(result);
+        return result;
+    }
+
+    public Professor[] getProfessors() {
+        Professor[] result = new Professor[professors.size()];
+        professors.values().toArray(result);
         return result;
     }
 
@@ -211,16 +328,9 @@ public class API {
         return result;
     }
 
-    public Professor[] getProfessors(int count) {
-        Professor[] result = new Professor[count];
-        professors.values().toArray(result);
-        return result;
-    }
-
     public String[] getCredentials(String email) {
         String[] result = {"", ""}; // id, password TODO: Use a class instead
         try {
-            Gson gson = new Gson();
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/users.json"), StandardCharsets.UTF_8));
             String line;
             StringBuilder sb = new StringBuilder();
@@ -237,32 +347,67 @@ public class API {
                 }
             }
             return result;
-        }catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             return result;
         }
     }
 
-    public static void main(String[] args) throws IOException{
-        API api = API.getInstance();
-        System.out.println("OK");
+    public void update(Observable o, Object arg) {
+        if (o instanceof Classroom) {
+            Classroom classroom = (Classroom) o;
+            if (!classrooms.containsValue(classroom)) {
+                System.out.println("Classroom not found in API");
+            }
+            syncClassrooms();
+        }
+        if (o instanceof Course) {
+            Course course = (Course) o;
+            if (!courses.containsValue(course)) {
+                System.out.println("Course not found in API");
+            }
+            syncCourses();
+        }
+        if (o instanceof User) {
+            User user = (User) o;
+            if (!users.containsValue(user)) {
+                System.out.println("User not found in API");
+            }
+            syncUsers();
+        }
+        if (o instanceof Department) {
+            Department department = (Department) o;
+            if (!departments.containsValue(department)) {
+                System.out.println("Department not found in API");
+            }
+            syncDepartments();
+        }
+        if (o instanceof Section) {
+            Section section = (Section) o;
+            if (!sections.containsValue(section)) {
+                System.out.println("Section not found in API");
+            }
+            syncSections();
+        }
+        if (o instanceof Professor) {
+            Professor professor = (Professor) o;
+            if (!professors.containsValue(professor)) {
+                System.out.println("Professor not found in API");
+            }
+            syncProfessors();
+        }
     }
 
-    //Create json objects
-//    public static void main(String[] args) throws IOException {
-//        FileOutputStream fos = new FileOutputStream("src/main/resources/users.json");
-//        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos, StandardCharsets.UTF_8));
-//        Gson gson = new Gson();
-//        UserPassword[] users = new UserPassword[3];
-//        users[0] = new UserPassword(2200900, "Salim Mert", "Uçar", "salim.ucar@bahcesehir.edu.tr", String.valueOf("123".hashCode()));
-//        users[1] = new UserPassword(2200780, "Azizcan", "Tam", "azizcan.tam@bahcesehir.edu.tr", String.valueOf("223".hashCode()));
-//        users[2] = new UserPassword(2200870, "Murat Kerem", "Serter", "murat.serter@bahcesehir.edu.tr", String.valueOf("323".hashCode()));
-//
-//        String json = gson.toJson(users, User[].class);
-//        writer.write(json);
-//        writer.flush();
-//        writer.close();
-//    }
+    public static void main(String[] args) throws IOException {
+        API api = API.getInstance();
+        User user = api.getUser(2200870);
+        System.out.println(user.getName() + " " + user.getSurname());
+        if (user.getSurname().contentEquals("Serter"))
+            user.setSurname("Boozer");
+        else
+            user.setSurname("Serter");
+        System.out.println(user.getName() + " " + user.getSurname());
+    }
 }
 
 // Object for handling umis data
@@ -339,46 +484,5 @@ class CourseSection {
     }
     static CourseSection[] getAllCourseSections() throws IOException {
         return getAllCourseSections("src/main/resources/all_course_schedules.json");
-    }
-}
-
-class UserPassword extends User{
-    String password;
-
-    public UserPassword(int id, String name, String surname, String email, String password) {
-        super(id, name, surname, email);
-        this.password = password;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-}
-
-class LocalTimeSerializer implements JsonSerializer<LocalTime> {
-    @Override
-    public JsonElement serialize(LocalTime localTime, Type typeOfSrc, JsonSerializationContext context) {
-        return new JsonPrimitive(localTime.toString());
-    }
-}
-
-class LocalTimeDeserializer implements JsonDeserializer<LocalTime> {
-    @Override
-    public LocalTime deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-        return LocalTime.parse(json.getAsString());
-    }
-}
-
-class DurationSerializer implements JsonSerializer<Duration> {
-    @Override
-    public JsonElement serialize(Duration duration, Type typeOfSrc, JsonSerializationContext context) {
-        return new JsonPrimitive(duration.toString());
-    }
-}
-
-class DurationDeserializer implements JsonDeserializer<Duration> {
-    @Override
-    public Duration deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-        return Duration.parse(json.getAsString());
     }
 }
