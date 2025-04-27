@@ -8,7 +8,6 @@ public class Professor extends User
     private int prof_rating;
     private int prof_rating_count;
     private int total_rating;
-    private String prof_name;
 
     public Professor(int prof_id,String prof_name, String prof_surname, String prof_email)
     {
@@ -31,15 +30,11 @@ public class Professor extends User
     }
 
     public String getProf_name() {
-        return prof_name;
+        return super.getName();
     }
 
     public void setProf_name(String prof_name) {
-        this.prof_name = prof_name;
-
-        // Notify observers about the change
-        setChanged();
-        notifyObservers();
+        super.setName(prof_name);
     }
 
     public int getProf_id() {
@@ -80,7 +75,7 @@ public class Professor extends User
 
     public void show_prof_info()
     {
-        System.out.println("Professor Name : " + prof_name);
+        System.out.println("Professor Name : " + super.getName());
         System.out.println("Professor Id : " + prof_id);
         System.out.println("Professor Rating is " + this.prof_rating + "/10 based on " + this.prof_rating_count + " votes.");
 
