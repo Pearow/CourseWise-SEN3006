@@ -6,13 +6,13 @@ public class Review {
     private int course_id;
     private User user;
     private int rating;
-    private int updated_rating;
 
     public Review(Course course, String comment, User user, int rating) {
         this.course = course;
         this.comment = comment;
         this.user = user;
         this.rating = rating;
+        course.addRating(rating);
     }
 
     public Course getCourse() {
@@ -52,6 +52,7 @@ public class Review {
     }
 
     public void setRating(int rating) {
+        course.updateRating(this.rating, rating);
         this.rating = rating;
     }
 }
