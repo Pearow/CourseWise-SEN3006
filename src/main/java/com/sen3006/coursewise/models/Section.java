@@ -25,6 +25,7 @@ public class Section extends Observable
         this.classroom = classroom;
         this.course = course;
         this.lesson_duration = Duration.between(start_time,end_time);
+        this.professor = professor;
 
         // Register this classroom as an observable to the API
         this.addObserver(API.getInstance());
