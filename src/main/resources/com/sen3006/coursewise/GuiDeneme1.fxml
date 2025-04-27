@@ -95,7 +95,7 @@
                         <!-- Right side - Lecturer's Note Text Area (in the red circle area) -->
                         <VBox spacing="5.0" HBox.hgrow="ALWAYS">
                             <Label style="-fx-font-weight: bold; -fx-text-fill: #424242;" text="Lecturer's Note" />
-                            <TextArea fx:id="lecturerNoteTextArea" prefHeight="150.0" prefWidth="289.0" promptText="Notes from lecturer about this course..." style="-fx-background-color: #f5f5f5; -fx-border-color: #e0e0e0; -fx-border-radius: 4; -fx-background-radius: 4;" wrapText="true" VBox.vgrow="ALWAYS" />
+                            <TextArea fx:id="lecturersNoteTextArea" prefHeight="150.0" prefWidth="289.0" promptText="Notes from lecturer about this course..." style="-fx-background-color: #f5f5f5; -fx-border-color: #e0e0e0; -fx-border-radius: 4; -fx-background-radius: 4;" wrapText="true" VBox.vgrow="ALWAYS" />
                         </VBox>
                     </children>
                 </HBox>
