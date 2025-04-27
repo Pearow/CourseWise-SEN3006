@@ -1,12 +1,12 @@
 package com.sen3006.coursewise;
 import com.google.gson.*;
 import com.sen3006.coursewise.enums.Campus;
+import com.sen3006.coursewise.json.PearowsGson;
+import com.sen3006.coursewise.json.UserPassword;
 import com.sen3006.coursewise.models.*;
 
 import java.io.*;
-import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -28,14 +28,7 @@ public class API implements Observer {
 
     // Singleton pattern to ensure only one instance of API exists
     private API() {
-        gson = new GsonBuilder()
-                .registerTypeAdapter(Classroom.class, new ClassroomAdapter())
-                .registerTypeAdapter(Course.class, new CourseAdapter())
-                .registerTypeAdapter(UserPassword.class, new UserAdapter())
-                .registerTypeAdapter(Department.class, new DepartmentAdapter())
-                .registerTypeAdapter(Professor.class, new ProfessorAdapter())
-                .registerTypeAdapter(Section.class, new SectionAdapter())
-                .create();
+        gson = PearowsGson.getGson();
         instance = this;
         loadAll();
     }
@@ -406,6 +399,14 @@ public class API implements Observer {
     }
 
     public static void main(String[] args) throws IOException {
+        API api = API.getInstance();
+        User user = api.getUser(2200870);
+        System.out.println(user.getName() + " " + user.getSurname());
+        if (user.getSurname().contentEquals("Serter"))
+            user.setSurname("Boozer");
+        else
+            user.setSurname("Serter");
+        System.out.println(user.getName() + " " + user.getSurname());
     }
 }
 
@@ -483,144 +484,5 @@ class CourseSection {
     }
     static CourseSection[] getAllCourseSections() throws IOException {
         return getAllCourseSections("src/main/resources/all_course_schedules.json");
-    }
-}
-
-class UserPassword extends User{
-    String password;
-
-    public UserPassword(int id, String name, String surname, String email, String password) {
-        super(id, name, surname, email);
-        this.password = password;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-}
-
-//TODO: Move the adapters to a separate file or their own package
-class ClassroomAdapter implements JsonSerializer<Classroom>, JsonDeserializer<Classroom> {
-    @Override
-    public JsonElement serialize(Classroom classroom, Type typeOfSrc, JsonSerializationContext context) {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("campus", classroom.getCampus().getIntCampus());
-        jsonObject.addProperty("id", classroom.getClass_id());
-        return jsonObject;
-    }
-
-    @Override
-    public Classroom deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-        JsonObject jsonObject = json.getAsJsonObject();
-        return new Classroom(jsonObject.get("campus").getAsInt(), jsonObject.get("id").getAsString());
-    }
-}
-class CourseAdapter implements JsonSerializer<Course>, JsonDeserializer<Course> {
-    @Override
-    public JsonElement serialize(Course course, Type typeOfSrc, JsonSerializationContext context) {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("id", course.getCourse_id());
-        jsonObject.addProperty("name", course.getCourse_name());
-        if (course.getDepartment() != null)
-            jsonObject.addProperty("department_id", course.getDepartment().getDepartment_id());
-        else {
-            System.out.println("WARNING: Department is null in course object: " + course.getCourse_id() + " " + course.getCourse_name());
-        }
-        jsonObject.addProperty("type", course.getType().getIntType());
-        jsonObject.addProperty("total_rating", course.getTotalRating());
-        jsonObject.addProperty("rating_count", course.getRatingCount());
-
-        return jsonObject;
-    }
-
-    @Override
-    public Course deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-        JsonObject jsonObject = json.getAsJsonObject();
-        Department department = null;
-        if (jsonObject.get("department_id") != null)
-            department = API.getInstance().getDepartment(jsonObject.get("department_id").getAsInt());
-        return new Course(jsonObject.get("id").getAsString(), jsonObject.get("name").getAsString(), department, jsonObject.get("type").getAsInt(), jsonObject.get("total_rating").getAsInt(), jsonObject.get("rating_count").getAsInt());
-    }
-}
-class UserAdapter implements JsonSerializer<UserPassword>, JsonDeserializer<UserPassword> {
-    @Override
-    public JsonElement serialize(UserPassword user, Type typeOfSrc, JsonSerializationContext context) {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("id", user.getId());
-        jsonObject.addProperty("name", user.getName());
-        jsonObject.addProperty("surname", user.getSurname());
-        jsonObject.addProperty("email", user.getEmail());
-        jsonObject.addProperty("password", user.getPassword());
-        return jsonObject;
-    }
-    @Override
-    public UserPassword deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-        JsonObject jsonObject = json.getAsJsonObject();
-        return new UserPassword(jsonObject.get("id").getAsInt(), jsonObject.get("name").getAsString(), jsonObject.get("surname").getAsString(), jsonObject.get("email").getAsString(), jsonObject.get("password").getAsString());
-    }
-}
-class DepartmentAdapter implements JsonSerializer<Department>, JsonDeserializer<Department> {
-    @Override
-    public JsonElement serialize(Department department, Type typeOfSrc, JsonSerializationContext context) {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("id", department.getDepartment_id());
-        jsonObject.addProperty("name", department.getDepartment_name());
-        if (department.getFaculty_name() != null)
-            jsonObject.addProperty("faculty_name", department.getFaculty_name());
-
-        return jsonObject;
-    }
-
-    @Override
-    public Department deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-        JsonObject jsonObject = json.getAsJsonObject();
-        String faculty = null;
-        if (jsonObject.get("faculty_name") != null)
-            faculty = jsonObject.get("faculty_name").getAsString();
-        return new Department(jsonObject.get("id").getAsInt(), jsonObject.get("name").getAsString(), faculty);
-    }
-}
-class SectionAdapter implements JsonSerializer<Section>, JsonDeserializer<Section> {
-    @Override
-    public JsonElement serialize(Section section, Type typeOfSrc, JsonSerializationContext context) {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("id", section.getSection_id());
-        jsonObject.addProperty("course_id", section.getCourse().getCourse_id());
-        jsonObject.addProperty("professor_id", section.getProfessor().getId());
-        jsonObject.addProperty("start_time", section.getStart_time().toString());
-        jsonObject.addProperty("end_time", section.getEnd_time().toString());
-        jsonObject.addProperty("day", section.getSection_day().getIntWeekday());
-        jsonObject.addProperty("classroom_name", section.getClassroom().getClass_id());
-        return jsonObject;
-    }
-
-    @Override
-    public Section deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-        JsonObject jsonObject = json.getAsJsonObject();
-
-        Classroom classroom = API.getInstance().getClassroom(jsonObject.get("classroom_name").getAsString());
-        Course course = API.getInstance().getCourse(jsonObject.get("course_id").getAsString());
-        Professor professor = API.getInstance().getProfessor(jsonObject.get("professor_id").getAsInt());
-        return new Section(jsonObject.get("id").getAsInt(), LocalTime.parse(jsonObject.get("start_time").getAsString()), LocalTime.parse(jsonObject.get("end_time").getAsString()), jsonObject.get("day").getAsInt(), classroom, course, professor);
-    }
-}
-class ProfessorAdapter implements JsonSerializer<Professor>, JsonDeserializer<Professor> {
-    @Override
-    public JsonElement serialize(Professor professor, Type typeOfSrc, JsonSerializationContext context) {
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("id", professor.getId());
-        jsonObject.addProperty("name", professor.getName());
-        jsonObject.addProperty("surname", professor.getSurname());
-        jsonObject.addProperty("email", professor.getEmail());
-        jsonObject.addProperty("total_rating", professor.getTotalRating());
-        jsonObject.addProperty("rating_count", professor.getRatingCount());
-
-        return jsonObject;
-    }
-
-    @Override
-    public Professor deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-        JsonObject jsonObject = json.getAsJsonObject();
-        return new Professor(jsonObject.get("id").getAsInt(), jsonObject.get("name").getAsString(), jsonObject.get("surname").getAsString(), jsonObject.get("email").getAsString(), jsonObject.get("total_rating").getAsInt(), jsonObject.get("rating_count").getAsInt());
     }
 }
