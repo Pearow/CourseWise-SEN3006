@@ -15,8 +15,9 @@ public class Section extends Observable
     private Classroom classroom;
     private Course course;
     private final Duration lesson_duration;
+    private Professor professor;
 
-    public Section(int section_id, LocalTime start_time, LocalTime end_time, int section_day, Classroom classroom, Course course) {
+    public Section(int section_id, LocalTime start_time, LocalTime end_time, int section_day, Classroom classroom, Course course, Professor professor) {
         this.section_id = section_id;
         this.start_time = start_time;
         this.end_time = end_time;
@@ -95,6 +96,23 @@ public class Section extends Observable
         // Notify observers about the change
         setChanged();
         notifyObservers();
+    }
+
+    public Professor getProfessor() {
+        return professor;
+    }
+
+    public Professor setProfessor(Professor professor) {
+        this.professor = professor;
+
+        // Notify observers about the change
+        setChanged();
+        notifyObservers();
+        return professor;
+    }
+
+    public int getRating() {
+        return Math.round((float) (professor.getAvgRating() + course.getAvgRating())/2);
     }
 
     public void  show_section_info()
