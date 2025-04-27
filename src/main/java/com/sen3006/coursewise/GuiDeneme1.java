@@ -2,7 +2,6 @@ package com.sen3006.coursewise;
 
 import com.sen3006.coursewise.models.Course;
 import com.sen3006.coursewise.models.CurrentUser;
-import com.sen3006.coursewise.models.Section;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -349,7 +348,7 @@ public class GuiDeneme1 implements Initializable {
         this.currentCourseCode = courseCode;
 
         // TODO: Replace with your API call
-        // List<Review> reviews = yourApiService.getReviews(sectionCode);
+        // Review[] reviews = api.getReviews(courseCode);
         // updateReviewCountLabel(reviews.size());
         // for (Review review : reviews) {
         //     addReviewToContainer(review);
@@ -394,9 +393,12 @@ public class GuiDeneme1 implements Initializable {
     private void updateReviewCountLabel() {
         String count;
         reviewCountLabel.setText("(" + "count" + ")");
+//        Course course = api.getCourse(currentCourseCode);
+//        reviewCountLabel.setText("(" + String.valueOf(course.getRatingCount() + 1) + ")");
     }
 
     //Add a review to the reviews container
+    //TODO: Update after Review model is implemented
     private void addReviewToContainer(String studentId, String rating, String reviewText, String bgColor, String textColor) {
         VBox reviewBox = new VBox(5);
         reviewBox.setStyle("-fx-background-color: " + bgColor + "; -fx-background-radius: 4; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 2, 0, 0, 1);");
@@ -433,6 +435,7 @@ public class GuiDeneme1 implements Initializable {
 
     //Show dialog to add a new review
     //TODO: Check if the user has selected a section before adding a review
+    //TODO: Check if the current user is a student
     //TODO: Check if the user has already submitted a review for this course
     @FXML
     private void showAddReviewDialog(ActionEvent event) throws IOException {
@@ -491,7 +494,7 @@ public class GuiDeneme1 implements Initializable {
                 // Submit the review
                 String studentId = studentIdLabel.getText(); // Replace with actual student ID from the session
                 submitReview(studentId, rating, reviewText);
-                updateCourseRating(currentSectionCode); // Update course rating after review submission
+                updateCourseRating(currentCourseCode, rating); // Update course rating after review submission
                 creatingNewReview = false;
             }
         }
@@ -500,10 +503,13 @@ public class GuiDeneme1 implements Initializable {
 
 
     //Update the course rating after a new review is submitted
-    private void updateCourseRating(String sectionCode) {
+    private void updateCourseRating(String courseCode, int rating) {
         // TODO: Call your API to get the updated rating
-        // double newRating = yourApiService.getCourseRating(sectionCode);
-        // courseRatingLabel.setText(String.format("%.1f/10", newRating));
+//        Course course = api.getCourse(courseCode);
+//        course.addRating(rating);
+//        // Update the course rating label
+//        courseRatingLabel.setText(course.getAvgRating() + "/10");
+
     }
 
     //Show error alert
@@ -602,6 +608,7 @@ public class GuiDeneme1 implements Initializable {
     }
 
     //Update the review count label
+    //TODO: Remove this method when implementing the non-parameterized version, it's not needed
     private void updateReviewCountLabel(int count) {
         reviewCountLabel.setText("(" + count + ")");
     }
@@ -630,8 +637,27 @@ public class GuiDeneme1 implements Initializable {
         lecturersNoteTextArea.setStyle("-fx-background-color: #f5f5f5; -fx-border-color: #e0e0e0; -fx-border-radius: 4;");
     }
 
+    //
+    //TODO: Check if the user is a Professor
+    private void editLecturersNote() {
+        loadLecturersNote();
+        lecturersNoteTextArea.setEditable(true);
+        lecturersNoteTextArea.setStyle("-fx-background-color: #ffffff; -fx-border-color: #e0e0e0; -fx-border-radius: 4;");
+//        lecturersNoteTextArea.setOnKeyPressed(event -> {
+//            if (event.getCode().toString().equals("ENTER")) {
+//                // Save the note
+//                String note = lecturersNoteTextArea.getText();
+//            }
+//            if (event.getCode().toString().equals("ESCAPE")) {
+//                // Cancel editing
+//                loadLecturersNote();
+//            }
+//        });
+    }
+
     //Show dialog to rate a professor
     //TODO: Check if the user has already rated this professor
+    //TODO: Check if the current user is a student
     @FXML
     private void showRateProfessorDialog(MouseEvent event) throws IOException {
         if (event.getSource() == profRatingLabel) {
@@ -677,7 +703,14 @@ public class GuiDeneme1 implements Initializable {
     }
 
     //Submit a new rating for a professor
-    private void submitRating(String studentId, int rating, String reviewText) {
+    //TODO: Call your API to submit the rating
+    private void submitRating(String studentId, int rating, String profId) {
+        //Professor professor = api.getProfessor(profId); // Get the professor object from API
+        //professor.addRating(rating); // Add the rating to the professor
+        // Update the professor rating label
+//        String ratingStr = rating + "/10";
+//        profRatingLabel.setText(ratingStr);
+
         // Show success message
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Success");
