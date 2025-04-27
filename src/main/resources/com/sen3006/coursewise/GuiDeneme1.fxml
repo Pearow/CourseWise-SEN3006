@@ -4,9 +4,9 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="900.0" style="-fx-border-color: #e0e0e0; -fx-border-width: 1; -fx-background-color: #f8f9fa;" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.sen3006.coursewise.GuiDeneme1">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1280.0" style="-fx-border-color: #e0e0e0; -fx-border-width: 1; -fx-background-color: #f8f9fa;" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.sen3006.coursewise.GuiDeneme1">
     <left>
-        <VBox prefWidth="200.0" spacing="10.0" style="-fx-border-color: transparent #e0e0e0 transparent transparent; -fx-border-width: 1; -fx-background-color: #ffffff;" BorderPane.alignment="CENTER" VBox.vgrow="ALWAYS">
+        <VBox prefHeight="718.0" prefWidth="276.0" spacing="10.0" style="-fx-border-color: transparent #e0e0e0 transparent transparent; -fx-border-width: 1; -fx-background-color: #ffffff;" BorderPane.alignment="CENTER" VBox.vgrow="ALWAYS">
             <padding>
                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
             </padding>
@@ -42,7 +42,7 @@
             <children>
                 <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-background-color: #e3f2fd; -fx-background-radius: 4;">
                     <children>
-                        <Label fx:id="courseCodeLabel" style="-fx-font-weight: bold; -fx-font-size: 18px; -fx-text-fill: #0d47a1;" text="" />
+                        <Label fx:id="courseTitleLabel" style="-fx-font-weight: bold; -fx-font-size: 18px; -fx-text-fill: #0d47a1;" text="" />
                         <Label fx:id="courseRatingLabel" style="-fx-border-color: #1976d2; -fx-border-radius: 10; -fx-background-color: white; -fx-background-radius: 10; -fx-text-fill: #1976d2;" text="">
                             <padding>
                                 <Insets bottom="2.0" left="5.0" right="5.0" top="2.0" />
@@ -74,14 +74,14 @@
                                 <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
                             </rowConstraints>
                             <children>
-                                <Label fx:id="courseTitleLabel" style="-fx-font-weight: bold; -fx-text-fill: #424242;" text="Title" />
+                                <Label fx:id="courseCodeLabel" style="-fx-font-weight: bold; -fx-text-fill: #424242;" text="Code" />
                                 <Label fx:id="courseTypeLabel" style="-fx-font-weight: bold; -fx-text-fill: #424242;" text="Type" GridPane.rowIndex="1" />
                                 <Label fx:id="profNameLabel" style="-fx-font-weight: bold; -fx-text-fill: #424242;" text="Prof. Name" GridPane.rowIndex="2" />
                                 <Label fx:id="weekdayLabel" style="-fx-font-weight: bold; -fx-text-fill: #424242;" text="Day" GridPane.rowIndex="3" />
                                 <Label fx:id="durationLabel" style="-fx-font-weight: bold; -fx-text-fill: #424242;" text="Duration" GridPane.rowIndex="4" />
                                 <Label fx:id="campusLabel" style="-fx-font-weight: bold; -fx-text-fill: #424242;" text="Campus" GridPane.rowIndex="5" />
                                 <Label fx:id="roomLabel" style="-fx-font-weight: bold; -fx-text-fill: #424242;" text="Room" GridPane.rowIndex="6" />
-                        <Label fx:id="profRatingLabel" alignment="CENTER_RIGHT" prefHeight="24.0" prefWidth="38.0" style="-fx-border-color: #1976d2; -fx-border-radius: 10; -fx-background-color: white; -fx-background-radius: 10; -fx-text-fill: #1976d2;" text="" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                        <Label fx:id="profRatingLabel" alignment="CENTER_RIGHT" onMouseClicked="#showRateProfessorDialog" prefHeight="24.0" prefWidth="38.0" style="-fx-border-color: #1976d2; -fx-border-radius: 10; -fx-background-color: white; -fx-background-radius: 10; -fx-text-fill: #1976d2;" text="" GridPane.columnIndex="1" GridPane.rowIndex="2">
                            <padding>
                               <Insets bottom="2.0" left="5.0" right="5.0" top="2.0" />
                            </padding>
@@ -131,14 +131,14 @@
         </VBox>
     </center>
     <right>
-        <VBox prefWidth="200.0" spacing="10.0" style="-fx-border-color: transparent transparent transparent #e0e0e0; -fx-border-width: 1; -fx-background-color: #ffffff;" BorderPane.alignment="CENTER" VBox.vgrow="ALWAYS">
+        <VBox prefHeight="718.0" prefWidth="272.0" spacing="10.0" style="-fx-border-color: transparent transparent transparent #e0e0e0; -fx-border-width: 1; -fx-background-color: #ffffff;" BorderPane.alignment="CENTER" VBox.vgrow="ALWAYS">
             <padding>
                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
             </padding>
             <children>
                 <Label style="-fx-font-weight: bold; -fx-text-fill: #424242; -fx-underline: true;" text="Available Sections" />
                 <VBox VBox.vgrow="ALWAYS">
-                    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-background-color: #f5f5f5; -fx-background-radius: 4; -fx-border-color: #e0e0e0; -fx-border-radius: 4;" vbarPolicy="ALWAYS" VBox.vgrow="ALWAYS">
+                    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" prefWidth="222.0" style="-fx-background-color: #f5f5f5; -fx-background-radius: 4; -fx-border-color: #e0e0e0; -fx-border-radius: 4;" vbarPolicy="ALWAYS" VBox.vgrow="ALWAYS">
                         <content>
                             <VBox fx:id="sectionsContainer" minWidth="0" spacing="10.0" style="-fx-background-color: transparent;">
                                 <!-- Sections will be loaded dynamically -->
