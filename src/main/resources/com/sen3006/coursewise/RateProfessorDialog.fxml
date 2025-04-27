@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<DialogPane prefHeight="174.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.sen3006.coursewise.GuiDeneme1">
+
+    <content>
+        <VBox spacing="10">
+            <padding>
+                <Insets bottom="20" left="20" right="20" top="20" />
+            </padding>
+
+            <Label fx:id="studentIdLabel" prefHeight="17.0" prefWidth="370.0" style="-fx-font-weight: bold;" text="Student ID:" />
+
+            <Label style="-fx-font-weight: bold;" text="Rating:" />
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <Slider fx:id="ratingSlider" majorTickUnit="1" max="10" min="1" minorTickCount="0" prefWidth="300" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="5" />
+                <Label fx:id="ratingValueLabel" style="-fx-font-weight: bold;" text="5" />
+            </HBox>
+
+            <HBox alignment="CENTER_RIGHT" />
+        </VBox>
+    </content>
+
+    <buttonTypes>
+        <ButtonType fx:constant="OK" />
+        <ButtonType fx:constant="CANCEL" />
+    </buttonTypes>
+</DialogPane>

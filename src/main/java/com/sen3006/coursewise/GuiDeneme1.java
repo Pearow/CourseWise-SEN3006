@@ -1,12 +1,16 @@
 package com.sen3006.coursewise;
 
+import com.sen3006.coursewise.models.Course;
 import com.sen3006.coursewise.models.CurrentUser;
+import com.sen3006.coursewise.models.Section;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
 import javafx.geometry.Insets;
@@ -42,16 +46,17 @@ public class GuiDeneme1 implements Initializable {
 
     private ToggleGroup sectionGroup;
     private String currentCourseCode;
+    private String currentCourseTitle;
     private static boolean creatingNewReview = false;
     private String currentSectionCode;
 
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // Initialize search functionality
-        setupSearch();
 
         if (!creatingNewReview) {
+            // Set up the search text field
+            setupSearch();
             // Load course list from API or database
             loadCourseList();
             // Create the section toggle group
@@ -61,6 +66,14 @@ public class GuiDeneme1 implements Initializable {
             searchField.textProperty().addListener((observable, oldValue, newValue) -> {
                 filterCourses(newValue);
             });
+
+            //Select the first course by default
+            if (!courseListContainer.getChildren().isEmpty()) {
+                HBox firstCourse = (HBox) courseListContainer.getChildren().get(0);
+                String courseCode = ((Label) firstCourse.getChildren().get(0)).getText();
+                String rating = ((Label) firstCourse.getChildren().get(1)).getText();
+                loadCourseDetails(courseCode, rating);
+            }
         }
     }
 
@@ -77,27 +90,28 @@ public class GuiDeneme1 implements Initializable {
      * Replace with your API or database call
      */
     private void loadCourseList() {
-//        courseListContainer.getChildren().clear();
+        courseListContainer.getChildren().clear();
 
         // TODO: Replace with your API call to get courses
-        // List<Course> courses = yourApiService.getCourses();
-        // for (Course course : courses) {
-        //     addCourseToList(course);
-        // }
+        API api = API.getInstance();
+        Course[] courses = api.getCourses(10); //api can't get courses yet, it returns null
+        for (Course course : courses) {
+            addCourseItemToList(course.getCourse_id(), course.getAvgRating() + "/10");
+        }
 
         // Example: Add some sample courses for now
-        addSampleCoursesToList();
+        //addSampleCoursesToList();
     }
 
     //This method should be replaced with your actual API calls
-    private void addSampleCoursesToList() {
-        addCourseItemToList("SEN3006", "9/10");
-        addCourseItemToList("CSE2025", "8/10");
-        addCourseItemToList("MBG1201", "7/10");
-        addCourseItemToList("ECON101", "8/10");
-        addCourseItemToList("PHYS101", "7/10");
-        addCourseItemToList("MATH241", "9/10");
-    }
+//    private void addSampleCoursesToList() {
+//        addCourseItemToList("SEN3006", "9/10");
+//        addCourseItemToList("CSE2025", "8/10");
+//        addCourseItemToList("MBG1201", "7/10");
+//        addCourseItemToList("ECON101", "8/10");
+//        addCourseItemToList("PHYS101", "7/10");
+//        addCourseItemToList("MATH241", "9/10");
+//    }
 
     /**
      * Add a course item to the list
@@ -118,6 +132,7 @@ public class GuiDeneme1 implements Initializable {
         Label ratingLabel = new Label(rating);
         ratingLabel.setStyle("-fx-border-color: #757575; -fx-border-radius: 10; -fx-background-color: white; -fx-background-radius: 10; -fx-text-fill: #757575;");
         ratingLabel.setPadding(new Insets(2, 5, 2, 5));
+        ratingLabel.setMinWidth(40);
 
         courseItem.getChildren().addAll(codeLabel, ratingLabel);
 
@@ -135,41 +150,75 @@ public class GuiDeneme1 implements Initializable {
         courseListContainer.getChildren().add(courseItem);
 
         // Add separator except for the last item
-        if (courseListContainer.getChildren().size() > 0 &&
-                !courseCode.equals("MATH241")) { // This should be dynamically checked in your actual implementation
-            Separator separator = new Separator();
-            separator.setStyle("-fx-background-color: #e0e0e0;");
-            courseListContainer.getChildren().add(separator);
-        }
+        //Commented out for now, works inconsistently and looks bad
+//        if (courseListContainer.getChildren().size() > 0 &&
+//                courseListContainer.getChildren().indexOf(courseItem) < totalSize - 1) {
+//            Separator separator = new Separator();
+//            separator.setStyle("-fx-background-color: #e0e0e0;");
+//            courseListContainer.getChildren().add(separator);
+//        }
     }
 
     //Filter courses based on search text
     private void filterCourses(String searchText) {
-        // TODO: Replace with your filtering logic
-        // You could call your API again with a filter parameter or filter the existing list
+        // Filtering will be done when the user types at least 3 characters
+        if (searchText.length() < 3) {
+            loadCourseList(); // Show all courses if less than 3 characters
+            return;
+        }
 
-        // Example implementation:
-        // clearCourseList();
-        // List<Course> filteredCourses = yourApiService.searchCourses(searchText);
-        // for (Course course : filteredCourses) {
-        //     addCourseToList(course);
-        // }
+        Course[] courses = API.getInstance().getCourses(10); // Get courses from API
+
+        // Clear the list first
+        courseListContainer.getChildren().clear();
+
+        // Iterate through the courses and add the ones matching the searchText
+        boolean foundAny = false;
+        for (Course course : courses) {
+            if (course.getCourse_id().toLowerCase().contains(searchText.toLowerCase())) {
+                // Add matching course to the GUI
+                addCourseItemToList(course.getCourse_id(), String.valueOf(course.getAvgRating() + "/10"));
+                foundAny = true;
+            }
+        }
+
+        // If no results were found, show a message to the user
+        if (!foundAny) {
+            showNoResultsMessage();
+        }
     }
 
-    //Load course details when a course is selected
+    // Message to display when no results are found
+    private void showNoResultsMessage() {
+        Label noResultsLabel = new Label("No courses found matching the search criteria");
+        noResultsLabel.setStyle("-fx-text-fill: #757575; -fx-padding: 10;");
+        courseListContainer.getChildren().add(noResultsLabel);
+    }
+
+            //Load course details when a course is selected
     private void loadCourseDetails(String courseCode, String rating) {
         // Save current course code
         this.currentCourseCode = courseCode;
+        this.currentCourseTitle = "Course Title Placeholder"; // Placeholder, replace with actual title from API
 
         // TODO: Replace with your API call
-        // Course course = yourApiService.getCourseDetails(courseCode);
-        // updateCourseDetailsUI(course);
+        API api = API.getInstance();
+        Course course = api.getCourse(courseCode); // This should return the course object with all details
+        if (course != null) {
+            currentCourseTitle = course.getCourse_name();
+            // Update course details UI
+            courseTitleLabel.setText(currentCourseTitle);
+            courseRatingLabel.setText(rating);
+            courseCodeLabel.setText(courseCode);
+            courseTypeLabel.setText(course.getType().toString());
+        }
 
         // For now, use example data
-        courseCodeLabel.setText(courseCode);
-        courseRatingLabel.setText(rating); // This should come from your API
-        courseTitleLabel.setText("Software Engineering"); // From API
-        courseTypeLabel.setText("Lecture"); // From API
+//        courseTitleLabel.setText(currentCourseTitle); // From API
+//        courseRatingLabel.setText(rating); // This should come from your API
+//        courseRatingLabel.setMinWidth(40);
+//        courseCodeLabel.setText(courseCode);
+//        courseTypeLabel.setText("Lecture"); // From API
 
         // Load available sections
         loadAvailableSections(courseCode);
@@ -189,10 +238,11 @@ public class GuiDeneme1 implements Initializable {
         sectionGroup = new ToggleGroup();
 
         // TODO: Replace with your API call
-        // List<Section> sections = yourApiService.getSections(courseCode);
-        // for (Section section : sections) {
-        //     addSectionToList(section);
-        // }
+//        API api = API.getInstance();
+//        Section[] sections = api.getSections(courseCode); // This should return the list of sections for the course
+//        for (Section section : sections) {
+//            addSectionToList(String.valueOf(section.getSection_id()));
+//        }
 
         // Add sections based on course code
         if (courseCode.equals("SEN3006")) {
@@ -248,8 +298,17 @@ public class GuiDeneme1 implements Initializable {
         courseCodeLabel.setText(sectionCode);
 
         // TODO: Replace with your API call
-        // Section section = yourApiService.getSectionDetails(sectionCode);
-        // updateSectionDetailsUI(section);
+//        API api = API.getInstance();
+//        for (Section s : api.getSections(currentCourseCode)) {
+//            if (s.getSection_id() == Integer.parseInt(sectionCode)) {
+//                weekdayLabel.setText(s.getSection_day().toString());
+//                durationLabel.setText(s.getStart_time().toString() + " - " + s.getEnd_time().toString());
+//                roomLabel.setText(s.getClassroom().getClass_id());
+//                profNameLabel.setText("Dr. " + s.getProfessor().getProf_name()); // Placeholder, replace with actual professor name from API
+//                profRatingLabel.setText("8/10"); // Placeholder, replace with actual rating from API
+//                campusLabel.setText(String.valueOf(s.getClassroom().getCampus())); // Placeholder, replace with actual campus from API
+//            }
+//        }
 
         // Example implementation
         if (sectionCode.endsWith("(1)")) {
@@ -277,7 +336,7 @@ public class GuiDeneme1 implements Initializable {
             // Default or random values for sections 4-6
             weekdayLabel.setText("Friday");
             durationLabel.setText("13:00 - 15:50");
-            roomLabel.setText("D" + sectionCode.charAt(sectionCode.length()-2) + "01");
+            roomLabel.setText("D" + sectionCode.charAt(sectionCode.length() - 1) + "06");
             profNameLabel.setText("Dr. Brown");
             profRatingLabel.setText("8/10");
             campusLabel.setText("East Campus");
@@ -399,6 +458,7 @@ public class GuiDeneme1 implements Initializable {
         TextArea reviewTextArea = (TextArea) dialogPane.lookup("#reviewTextArea");
         Label characterCountLabel = (Label) dialogPane.lookup("#characterCountLabel");
 
+        // Get the student ID from the current user session and set it to the label
         studentIdLabel.setText(String.valueOf(currentUser.getId()));
 
         // Set up character limit for review text area (300 characters)
@@ -571,5 +631,61 @@ public class GuiDeneme1 implements Initializable {
         lecturersNoteTextArea.setWrapText(true);
         lecturersNoteTextArea.setEditable(false);
         lecturersNoteTextArea.setStyle("-fx-background-color: #f5f5f5; -fx-border-color: #e0e0e0; -fx-border-radius: 4;");
+    }
+
+    //Show dialog to rate a professor
+    //TODO: Check if the user has already rated this professor
+    @FXML
+    private void showRateProfessorDialog(MouseEvent event) throws IOException {
+        if (event.getSource() == profRatingLabel) {
+            if (event.getButton() == MouseButton.PRIMARY){
+                creatingNewReview = true;
+                // Load the dialog FXML
+                FXMLLoader dialogLoader = new FXMLLoader(getClass().getResource("/com/sen3006/coursewise/RateProfessorDialog.fxml"));
+                DialogPane dialogPane = dialogLoader.load();
+                // Create the dialog
+                Dialog<ButtonType> dialog = new Dialog<>();
+                dialog.setDialogPane(dialogPane);
+                dialog.setTitle("Rate Professor " + profNameLabel.getText());
+                dialog.initModality(Modality.APPLICATION_MODAL);
+                // Get the dialog components
+                Label studentIdLabel = (Label) dialogPane.lookup("#studentIdLabel");
+                Slider ratingSlider = (Slider) dialogPane.lookup("#ratingSlider");
+                Label ratingValueLabel = (Label) dialogPane.lookup("#ratingValueLabel");
+
+                //Get the student ID from the current user session and set it to the label
+                studentIdLabel.setText(String.valueOf(CurrentUser.getInstance().getId()));
+
+                //Update rating value label when slider changes
+                ratingSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+                    ratingValueLabel.setText(String.valueOf(newValue.intValue()));
+                });
+                // Show dialog and process the result
+                Optional<ButtonType> result = dialog.showAndWait();
+                if (result.isPresent() && result.get() == ButtonType.OK) {
+
+                    int rating = (int) ratingSlider.getValue();
+
+                    // Submit the review
+                    String studentId = studentIdLabel.getText(); // Replace with actual student ID from the session
+                    submitRating(studentId, rating, ""); // Empty review text for professor rating
+                    System.out.println("Rating submitted: " + rating);
+                    }
+
+
+                System.out.println("Clicked");
+            }
+        }
+
+    }
+
+    //Submit a new rating for a professor
+    private void submitRating(String studentId, int rating, String reviewText) {
+        // Show success message
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Success");
+        alert.setHeaderText("Review Submitted");
+        alert.setContentText("Your rating of " + profNameLabel.getText() + " has been submitted successfully.");
+        alert.showAndWait();
     }
 }
