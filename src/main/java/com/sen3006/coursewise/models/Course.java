@@ -1,7 +1,10 @@
 package com.sen3006.coursewise.models;
+import com.sen3006.coursewise.API;
 import com.sen3006.coursewise.enums.Type;
 
-public class Course
+import java.util.Observable;
+
+public class Course extends Observable
 {
     private String course_id;
     private String course_name;
@@ -20,6 +23,18 @@ public class Course
         this.course_rating_count = 0;
         this.course_rating = 0;
         this.total_course_rating = 0;
+
+        // Register this classroom as an observable to the API
+        this.addObserver(API.getInstance());
+    }
+
+    public Course(String course_id, String course_name, Department department, int type, int total_rating, int course_rating_count)
+    {
+        this(course_id, course_name, department, type);
+        this.total_course_rating = total_rating;
+        this.course_rating_count = course_rating_count;
+        this.course_rating = Math.round((float) total_course_rating / course_rating_count);
+
     }
 
     public boolean addRating(int newRating) {
@@ -30,6 +45,11 @@ public class Course
         this.total_course_rating += newRating;
         this.course_rating_count++;
         this.course_rating = Math.round((float) total_course_rating / course_rating_count);
+
+        // Notify observers about the change
+        setChanged();
+        notifyObservers();
+
         return true;
     }
 
@@ -41,6 +61,10 @@ public class Course
         return this.course_rating_count;
     }
 
+    public int getTotalRating() {
+        return this.total_course_rating;
+    }
+
 
     public Type getType() {
         return type;
@@ -48,6 +72,9 @@ public class Course
 
     public void setType(int type) {
         this.type = Type.fromIndex(type);
+        // Notify observers about the change
+        setChanged();
+        notifyObservers();
     }
 
     public Department getDepartment() {
@@ -56,6 +83,10 @@ public class Course
 
     public void setDepartment(Department department) {
         this.department = department;
+
+        // Notify observers about the change
+        setChanged();
+        notifyObservers();
     }
 
     public String getCourse_name() {
@@ -64,6 +95,10 @@ public class Course
 
     public void setCourse_name(String course_name) {
         this.course_name = course_name;
+
+        // Notify observers about the change
+        setChanged();
+        notifyObservers();
     }
 
     public String getCourse_id() {
@@ -71,7 +106,7 @@ public class Course
     }
 
 
-    public void setCourse_id(String course_id) {
+    private void setCourse_id(String course_id) {
         this.course_id = course_id;
     }
     public void show_course_info() {

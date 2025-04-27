@@ -1,7 +1,10 @@
 package com.sen3006.coursewise.models;
+import com.sen3006.coursewise.API;
 import com.sen3006.coursewise.enums.Campus;
 
-public class Classroom
+import java.util.Observable;
+
+public class Classroom extends Observable
 {
     private Campus campus;
     private String class_id;
@@ -10,6 +13,9 @@ public class Classroom
     {
         this.campus = Campus.fromIndex(campus);
         this.class_id = class_id;
+
+        // Register this classroom as an observable to the API
+        this.addObserver(API.getInstance());
     }
 
     public Campus getCampus() {
@@ -18,13 +24,17 @@ public class Classroom
 
     public void setCampus(int campus) {
         this.campus = Campus.fromIndex(campus);
+
+        // Notify observers about the change
+        setChanged();
+        notifyObservers();
     }
 
     public String getClass_id() {
         return class_id;
     }
 
-    public void setClass_id(String class_id) {
+    private void setClass_id(String class_id) {
         this.class_id = class_id;
     }
 

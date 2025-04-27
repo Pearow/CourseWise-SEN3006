@@ -8,7 +8,8 @@ public enum Campus {
     GOZTEPE,
     IDEA,
     PERA,
-    FUTURE;
+    FUTURE,
+    ONLINE;
 
     public int getIntCampus() {
         switch (this) {
@@ -28,12 +29,28 @@ public enum Campus {
                 return 6;
             case FUTURE:
                 return 7;
+            case ONLINE:
+                return 8;
             default:
                 return -1;
         }
     }
 
     public static Campus fromString(String input) {
+        if (input.equalsIgnoreCase("İSTANBUL-BEŞİKTAŞ")) {
+            return Campus.SOUTH;
+        } else if (input.equalsIgnoreCase("İSTANBUL-KUZEY")) {
+            return Campus.NORTH;
+        } else if (input.equalsIgnoreCase("İSTANBUL-GALATA")) {
+            return Campus.GALATA;
+        } else if (input.equalsIgnoreCase("İSTANBUL-GÖZTEPE")) {
+            return Campus.GOZTEPE;
+        } else if (input.equalsIgnoreCase("İSTANBUL-PERA")) {
+            return Campus.PERA;
+        } else if (input.equalsIgnoreCase("UZAKTAN EĞİTİM")) {
+            return Campus.ONLINE;
+        } else if (input.equalsIgnoreCase("İSTANBUL-BALMUMCU")) {return Campus.BALMUMCU;}
+
         for (Campus campus : Campus.values()) {
             if (campus.name().equalsIgnoreCase(input)) {
                 return campus;

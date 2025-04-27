@@ -1,6 +1,10 @@
 package com.sen3006.coursewise.models;
 
-public class Department
+import com.sen3006.coursewise.API;
+
+import java.util.Observable;
+
+public class Department extends Observable
 {
     private int department_id;
     private String department_name;
@@ -10,13 +14,16 @@ public class Department
         this.department_id = department_id;
         this.department_name = department_name;
         this.faculty_name = faculty_name;
+
+        // Register this classroom as an observable to the API
+        this.addObserver(API.getInstance());
     }
 
     public int getDepartment_id() {
         return department_id;
     }
 
-    public void setDepartment_id(int department_id) {
+    private void setDepartment_id(int department_id) {
         this.department_id = department_id;
     }
 
@@ -26,6 +33,10 @@ public class Department
 
     public void setDepartment_name(String department_name) {
         this.department_name = department_name;
+
+        // Notify observers about the change
+        setChanged();
+        notifyObservers();
     }
 
     public String getFaculty_name() {
@@ -34,6 +45,10 @@ public class Department
 
     public void setFaculty_name(String faculty_name) {
         this.faculty_name = faculty_name;
+
+        // Notify observers about the change
+        setChanged();
+        notifyObservers();
     }
 
     public void show_department_info()
