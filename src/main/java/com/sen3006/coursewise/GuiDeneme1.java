@@ -50,6 +50,8 @@ public class GuiDeneme1 implements Initializable {
     private static boolean creatingNewReview = false;
     private String currentSectionCode;
 
+    API api = API.getInstance();
+
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -92,9 +94,7 @@ public class GuiDeneme1 implements Initializable {
     private void loadCourseList() {
         courseListContainer.getChildren().clear();
 
-        // TODO: Replace with your API call to get courses
-        API api = API.getInstance();
-        Course[] courses = api.getCourses(10); //api can't get courses yet, it returns null
+        Course[] courses = api.getCourses(10); //this method is broken for now and returns every course in the database
         for (Course course : courses) {
             addCourseItemToList(course.getCourse_id(), course.getAvgRating() + "/10");
         }
@@ -167,7 +167,7 @@ public class GuiDeneme1 implements Initializable {
             return;
         }
 
-        Course[] courses = API.getInstance().getCourses(10); // Get courses from API
+        Course[] courses = api.getCourses(10); // Get courses from API
 
         // Clear the list first
         courseListContainer.getChildren().clear();
@@ -202,7 +202,6 @@ public class GuiDeneme1 implements Initializable {
         this.currentCourseTitle = "Course Title Placeholder"; // Placeholder, replace with actual title from API
 
         // TODO: Replace with your API call
-        API api = API.getInstance();
         Course course = api.getCourse(courseCode); // This should return the course object with all details
         if (course != null) {
             currentCourseTitle = course.getCourse_name();
@@ -238,7 +237,6 @@ public class GuiDeneme1 implements Initializable {
         sectionGroup = new ToggleGroup();
 
         // TODO: Replace with your API call
-//        API api = API.getInstance();
 //        Section[] sections = api.getSections(courseCode); // This should return the list of sections for the course
 //        for (Section section : sections) {
 //            addSectionToList(String.valueOf(section.getSection_id()));
@@ -298,7 +296,6 @@ public class GuiDeneme1 implements Initializable {
         courseCodeLabel.setText(sectionCode);
 
         // TODO: Replace with your API call
-//        API api = API.getInstance();
 //        for (Section s : api.getSections(currentCourseCode)) {
 //            if (s.getSection_id() == Integer.parseInt(sectionCode)) {
 //                weekdayLabel.setText(s.getSection_day().toString());
