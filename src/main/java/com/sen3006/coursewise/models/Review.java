@@ -1,9 +1,12 @@
 package com.sen3006.coursewise.models;
 
-public class Review {
+import com.sen3006.coursewise.API;
+
+import java.util.Observable;
+
+public class Review extends Observable {
     private Course course;
     private String comment;
-    private int course_id;
     private User user;
     private int rating;
 
@@ -13,14 +16,22 @@ public class Review {
         this.user = user;
         this.rating = rating;
         course.addRating(rating);
+
+        addObserver(API.getInstance());
     }
 
     public Course getCourse() {
         return course;
     }
 
-    public void setCourse(Course course) {
-        this.course = course;
+    public void setCourse(Course newCourse) {
+        course.revokeRating(rating);
+        course = newCourse;
+        course.addRating(rating);
+
+        // Notify observers about the change
+        setChanged();
+        notifyObservers();
     }
 
     public String getComment() {
@@ -29,22 +40,14 @@ public class Review {
 
     public void setComment(String comment) {
         this.comment = comment;
-    }
 
-    public int getCourse_id() {
-        return course_id;
-    }
-
-    public void setCourse_id(int course_id) {
-        this.course_id = course_id;
+        // Notify observers about the change
+        setChanged();
+        notifyObservers();
     }
 
     public User getUser() {
         return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
     }
 
     public int getRating() {
@@ -54,5 +57,19 @@ public class Review {
     public void setRating(int rating) {
         course.updateRating(this.rating, rating);
         this.rating = rating;
+    }
+
+    public void revokeRating() {
+        if (rating == -1){
+            System.out.println("Already revoked");
+            return;
+        }
+        course.revokeRating(rating);
+        course = null;
+        rating = -1;
+
+        // Notify observers about the change
+        setChanged();
+        notifyObservers();
     }
 }

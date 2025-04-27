@@ -25,6 +25,7 @@ public class API implements Observer {
     private Hashtable<Integer, Department> departments;
     private Hashtable<Integer, Professor> professors;
     private Hashtable<Integer, Section> sections;
+    private Hashtable<Integer, Review> reviews;
 
     // Singleton pattern to ensure only one instance of API exists
     private API() {
@@ -40,6 +41,7 @@ public class API implements Observer {
         return instance;
     }
 
+    @Deprecated
     private void fetchPseudoTables() {
         classrooms = new Hashtable<>();
         courses = new Hashtable<>();
@@ -99,6 +101,7 @@ public class API implements Observer {
             e.printStackTrace();
         }
     }
+    @Deprecated
     private void saveAll() {
         Hashtable[] tables = {classrooms, courses, departments, professors, sections};
         String[] names = {"classrooms", "courses", "departments", "professors", "sections"};
@@ -212,6 +215,24 @@ public class API implements Observer {
         }
     }
 
+    public void syncReviews(){
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/resources/reviews.json"));
+            Review[] table = new Review[reviews.size()];
+
+            reviews.values().toArray(table);
+
+            String json = gson.toJson(table, Review[].class);
+            writer.write(json);
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //TODO: Add a base model class and collapse all the sync methods into one
+
     private void loadAll() {
         try {
             Classroom[] classrooms;
@@ -220,6 +241,7 @@ public class API implements Observer {
             Department[] departments;
             Professor[] professors;
             Section[] sections;
+            Review[] reviews;
 
             classrooms = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/classrooms.json"), StandardCharsets.UTF_8)).readLine(), Classroom[].class);
             this.classrooms = new Hashtable<>();
@@ -256,6 +278,12 @@ public class API implements Observer {
             for (Section section : sections) {
                 this.sections.put(section.getSection_id() + section.getCourse().getCourse_id().hashCode(), section);
             }
+
+            reviews = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/reviews.json"), StandardCharsets.UTF_8)).readLine(), Review[].class);
+            this.reviews = new Hashtable<>();
+            for (Review review : reviews) {
+                this.reviews.put(review.getCourse().getCourse_id().hashCode() + review.getUser().getId(), review);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -284,6 +312,23 @@ public class API implements Observer {
     public Section getSection(int id, String courseId) {
         return sections.get(id + courseId.hashCode());
     }
+
+    public Review getReview(int user_id, String courseId) {
+        return reviews.get(user_id + courseId.hashCode());
+    }
+
+    public boolean addReview(User user, Course course, String comment, int rating) {
+        int id = user.getId() + course.getCourse_name().hashCode();
+        if (reviews.containsKey(id)) {
+            Review reviewTemp = reviews.get(id);
+            reviewTemp.revokeRating();
+        }
+        Review review = new Review(course, comment, user, rating);
+        reviews.put(id, review);
+        syncReviews();
+        return true;
+    }
+
 
     //TODO: Add pagination support
     public Classroom[] getClassrooms() {
@@ -328,6 +373,30 @@ public class API implements Observer {
         return result;
     }
 
+    public Review[] getReviews(String courseId) {
+        ArrayList<Review> results = new ArrayList<>();
+        for (Review review : reviews.values()) {
+            if (review.getCourse().getCourse_id().contentEquals(courseId)) {
+                results.add(review);
+            }
+        }
+        Review[] result = new Review[results.size()];
+        results.toArray(result);
+        return result;
+    }
+
+    public Review[] getReviews(int user_id) {
+        ArrayList<Review> results = new ArrayList<>();
+        for (Review review : reviews.values()) {
+            if (review.getUser().getId() == user_id) {
+                results.add(review);
+            }
+        }
+        Review[] result = new Review[results.size()];
+        results.toArray(result);
+        return result;
+    }
+
     public String[] getCredentials(String email) {
         String[] result = {"", ""}; // id, password TODO: Use a class instead
         try {
@@ -368,6 +437,7 @@ public class API implements Observer {
             }
             syncCourses();
         }
+        //TODO: Fix professor triggering if
         if (o instanceof User) {
             User user = (User) o;
             if (!users.containsValue(user)) {
@@ -396,17 +466,29 @@ public class API implements Observer {
             }
             syncProfessors();
         }
+        if (o instanceof Review) {
+            Review review = (Review) o;
+            if (!reviews.containsValue(review)) {
+                System.out.println("Review not found in API");
+            }
+            syncReviews();
+        }
     }
 
+    //TODO: Do not store ratings models other than review and rating
     public static void main(String[] args) throws IOException {
         API api = API.getInstance();
         User user = api.getUser(2200870);
-        System.out.println(user.getName() + " " + user.getSurname());
-        if (user.getSurname().contentEquals("Serter"))
-            user.setSurname("Boozer");
-        else
-            user.setSurname("Serter");
-        System.out.println(user.getName() + " " + user.getSurname());
+        Course course = api.getCourse("PHY1001");
+        System.out.println("User: " + user.getName() + " " + course.getCourse_name());
+        for (Review review : api.getReviews(course.getCourse_id())) {
+            System.out.println("Review: " + review.getComment() + " " + review.getRating());
+        }
+        for (Course course2 : api.getCourses()) {
+            if (course2.getRatingCount() > 0) {
+                System.out.println("Course: " + course2.getCourse_id() + " " + course2.getCourse_name() + " " + course2.getAvgRating() + " There are " + course2.getRatingCount() + " ratings");
+            }
+        }
     }
 }
 
