@@ -2,6 +2,7 @@ package com.sen3006.coursewise;
 
 import com.sen3006.coursewise.models.Course;
 import com.sen3006.coursewise.models.CurrentUser;
+import com.sen3006.coursewise.models.Section;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -38,7 +39,6 @@ public class GuiDeneme1 implements Initializable {
     @FXML private Label reviewCountLabel;
 
     @FXML private VBox reviewsContainer;
-    @FXML private Button addReviewButton;
     @FXML private VBox sectionsContainer;
 
     @FXML private TextArea lecturersNoteTextArea;
@@ -56,8 +56,6 @@ public class GuiDeneme1 implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
 
         if (!creatingNewReview) {
-            // Set up the search text field
-            setupSearch();
             // Load course list from API or database
             loadCourseList();
             // Create the section toggle group
@@ -78,22 +76,11 @@ public class GuiDeneme1 implements Initializable {
         }
     }
 
-    //Sets up search functionality
-    private void setupSearch() {
-        // TODO: Implement your search functionality here
-        // searchField.textProperty().addListener((obs, oldVal, newVal) -> {
-        //     yourSearchFunction(newVal);
-        // });
-    }
-
-    /**
-     * Loads course list from API or database
-     * Replace with your API or database call
-     */
+    //Loads course list from API or database
     private void loadCourseList() {
         courseListContainer.getChildren().clear();
 
-        Course[] courses = api.getCourses(10); //this method is broken for now and returns every course in the database
+        Course[] courses = api.getCourses(); //this method is broken for now and returns every course in the database
         for (Course course : courses) {
             addCourseItemToList(course.getCourse_id(), course.getAvgRating() + "/10");
         }
@@ -112,10 +99,7 @@ public class GuiDeneme1 implements Initializable {
 //        addCourseItemToList("MATH241", "9/10");
 //    }
 
-    /**
-     * Add a course item to the list
-     * Replace parameters with your Course class when integrating
-     */
+    //Add a course item to the list
     private void addCourseItemToList(String courseCode, String rating) {
         HBox courseItem = new HBox();
         courseItem.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
@@ -147,15 +131,6 @@ public class GuiDeneme1 implements Initializable {
                 courseItem.setStyle(courseItem.getStyle().replace("-fx-background-color: #f5f5f5;", "-fx-background-color: white;")));
 
         courseListContainer.getChildren().add(courseItem);
-
-        // Add separator except for the last item
-        //Commented out for now, works inconsistently and looks bad
-//        if (courseListContainer.getChildren().size() > 0 &&
-//                courseListContainer.getChildren().indexOf(courseItem) < totalSize - 1) {
-//            Separator separator = new Separator();
-//            separator.setStyle("-fx-background-color: #e0e0e0;");
-//            courseListContainer.getChildren().add(separator);
-//        }
     }
 
     //Filter courses based on search text
@@ -166,7 +141,7 @@ public class GuiDeneme1 implements Initializable {
             return;
         }
 
-        Course[] courses = api.getCourses(10); // Get courses from API
+        Course[] courses = api.getCourses(); // Get courses from API
 
         // Clear the list first
         courseListContainer.getChildren().clear();
@@ -176,7 +151,7 @@ public class GuiDeneme1 implements Initializable {
         for (Course course : courses) {
             if (course.getCourse_id().toLowerCase().contains(searchText.toLowerCase())) {
                 // Add matching course to the GUI
-                addCourseItemToList(course.getCourse_id(), String.valueOf(course.getAvgRating() + "/10"));
+                addCourseItemToList(course.getCourse_id(), course.getAvgRating() + "/10");
                 foundAny = true;
             }
         }
@@ -194,13 +169,12 @@ public class GuiDeneme1 implements Initializable {
         courseListContainer.getChildren().add(noResultsLabel);
     }
 
-            //Load course details when a course is selected
+    //Load course details when a course is selected
     private void loadCourseDetails(String courseCode, String rating) {
         // Save current course code
         this.currentCourseCode = courseCode;
         this.currentCourseTitle = "Course Title Placeholder"; // Placeholder, replace with actual title from API
 
-        // TODO: Replace with your API call
         Course course = api.getCourse(courseCode); // This should return the course object with all details
         if (course != null) {
             currentCourseTitle = course.getCourse_name();
@@ -211,7 +185,7 @@ public class GuiDeneme1 implements Initializable {
             courseTypeLabel.setText(course.getType().toString());
         }
 
-        // For now, use example data
+        //Example data
 //        courseTitleLabel.setText(currentCourseTitle); // From API
 //        courseRatingLabel.setText(rating); // This should come from your API
 //        courseRatingLabel.setMinWidth(40);
@@ -235,30 +209,29 @@ public class GuiDeneme1 implements Initializable {
         sectionsContainer.getChildren().clear();
         sectionGroup = new ToggleGroup();
 
-        // TODO: Replace with your API call
-//        Section[] sections = api.getSections(courseCode); // This should return the list of sections for the course
-//        for (Section section : sections) {
-//            addSectionToList(String.valueOf(section.getSection_id()));
-//        }
+        Section[] sections = api.getSections(courseCode); // This should return the list of sections for the course
+        for (Section section : sections) {
+            addSectionToList(String.valueOf(section.getSection_id()));
+        }
 
         // Add sections based on course code
-        if (courseCode.equals("SEN3006")) {
-            addSectionToList(courseCode + "(1)");
-            addSectionToList(courseCode + "(2)");
-            addSectionToList(courseCode + "(3)");
-        } else if (courseCode.equals("CSE2025")) {
-            addSectionToList(courseCode + "(1)");
-            addSectionToList(courseCode + "(2)");
-        } else if (courseCode.equals("MBG1201")) {
-            addSectionToList(courseCode + "(1)");
-            addSectionToList(courseCode + "(2)");
-            addSectionToList(courseCode + "(3)");
-            addSectionToList(courseCode + "(4)");
-        } else {
-            // Default sections for other courses
-            addSectionToList(courseCode + "(1)");
-            addSectionToList(courseCode + "(2)");
-        }
+//        if (courseCode.equals("SEN3006")) {
+//            addSectionToList(courseCode + "(1)");
+//            addSectionToList(courseCode + "(2)");
+//            addSectionToList(courseCode + "(3)");
+//        } else if (courseCode.equals("CSE2025")) {
+//            addSectionToList(courseCode + "(1)");
+//            addSectionToList(courseCode + "(2)");
+//        } else if (courseCode.equals("MBG1201")) {
+//            addSectionToList(courseCode + "(1)");
+//            addSectionToList(courseCode + "(2)");
+//            addSectionToList(courseCode + "(3)");
+//            addSectionToList(courseCode + "(4)");
+//        } else {
+//            // Default sections for other courses
+//            addSectionToList(courseCode + "(1)");
+//            addSectionToList(courseCode + "(2)");
+//        }
 
         // Select first section by default
         if (!sectionsContainer.getChildren().isEmpty()) {
@@ -292,51 +265,50 @@ public class GuiDeneme1 implements Initializable {
     //Load section details when a section is selected
     private void loadSectionDetails(String sectionCode) {
         this.currentSectionCode = sectionCode;
-        courseCodeLabel.setText(sectionCode);
+        courseCodeLabel.setText(currentCourseCode);
 
-        // TODO: Replace with your API call
-//        for (Section s : api.getSections(currentCourseCode)) {
-//            if (s.getSection_id() == Integer.parseInt(sectionCode)) {
-//                weekdayLabel.setText(s.getSection_day().toString());
-//                durationLabel.setText(s.getStart_time().toString() + " - " + s.getEnd_time().toString());
-//                roomLabel.setText(s.getClassroom().getClass_id());
-//                profNameLabel.setText("Dr. " + s.getProfessor().getProf_name()); // Placeholder, replace with actual professor name from API
-//                profRatingLabel.setText("8/10"); // Placeholder, replace with actual rating from API
-//                campusLabel.setText(String.valueOf(s.getClassroom().getCampus())); // Placeholder, replace with actual campus from API
-//            }
-//        }
+        for (Section s : api.getSections(currentCourseCode)) {
+            if (s.getSection_id() == Integer.parseInt(sectionCode)) {
+                weekdayLabel.setText(s.getSection_day().toString());
+                durationLabel.setText(s.getStart_time().toString() + " - " + s.getEnd_time().toString());
+                roomLabel.setText(s.getClassroom().getClass_id());
+                profNameLabel.setText(s.getProfessor().getProf_name() + " " + s.getProfessor().getSurname()); // Placeholder, replace with actual professor name from API
+                profRatingLabel.setText("8/10"); // Placeholder, replace with actual rating from API
+                campusLabel.setText(String.valueOf(s.getClassroom().getCampus())); // Placeholder, replace with actual campus from API
+            }
+        }
 
         // Example implementation
-        if (sectionCode.endsWith("(1)")) {
-            weekdayLabel.setText("Tuesday");
-            durationLabel.setText("10:30 - 13:20");
-            roomLabel.setText("G103");
-            profNameLabel.setText("Dr. Smith");
-            profRatingLabel.setText("9/10");
-            campusLabel.setText("South Campus");
-        } else if (sectionCode.endsWith("(2)")) {
-            weekdayLabel.setText("Thursday");
-            durationLabel.setText(" 14:00 - 16:50");
-            roomLabel.setText("B204");
-            profNameLabel.setText("Dr. Johnson");
-            profRatingLabel.setText("8/10");
-            campusLabel.setText("North Campus");
-        } else if (sectionCode.endsWith("(3)")) {
-            weekdayLabel.setText("Monday");
-            durationLabel.setText("09:00 - 11:50");
-            roomLabel.setText("C305");
-            profNameLabel.setText("Dr. Williams");
-            profRatingLabel.setText("7/10");
-            campusLabel.setText("Central Campus");
-        } else {
-            // Default or random values for sections 4-6
-            weekdayLabel.setText("Friday");
-            durationLabel.setText("13:00 - 15:50");
-            roomLabel.setText("D" + sectionCode.charAt(sectionCode.length() - 1) + "06");
-            profNameLabel.setText("Dr. Brown");
-            profRatingLabel.setText("8/10");
-            campusLabel.setText("East Campus");
-        }
+//        if (sectionCode.endsWith("(1)")) {
+//            weekdayLabel.setText("Tuesday");
+//            durationLabel.setText("10:30 - 13:20");
+//            roomLabel.setText("G103");
+//            profNameLabel.setText("Dr. Smith");
+//            profRatingLabel.setText("9/10");
+//            campusLabel.setText("South Campus");
+//        } else if (sectionCode.endsWith("(2)")) {
+//            weekdayLabel.setText("Thursday");
+//            durationLabel.setText(" 14:00 - 16:50");
+//            roomLabel.setText("B204");
+//            profNameLabel.setText("Dr. Johnson");
+//            profRatingLabel.setText("8/10");
+//            campusLabel.setText("North Campus");
+//        } else if (sectionCode.endsWith("(3)")) {
+//            weekdayLabel.setText("Monday");
+//            durationLabel.setText("09:00 - 11:50");
+//            roomLabel.setText("C305");
+//            profNameLabel.setText("Dr. Williams");
+//            profRatingLabel.setText("7/10");
+//            campusLabel.setText("Central Campus");
+//        } else {
+//            // Default or random values for sections 4-6
+//            weekdayLabel.setText("Friday");
+//            durationLabel.setText("13:00 - 15:50");
+//            roomLabel.setText("D" + sectionCode.charAt(sectionCode.length() - 1) + "06");
+//            profNameLabel.setText("Dr. Brown");
+//            profRatingLabel.setText("8/10");
+//            campusLabel.setText("East Campus");
+//        }
 
         // Load reviews for this section
         loadReviews(currentCourseCode);
@@ -425,7 +397,7 @@ public class GuiDeneme1 implements Initializable {
         reviewsContainer.getChildren().add(reviewBox);
 
         // Add separator except for the last item
-        if (reviewsContainer.getChildren().size() > 0 &&
+        if (!reviewsContainer.getChildren().isEmpty() &&
                 reviewsContainer.getChildren().indexOf(reviewBox) < reviewsContainer.getChildren().size() - 1) {
             Separator separator = new Separator();
             separator.setStyle("-fx-background-color: #e0e0e0;");
@@ -511,25 +483,6 @@ public class GuiDeneme1 implements Initializable {
 //        courseRatingLabel.setText(course.getAvgRating() + "/10");
 
     }
-
-    //Show error alert
-    private void showErrorAlert(String title, String header, String content) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(header);
-        alert.setContentText(content);
-        alert.showAndWait();
-    }
-
-    //Sets up the add review button with "+" symbol
-//    private void setupAddReviewButton() {
-//        Button addButton = new Button("+");
-//        addButton.getStyleClass().add("add-button");
-//        addButton.setOnAction(event -> showAddReviewDialog());
-//
-//        // Add the button to your layout (toolbar, pane, etc.)
-//        // Example: toolbarBox.getChildren().add(addButton);
-//    }
 
     //Submit a new review to the system
     //TODO: This method can't add a review to the system yet, it just adds it to the UI and it's not saved anywhere. Fix addReviewToContainer method.
