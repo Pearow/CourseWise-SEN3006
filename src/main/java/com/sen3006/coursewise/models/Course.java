@@ -28,6 +28,15 @@ public class Course extends Observable
         this.addObserver(API.getInstance());
     }
 
+    public Course(String course_id, String course_name, Department department, int type, int total_rating, int course_rating_count)
+    {
+        this(course_id, course_name, department, type);
+        this.total_course_rating = total_rating;
+        this.course_rating_count = course_rating_count;
+        this.course_rating = Math.round((float) total_course_rating / course_rating_count);
+
+    }
+
     public boolean addRating(int newRating) {
         if (newRating <= 0 || newRating > 10) {
             System.out.println("Invalid rating: " + newRating);
@@ -50,6 +59,10 @@ public class Course extends Observable
 
     public int getRatingCount() {
         return this.course_rating_count;
+    }
+
+    public int getTotalRating() {
+        return this.total_course_rating;
     }
 
 

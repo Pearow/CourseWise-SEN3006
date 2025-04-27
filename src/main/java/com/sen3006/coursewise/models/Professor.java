@@ -22,6 +22,14 @@ public class Professor extends User
         this.addObserver(API.getInstance());
     }
 
+    public Professor(int prof_id, String prof_name, String prof_surname, String prof_email, int total_rating, int prof_rating_count)
+    {
+        this(prof_id, prof_name, prof_surname, prof_email);
+        this.total_rating = total_rating;
+        this.prof_rating_count = prof_rating_count;
+        this.prof_rating = Math.round((float) total_rating / prof_rating_count);
+    }
+
     public String getProf_name() {
         return prof_name;
     }
@@ -64,6 +72,10 @@ public class Professor extends User
 
     public int getRatingCount() {
         return this.prof_rating_count;
+    }
+
+    public int getTotalRating() {
+        return this.total_rating;
     }
 
     public void show_prof_info()
