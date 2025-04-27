@@ -24,8 +24,8 @@ public class API implements Observer {
     private Hashtable<String, Course> courses;
     private Hashtable<Integer, UserPassword> users;
     private Hashtable<Integer, Department> departments;
-    private Hashtable<Integer, Section> sections;
     private Hashtable<Integer, Professor> professors;
+    private Hashtable<Integer, Section> sections;
 
     // Singleton pattern to ensure only one instance of API exists
     private API() {
@@ -36,8 +36,8 @@ public class API implements Observer {
                 .registerTypeAdapter(Course.class, new CourseAdapter())
                 .registerTypeAdapter(UserPassword.class, new UserAdapter())
                 .registerTypeAdapter(Department.class, new DepartmentAdapter())
-                .registerTypeAdapter(Section.class, new SectionAdapter())
                 .registerTypeAdapter(Professor.class, new ProfessorAdapter())
+                .registerTypeAdapter(Section.class, new SectionAdapter())
                 .create();
         instance = this;
         loadAll();
@@ -55,14 +55,16 @@ public class API implements Observer {
         courses = new Hashtable<>();
         users = new Hashtable<>();
         departments = new Hashtable<>();
-        sections = new Hashtable<>();
         professors = new Hashtable<>();
+        sections = new Hashtable<>();
+        int sectionC = 0, asyncC = 0, syncC = 0;
         try {
             for (CourseSection cSection : CourseSection.getAllCourseSections()) {
                 // Create and add objects to the respective arrays
                 // Use umis data to populate these objects
+                sectionC++;
 
-                if (!classrooms.containsKey(cSection.classroom_name) && !cSection.classroom_name.contentEquals("MS TEAMS") && !cSection.classroom_name.contentEquals("ITSLEARNING1")) {
+                if (!classrooms.containsKey(cSection.classroom_name) && !cSection.classroom_name.contentEquals("ITSLEARNING1")) {
                     classrooms.put(cSection.classroom_name, new Classroom(Campus.fromString(cSection.campus_name).getIntCampus(), cSection.classroom_name)); // Campus won't be found
                 }
 
@@ -75,7 +77,16 @@ public class API implements Observer {
                 }
 
                 if (!sections.containsKey(cSection.section_id) && !cSection.classroom_name.contentEquals("ITSLEARNING1")) {
-                    sections.put(cSection.section_id, new Section(cSection.section, LocalTime.parse(cSection.start_time), LocalTime.parse(cSection.end_time), cSection.day - 1, getClassroom(cSection.classroom_name), getCourse(cSection.course_code)));
+                    sections.put(cSection.section_id, new Section(cSection.section, LocalTime.parse(cSection.start_time), LocalTime.parse(cSection.end_time), cSection.day - 1, getClassroom(cSection.classroom_name), getCourse(cSection.course_code), getProfessor(cSection.instructor_id)));
+                    syncC++;
+                } else if (sections.containsKey(cSection.section_id)) {
+                    //TODO: Find differences between duplicates
+//                    System.out.println("Section already exists: " + cSection.section + " " + cSection.course_code + " " + cSection.classroom_name);
+                    Section dp = sections.get(cSection.section_id);
+//                    System.out.println("Is duplicate of: " + dp.getSection_id() + " " + dp.getCourse().getCourse_id() + " " + dp.getClassroom().getClass_id());
+                    asyncC++;
+                } else {
+                    asyncC++;
                 }
 
                 //Extract department abbreviation
@@ -84,14 +95,23 @@ public class API implements Observer {
                     departments.put(dep.hashCode(), new Department(dep.hashCode(), dep, null));
                 }
             }
+            // Get user data
+            UserPassword[] userPasswords = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/users.json"), StandardCharsets.UTF_8)).readLine(), UserPassword[].class);
+            for (UserPassword user : userPasswords) {
+                if (!users.containsKey(user.getId())) {
+                    users.put(user.getId(), user);
+                }else {
+                    System.out.println("User already exists: " + user.getId() + " " + user.getName() + " " + user.getSurname());
+                }
+            }
         } catch (IOException e) {
             //TODO: Add a proper error message
             e.printStackTrace();
         }
     }
     private void saveAll() {
-        Hashtable[] tables = {classrooms, courses, departments, sections, professors};
-        String[] names = {"classrooms", "courses", "departments", "sections", "professors"};
+        Hashtable[] tables = {classrooms, courses, departments, professors, sections};
+        String[] names = {"classrooms", "courses", "departments", "professors", "sections"};
 
         for (int i = 0; i < tables.length; i++) {
             try {
@@ -171,6 +191,21 @@ public class API implements Observer {
         }
     }
 
+    public void syncProfessors() {
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/resources/professors.json"));
+            Professor[] table = new Professor[professors.size()];
+            professors.values().toArray(table);
+
+            String json = gson.toJson(table, Professor[].class);
+            writer.write(json);
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void syncSections() {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/resources/sections.json"));
@@ -187,62 +222,50 @@ public class API implements Observer {
         }
     }
 
-    public void syncProfessors() {
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/resources/professors.json"));
-            Professor[] table = new Professor[professors.size()];
-            professors.values().toArray(table);
-
-            String json = gson.toJson(table, Professor[].class);
-            writer.write(json);
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     private void loadAll() {
         try {
             Classroom[] classrooms;
             Course[] courses;
             UserPassword[] users;
             Department[] departments;
-            Section[] sections;
             Professor[] professors;
+            Section[] sections;
 
             classrooms = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/classrooms.json"), StandardCharsets.UTF_8)).readLine(), Classroom[].class);
-            courses = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/courses.json"), StandardCharsets.UTF_8)).readLine(), Course[].class);
-            users = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/users.json"), StandardCharsets.UTF_8)).readLine(), UserPassword[].class);
-            departments = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/departments.json"), StandardCharsets.UTF_8)).readLine(), Department[].class);
-            sections = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/sections.json"), StandardCharsets.UTF_8)).readLine(), Section[].class);
-            professors = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/professors.json"), StandardCharsets.UTF_8)).readLine(), Professor[].class);
             this.classrooms = new Hashtable<>();
-            this.courses = new Hashtable<>();
-            this.users = new Hashtable<>();
-            this.departments = new Hashtable<>();
-            this.sections = new Hashtable<>();
-            this.professors = new Hashtable<>();
-
             for (Classroom classroom : classrooms) {
                 this.classrooms.put(classroom.getClass_id(), classroom);
             }
+
+            courses = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/courses.json"), StandardCharsets.UTF_8)).readLine(), Course[].class);
+            this.courses = new Hashtable<>();
             for (Course course : courses) {
                 this.courses.put(course.getCourse_id(), course);
             }
+
+            users = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/users.json"), StandardCharsets.UTF_8)).readLine(), UserPassword[].class);
+            this.users = new Hashtable<>();
             for (UserPassword user : users) {
                 this.users.put(user.getId(), user);
             }
+
+            departments = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/departments.json"), StandardCharsets.UTF_8)).readLine(), Department[].class);
+            this.departments = new Hashtable<>();
             for (Department department : departments) {
                 this.departments.put(department.getDepartment_id(), department);
             }
-            for (Section section : sections) {
-                this.sections.put(section.getSection_id() + section.getCourse().getCourse_id().hashCode(), section);
-            }
+
+            professors = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/professors.json"), StandardCharsets.UTF_8)).readLine(), Professor[].class);
+            this.professors = new Hashtable<>();
             for (Professor professor : professors) {
                 this.professors.put(professor.getId(), professor);
             }
 
+            sections = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/sections.json"), StandardCharsets.UTF_8)).readLine(), Section[].class);
+            this.sections = new Hashtable<>();
+            for (Section section : sections) {
+                this.sections.put(section.getSection_id() + section.getCourse().getCourse_id().hashCode(), section);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -264,13 +287,13 @@ public class API implements Observer {
         return departments.get(id);
     }
 
-    //TODO: Fix
-    public Section getSection(int id, String courseId) {
-        return sections.get(id);
-    }
-
     public Professor getProfessor(int id) {
         return professors.get(id);
+    }
+    //TODO: Fix
+
+    public Section getSection(int id, String courseId) {
+        return sections.get(id);
     }
 
     public Classroom[] getClassrooms(int count) {
@@ -297,6 +320,12 @@ public class API implements Observer {
         return result;
     }
 
+    public Professor[] getProfessors(int count) {
+        Professor[] result = new Professor[count];
+        professors.values().toArray(result);
+        return result;
+    }
+
     public Section[] getSections(String courseId) {
         ArrayList<Section> results = new ArrayList<>();
         for (Section section : sections.values()) {
@@ -306,12 +335,6 @@ public class API implements Observer {
         }
         Section[] result = new Section[results.size()];
         results.toArray(result);
-        return result;
-    }
-
-    public Professor[] getProfessors(int count) {
-        Professor[] result = new Professor[count];
-        professors.values().toArray(result);
         return result;
     }
 
@@ -387,7 +410,9 @@ public class API implements Observer {
 
     public static void main(String[] args) throws IOException {
         API api = API.getInstance();
-//        api.fetchPseudoTables();
+        User user = api.getUser(2200870);
+        System.out.println(user.getName() + " " + user.getSurname());
+//        user.setName("Murat Kerem");
         System.out.println("OK");
     }
 }
@@ -482,6 +507,8 @@ class UserPassword extends User{
     }
 }
 
+//TODO: Move the adapters to a separate file or their own package
+//TODO: Remove
 class LocalTimeAdapter implements JsonSerializer<LocalTime>, JsonDeserializer<LocalTime> {
     @Override
     public JsonElement serialize(LocalTime localTime, Type typeOfSrc, JsonSerializationContext context) {
@@ -494,6 +521,7 @@ class LocalTimeAdapter implements JsonSerializer<LocalTime>, JsonDeserializer<Lo
     }
 }
 
+//TODO: Remove
 class DurationAdapter implements JsonSerializer<Duration>, JsonDeserializer<Duration> {
     @Override
     public JsonElement serialize(Duration duration, Type typeOfSrc, JsonSerializationContext context) {
@@ -510,70 +538,91 @@ class ClassroomAdapter implements JsonSerializer<Classroom>, JsonDeserializer<Cl
     public JsonElement serialize(Classroom classroom, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("campus", classroom.getCampus().getIntCampus());
-        jsonObject.addProperty("class_id", classroom.getClass_id());
+        jsonObject.addProperty("id", classroom.getClass_id());
         return jsonObject;
     }
 
     @Override
     public Classroom deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         JsonObject jsonObject = json.getAsJsonObject();
-        return new Classroom(Campus.fromString(jsonObject.get("campus").getAsString()).getIntCampus(), jsonObject.get("class_id").getAsString());
+        return new Classroom(jsonObject.get("campus").getAsInt(), jsonObject.get("id").getAsString());
     }
 }
 class CourseAdapter implements JsonSerializer<Course>, JsonDeserializer<Course> {
     @Override
     public JsonElement serialize(Course course, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("course_id", course.getCourse_id());
-        jsonObject.addProperty("course_name", course.getCourse_name());
+        jsonObject.addProperty("id", course.getCourse_id());
+        jsonObject.addProperty("name", course.getCourse_name());
+        if (course.getDepartment() != null)
+            jsonObject.addProperty("department_id", course.getDepartment().getDepartment_id());
+        else {
+            System.out.println("WARNING: Department is null in course object: " + course.getCourse_id() + " " + course.getCourse_name());
+        }
+        jsonObject.addProperty("type", course.getType().getIntType());
+        jsonObject.addProperty("total_rating", course.getTotalRating());
+        jsonObject.addProperty("rating_count", course.getRatingCount());
+
         return jsonObject;
     }
 
     @Override
     public Course deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         JsonObject jsonObject = json.getAsJsonObject();
-        return new Course(jsonObject.get("course_id").getAsString(), jsonObject.get("course_name").getAsString(), null, 0);
+        Department department = null;
+        if (jsonObject.get("department_id") != null)
+            department = API.getInstance().getDepartment(jsonObject.get("department_id").getAsInt());
+        return new Course(jsonObject.get("id").getAsString(), jsonObject.get("name").getAsString(), department, jsonObject.get("type").getAsInt(), jsonObject.get("total_rating").getAsInt(), jsonObject.get("rating_count").getAsInt());
     }
 }
 class UserAdapter implements JsonSerializer<UserPassword>, JsonDeserializer<UserPassword> {
     @Override
     public JsonElement serialize(UserPassword user, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("user_id", user.getId());
+        jsonObject.addProperty("id", user.getId());
         jsonObject.addProperty("name", user.getName());
         jsonObject.addProperty("surname", user.getSurname());
         jsonObject.addProperty("email", user.getEmail());
         jsonObject.addProperty("password", user.getPassword());
         return jsonObject;
     }
-
     @Override
     public UserPassword deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         JsonObject jsonObject = json.getAsJsonObject();
-        return new UserPassword(jsonObject.get("user_id").getAsInt(), jsonObject.get("name").getAsString(), jsonObject.get("surname").getAsString(), jsonObject.get("email").getAsString(), jsonObject.get("password").getAsString());
+        return new UserPassword(jsonObject.get("id").getAsInt(), jsonObject.get("name").getAsString(), jsonObject.get("surname").getAsString(), jsonObject.get("email").getAsString(), jsonObject.get("password").getAsString());
     }
 }
 class DepartmentAdapter implements JsonSerializer<Department>, JsonDeserializer<Department> {
     @Override
     public JsonElement serialize(Department department, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("department_id", department.getDepartment_id());
-        jsonObject.addProperty("department_name", department.getDepartment_name());
+        jsonObject.addProperty("id", department.getDepartment_id());
+        jsonObject.addProperty("name", department.getDepartment_name());
+        if (department.getFaculty_name() != null)
+            jsonObject.addProperty("faculty_name", department.getFaculty_name());
+
         return jsonObject;
     }
 
     @Override
     public Department deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         JsonObject jsonObject = json.getAsJsonObject();
-        return new Department(jsonObject.get("department_id").getAsInt(), jsonObject.get("department_name").getAsString(), null);
+        String faculty = null;
+        if (jsonObject.get("faculty_name") != null)
+            faculty = jsonObject.get("faculty_name").getAsString();
+        return new Department(jsonObject.get("id").getAsInt(), jsonObject.get("name").getAsString(), faculty);
     }
 }
 class SectionAdapter implements JsonSerializer<Section>, JsonDeserializer<Section> {
     @Override
     public JsonElement serialize(Section section, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("section_id", section.getSection_id());
+        jsonObject.addProperty("id", section.getSection_id());
         jsonObject.addProperty("course_id", section.getCourse().getCourse_id());
+        jsonObject.addProperty("professor_id", section.getProfessor().getId());
+        jsonObject.addProperty("start_time", section.getStart_time().toString());
+        jsonObject.addProperty("end_time", section.getEnd_time().toString());
+        jsonObject.addProperty("day", section.getSection_day().getIntWeekday());
         jsonObject.addProperty("classroom_name", section.getClassroom().getClass_id());
         return jsonObject;
     }
@@ -581,22 +630,30 @@ class SectionAdapter implements JsonSerializer<Section>, JsonDeserializer<Sectio
     @Override
     public Section deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         JsonObject jsonObject = json.getAsJsonObject();
-        return new Section(0, LocalTime.now(), LocalTime.now(), 0, null, null);
+
+        Classroom classroom = API.getInstance().getClassroom(jsonObject.get("classroom_name").getAsString());
+        Course course = API.getInstance().getCourse(jsonObject.get("course_id").getAsString());
+        Professor professor = API.getInstance().getProfessor(jsonObject.get("professor_id").getAsInt());
+        return new Section(jsonObject.get("id").getAsInt(), LocalTime.parse(jsonObject.get("start_time").getAsString()), LocalTime.parse(jsonObject.get("end_time").getAsString()), jsonObject.get("day").getAsInt(), classroom, course, professor);
     }
 }
 class ProfessorAdapter implements JsonSerializer<Professor>, JsonDeserializer<Professor> {
     @Override
     public JsonElement serialize(Professor professor, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("prof_id", professor.getId());
+        jsonObject.addProperty("id", professor.getId());
         jsonObject.addProperty("name", professor.getName());
         jsonObject.addProperty("surname", professor.getSurname());
+        jsonObject.addProperty("email", professor.getEmail());
+        jsonObject.addProperty("total_rating", professor.getTotalRating());
+        jsonObject.addProperty("rating_count", professor.getRatingCount());
+
         return jsonObject;
     }
 
     @Override
     public Professor deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         JsonObject jsonObject = json.getAsJsonObject();
-        return new Professor(jsonObject.get("prof_id").getAsInt(), jsonObject.get("name").getAsString(), jsonObject.get("surname").getAsString(), null);
+        return new Professor(jsonObject.get("id").getAsInt(), jsonObject.get("name").getAsString(), jsonObject.get("surname").getAsString(), jsonObject.get("email").getAsString(), jsonObject.get("total_rating").getAsInt(), jsonObject.get("rating_count").getAsInt());
     }
 }
