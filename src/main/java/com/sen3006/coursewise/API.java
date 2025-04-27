@@ -14,7 +14,6 @@ import java.util.Observable;
 import java.util.Observer;
 
 // API class for handling all the data
-// TODO: Add observer pattern to all models
 // TODO: Add reviews
 public class API implements Observer {
     private static API instance;
@@ -30,8 +29,6 @@ public class API implements Observer {
     // Singleton pattern to ensure only one instance of API exists
     private API() {
         gson = new GsonBuilder()
-                .registerTypeAdapter(LocalTime.class, new LocalTimeAdapter())
-                .registerTypeAdapter(Duration.class, new DurationAdapter())
                 .registerTypeAdapter(Classroom.class, new ClassroomAdapter())
                 .registerTypeAdapter(Course.class, new CourseAdapter())
                 .registerTypeAdapter(UserPassword.class, new UserAdapter())
@@ -290,26 +287,27 @@ public class API implements Observer {
     public Professor getProfessor(int id) {
         return professors.get(id);
     }
-    //TODO: Fix
 
+    //TODO: Fix
     public Section getSection(int id, String courseId) {
         return sections.get(id);
     }
 
-    public Classroom[] getClassrooms(int count) {
-        Classroom[] result = new Classroom[count];
+    //TODO: Add pagination support
+    public Classroom[] getClassrooms() {
+        Classroom[] result = new Classroom[classrooms.size()];
         classrooms.values().toArray(result);
         return result;
     }
 
-    public Course[] getCourses(int count) {
-        Course[] result = new Course[count];
+    public Course[] getCourses() {
+        Course[] result = new Course[courses.size()];
         courses.values().toArray(result);
         return result;
     }
 
-    public User[] getUsers(int count) {
-        User[] result = new User[count];
+    public User[] getUsers() {
+        User[] result = new User[users.size()];
         users.values().toArray(result);
         return result;
     }
@@ -320,8 +318,8 @@ public class API implements Observer {
         return result;
     }
 
-    public Professor[] getProfessors(int count) {
-        Professor[] result = new Professor[count];
+    public Professor[] getProfessors() {
+        Professor[] result = new Professor[professors.size()];
         professors.values().toArray(result);
         return result;
     }
@@ -410,9 +408,7 @@ public class API implements Observer {
 
     public static void main(String[] args) throws IOException {
         API api = API.getInstance();
-        User user = api.getUser(2200870);
-        System.out.println(user.getName() + " " + user.getSurname());
-//        user.setName("Murat Kerem");
+
         System.out.println("OK");
     }
 }
@@ -508,31 +504,6 @@ class UserPassword extends User{
 }
 
 //TODO: Move the adapters to a separate file or their own package
-//TODO: Remove
-class LocalTimeAdapter implements JsonSerializer<LocalTime>, JsonDeserializer<LocalTime> {
-    @Override
-    public JsonElement serialize(LocalTime localTime, Type typeOfSrc, JsonSerializationContext context) {
-        return new JsonPrimitive(localTime.toString());
-    }
-
-    @Override
-    public LocalTime deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-        return LocalTime.parse(json.getAsString());
-    }
-}
-
-//TODO: Remove
-class DurationAdapter implements JsonSerializer<Duration>, JsonDeserializer<Duration> {
-    @Override
-    public JsonElement serialize(Duration duration, Type typeOfSrc, JsonSerializationContext context) {
-        return new JsonPrimitive(duration.toString());
-    }
-    @Override
-    public Duration deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-        return Duration.parse(json.getAsString());
-    }
-}
-
 class ClassroomAdapter implements JsonSerializer<Classroom>, JsonDeserializer<Classroom> {
     @Override
     public JsonElement serialize(Classroom classroom, Type typeOfSrc, JsonSerializationContext context) {
