@@ -41,8 +41,7 @@ public class GuiDeneme1 implements Initializable {
     @FXML private TextArea lecturersNoteTextArea;
 
     private ToggleGroup sectionGroup;
-    private String currentCourseCode;
-    private String currentCourseTitle;
+    private Course currentCourse;
     private static boolean creatingNewReview = false;
     private String currentSectionCode;
 
@@ -66,8 +65,8 @@ public class GuiDeneme1 implements Initializable {
 
             //Select the first course by default
             if (!courseListContainer.getChildren().isEmpty()) {
-                currentCourseCode = api.getCourses()[0].getCourse_id();
-                loadCourseDetails(currentCourseCode, String.valueOf(api.getCourse(currentCourseCode).getAvgRating()));
+                currentCourse = api.getCourses()[0];
+                loadCourseDetails(currentCourse, String.valueOf(currentCourse.getAvgRating()));
             }
         }
     }
@@ -78,12 +77,12 @@ public class GuiDeneme1 implements Initializable {
 
         Course[] courses = api.getCourses(); //this method is broken for now and returns every course in the database
         for (Course course : courses) {
-            addCourseItemToList(course.getCourse_id(), String.valueOf(course.getAvgRating()));
+            addCourseItemToList(course, String.valueOf(course.getAvgRating()));
         }
     }
 
     //Add a course item to the list
-    private void addCourseItemToList(String courseCode, String rating) {
+    private void addCourseItemToList(Course course, String rating) {
         HBox courseItem = new HBox();
         courseItem.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
         courseItem.setSpacing(10.0);
@@ -92,7 +91,7 @@ public class GuiDeneme1 implements Initializable {
         // Style for a default course item
         courseItem.setStyle("-fx-background-color: white; -fx-background-radius: 4; -fx-border-color: #e0e0e0; -fx-border-radius: 4;");
 
-        Label codeLabel = new Label(courseCode);
+        Label codeLabel = new Label(course.getCourse_id());
         codeLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #424242;");
 
         Label ratingLabel = new Label(rating + "/10");
@@ -103,7 +102,7 @@ public class GuiDeneme1 implements Initializable {
         courseItem.getChildren().addAll(codeLabel, ratingLabel);
 
         // Add click event to load course details
-        courseItem.setOnMouseClicked(event -> loadCourseDetails(courseCode, rating));
+        courseItem.setOnMouseClicked(event -> loadCourseDetails(course, rating));
         courseItem.setStyle(courseItem.getStyle() + "; -fx-cursor: hand;");
 
         // Add hover effect
@@ -134,7 +133,7 @@ public class GuiDeneme1 implements Initializable {
         for (Course course : courses) {
             if (course.getCourse_id().toLowerCase().contains(searchText.toLowerCase())) {
                 // Add matching course to the GUI
-                addCourseItemToList(course.getCourse_id(), String.valueOf(course.getAvgRating()));
+                addCourseItemToList(course, String.valueOf(course.getAvgRating()));
                 foundAny = true;
             }
         }
@@ -153,23 +152,19 @@ public class GuiDeneme1 implements Initializable {
     }
 
     //Load course details when a course is selected
-    private void loadCourseDetails(String courseCode, String rating) {
+    private void loadCourseDetails(Course course, String rating) {
         // Save current course code
-        this.currentCourseCode = courseCode;
-        this.currentCourseTitle = "Course Title Placeholder"; // Placeholder, replace with actual title from API
-
-        Course course = api.getCourse(courseCode); // This should return the course object with all details
+        currentCourse = course;
         if (course != null) {
-            currentCourseTitle = course.getCourse_name();
             // Update course details UI
-            courseTitleLabel.setText(currentCourseTitle);
+            courseTitleLabel.setText(course.getCourse_name());
             courseRatingLabel.setText(rating + "/10");
-            courseCodeLabel.setText(courseCode);
+            courseCodeLabel.setText(course.getCourse_id());
             courseTypeLabel.setText(course.getType().toString());
         }
 
         // Load available sections
-        loadAvailableSections(courseCode);
+        loadAvailableSections(course);
         loadLecturersNote();
 
         // If sections are available, load the first section by default
@@ -181,11 +176,11 @@ public class GuiDeneme1 implements Initializable {
     }
 
     //Load available sections for a course
-    private void loadAvailableSections(String courseCode) {
+    private void loadAvailableSections(Course course) {
         sectionsContainer.getChildren().clear();
         sectionGroup = new ToggleGroup();
 
-        Section[] sections = api.getSections(courseCode); // This should return the list of sections for the course
+        Section[] sections = api.getSections(course.getCourse_id()); // This should return the list of sections for the course
         for (Section section : sections) {
             addSectionToList(String.valueOf(section.getSection_id()));
         }
@@ -222,9 +217,9 @@ public class GuiDeneme1 implements Initializable {
     //Load section details when a section is selected
     private void loadSectionDetails(String sectionCode) {
         this.currentSectionCode = sectionCode;
-        courseCodeLabel.setText(currentCourseCode);
+        courseCodeLabel.setText(currentCourse.getCourse_id());
 
-        for (Section s : api.getSections(currentCourseCode)) {
+        for (Section s : api.getSections(currentCourse.getCourse_id())) {
             if (s.getSection_id() == Integer.parseInt(sectionCode)) {
                 weekdayLabel.setText(s.getSection_day().toString());
                 durationLabel.setText(s.getStart_time().toString() + " - " + s.getEnd_time().toString());
@@ -236,15 +231,14 @@ public class GuiDeneme1 implements Initializable {
         }
 
         // Load reviews for this section
-        loadReviews(currentCourseCode);
+        loadReviews(currentCourse);
     }
 
     //Load reviews of a course, not a section
-    private void loadReviews(String courseCode) {
+    private void loadReviews(Course course) {
         reviewsContainer.getChildren().clear();
-        this.currentCourseCode = courseCode;
 
-         Review[] reviews = api.getReviews(courseCode);
+         Review[] reviews = api.getReviews(course.getCourse_id());
          updateReviewCountLabel(reviews.length);
          for (Review review : reviews) {
              addReviewToContainer(review);
@@ -375,7 +369,7 @@ public class GuiDeneme1 implements Initializable {
         // Create the dialog
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setDialogPane(dialogPane);
-        dialog.setTitle("Add Review for " + currentCourseCode);
+        dialog.setTitle("Add Review for " + currentCourse.getCourse_id());
         dialog.initModality(Modality.APPLICATION_MODAL);
 
         // Get the dialog components
@@ -426,10 +420,10 @@ public class GuiDeneme1 implements Initializable {
 
     //Submit a new review to the system
     private void submitReview(String studentId, int rating, String reviewText) {
-        api.addReview(currentUser, api.getCourse(currentCourseCode), reviewText, rating);
+        api.addReview(currentUser, currentCourse, reviewText, rating);
 
-        loadReviews(currentCourseCode);
-        loadCourseDetails(currentCourseCode, String.valueOf(api.getCourse(currentCourseCode).getAvgRating()));
+        loadReviews(currentCourse);
+        loadCourseDetails(currentCourse, String.valueOf(currentCourse.getAvgRating()));
 
         // Show success message
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -453,15 +447,16 @@ public class GuiDeneme1 implements Initializable {
         // Course currentCourse = api.getCourse(currentCourseCode)
         // lecturersNoteTextArea.setText(currentCourse.getNote())
         // also check if currentCourseCode.getNote() == null, if so, setText like the else statement below
-        if (currentCourseCode.equals("SEN3006")) {
+        // TODO: Delete placeholders
+        if (currentCourse.getCourse_id().equals("SEN3006")) {
             lecturersNoteTextArea.setText("This course is designed to provide students with a comprehensive understanding of software engineering principles and practices. Students will learn about software development methodologies, project management, and quality assurance.");
-        } else if (currentCourseCode.equals("CSE2025")) {
+        } else if (currentCourse.getCourse_id().equals("CSE2025")) {
             lecturersNoteTextArea.setText("This course covers the fundamentals of computer science, including algorithms, data structures, and programming languages. Students will gain hands-on experience through practical assignments.");
-        } else if (currentCourseCode.equals("MBG1201")) {
+        } else if (currentCourse.getCourse_id().equals("MBG1201")) {
             lecturersNoteTextArea.setText("This course introduces students to the principles of molecular biology and genetics. Students will learn about DNA structure, replication, and gene expression.");
-        } else if (currentCourseCode.equals("ECON101")) {
+        } else if (currentCourse.getCourse_id().equals("ECON101")) {
             lecturersNoteTextArea.setText("This course provides an introduction to microeconomics and macroeconomics. Students will learn about supply and demand, market structures, and economic indicators.");
-        } else if (currentCourseCode.equals("PHYS101")) {
+        } else if (currentCourse.getCourse_id().equals("PHYS101")) {
             lecturersNoteTextArea.setText("This course covers the basic principles of physics, including mechanics, thermodynamics, and electromagnetism. Students will engage in laboratory experiments to reinforce theoretical concepts.");
         }else {
             lecturersNoteTextArea.setText("No notes available for this course.");
@@ -535,7 +530,7 @@ public class GuiDeneme1 implements Initializable {
                 if (result.isPresent() && result.get() == ButtonType.OK) {
 
                     int rating = (int) ratingSlider.getValue();
-                    rating = updateProfessorRating(professorId, rating);
+                    updateProfessorRating(professorId, rating);
 
                     // Submit the review
                     String studentId = studentIdLabel.getText(); // Replace with actual student ID from the session
@@ -565,7 +560,7 @@ public class GuiDeneme1 implements Initializable {
         alert.showAndWait();
     }
 
-    private int updateProfessorRating(int profId, int rating) {
+    private boolean updateProfessorRating(int profId, int rating) {
         Professor professor = api.getProfessor(profId);
         return professor.addRating(rating);
 
