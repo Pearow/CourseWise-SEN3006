@@ -26,6 +26,7 @@ public class API implements Observer {
     private Hashtable<Integer, Professor> professors;
     private Hashtable<Integer, Section> sections;
     private Hashtable<Integer, Review> reviews;
+    private Hashtable<Integer, Rating> ratings;
 
     // Singleton pattern to ensure only one instance of API exists
     private API() {
@@ -231,6 +232,22 @@ public class API implements Observer {
         }
     }
 
+    public void syncRatings(){
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/resources/ratings.json"));
+            Rating[] table = new Rating[ratings.size()];
+
+            ratings.values().toArray(table);
+
+            String json = gson.toJson(table, Rating[].class);
+            writer.write(json);
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     //TODO: Add a base model class and collapse all the sync methods into one
 
     private void loadAll() {
@@ -242,6 +259,7 @@ public class API implements Observer {
             Professor[] professors;
             Section[] sections;
             Review[] reviews;
+            Rating[] ratings;
 
             classrooms = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/classrooms.json"), StandardCharsets.UTF_8)).readLine(), Classroom[].class);
             this.classrooms = new Hashtable<>();
@@ -284,6 +302,12 @@ public class API implements Observer {
             for (Review review : reviews) {
                 this.reviews.put(review.getCourse().getCourse_id().hashCode() + review.getUser().getId(), review);
             }
+
+            ratings = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/ratings.json"), StandardCharsets.UTF_8)).readLine(), Rating[].class);
+            this.ratings = new Hashtable<>();
+            for (Rating rating : ratings) {
+                this.ratings.put(rating.getProfessor().getId() + rating.getUser().getId(), rating);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -317,6 +341,10 @@ public class API implements Observer {
         return reviews.get(user_id + courseId.hashCode());
     }
 
+    public Rating getRating(int user_id, String courseId) {
+        return ratings.get(user_id + courseId.hashCode());
+    }
+
     public boolean addReview(User user, Course course, String comment, int rating) {
         int id = user.getId() + course.getCourse_id().hashCode();
         Review review;
@@ -329,6 +357,23 @@ public class API implements Observer {
         }
         reviews.put(id, review);
         syncReviews();
+        return true;
+    }
+    public boolean addReview(User user, Course course, int rating) {
+        return addReview(user, course, "", rating);
+    }
+
+    public boolean addRating(User user, Professor professor, int rating) {
+        int id = user.getId() + professor.getId();
+        Rating ratingObj;
+        if (ratings.containsKey(id)) {
+            ratingObj = ratings.get(id);
+            ratingObj.setRating(rating);
+        }else {
+            ratingObj = new Rating(professor, user, rating);
+        }
+        ratings.put(id, ratingObj);
+        syncRatings();
         return true;
     }
 
@@ -396,6 +441,18 @@ public class API implements Observer {
             }
         }
         Review[] result = new Review[results.size()];
+        results.toArray(result);
+        return result;
+    }
+
+    public Rating[] getRatings(int professorId) {
+        ArrayList<Rating> results = new ArrayList<>();
+        for (Rating rating : ratings.values()) {
+            if (rating.getProfessor().getId() == professorId) {
+                results.add(rating);
+            }
+        }
+        Rating[] result = new Rating[results.size()];
         results.toArray(result);
         return result;
     }
@@ -479,6 +536,30 @@ public class API implements Observer {
     }
 
     public static void main(String[] args) throws IOException {
+        API api = API.getInstance();
+        User user1 = api.getUser(2200900);
+        User user2 = api.getUser(2200870);
+        Course course = api.getCourse("PHY1001");
+        Professor professor1 = api.getProfessors()[25];
+        Professor professor2 = api.getProfessors()[31];
+
+        api.addReview(user1, course, "Great course!", 8);
+        api.addReview(user2, course, 5);
+
+        api.addRating(user1, professor1, 9);
+        api.addRating(user2, professor2, 6);
+        api.addRating(user1, professor2, 8);
+        for (Course c : api.getCourses()) {
+            if (c.getRatingCount() > 0) {
+                System.out.println(c.getCourse_id() + " " + c.getAvgRating() + " there are " + c.getRatingCount() + " reviews");
+            }
+        }
+
+        for (Professor professor: api.getProfessors()) {
+            if (professor.getRatingCount() > 0) {
+                System.out.println(professor.getName() + " " + professor.getAvgRating() + " there are " + professor.getRatingCount() + " ratings");
+            }
+        }
     }
 }
 

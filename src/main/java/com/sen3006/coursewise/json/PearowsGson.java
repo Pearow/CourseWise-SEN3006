@@ -16,6 +16,7 @@ public class PearowsGson {
                 .registerTypeAdapter(Professor.class, new ProfessorAdapter())
                 .registerTypeAdapter(Section.class, new SectionAdapter())
                 .registerTypeAdapter(Review.class, new ReviewAdapter())
+                .registerTypeAdapter(Rating.class, new RatingAdapter())
                 .create();
     }
 }
