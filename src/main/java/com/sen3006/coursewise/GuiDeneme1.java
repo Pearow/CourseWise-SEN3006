@@ -403,24 +403,14 @@ public class GuiDeneme1 implements Initializable {
     //Load the lecturer's note
     private void loadLecturersNote() {
 
-        //Create a some placeholder text for the lecturer's note
-        //TODO: Replace with your API call
-
-        // lecturersNoteTextArea.setText(currentCourse.getNote())
-        // also check if currentCourseCode.getNote() == null, if so, setText like the else statement below
         // TODO: Delete placeholders
         if (currentCourse.getCourse_id().equals("SEN3006")) {
             lecturersNoteTextArea.setText("This course is designed to provide students with a comprehensive understanding of software engineering principles and practices. Students will learn about software development methodologies, project management, and quality assurance.");
-        } else if (currentCourse.getCourse_id().equals("CSE2025")) {
-            lecturersNoteTextArea.setText("This course covers the fundamentals of computer science, including algorithms, data structures, and programming languages. Students will gain hands-on experience through practical assignments.");
-        } else if (currentCourse.getCourse_id().equals("MBG1201")) {
-            lecturersNoteTextArea.setText("This course introduces students to the principles of molecular biology and genetics. Students will learn about DNA structure, replication, and gene expression.");
-        } else if (currentCourse.getCourse_id().equals("ECON101")) {
-            lecturersNoteTextArea.setText("This course provides an introduction to microeconomics and macroeconomics. Students will learn about supply and demand, market structures, and economic indicators.");
-        } else if (currentCourse.getCourse_id().equals("PHYS101")) {
-            lecturersNoteTextArea.setText("This course covers the basic principles of physics, including mechanics, thermodynamics, and electromagnetism. Students will engage in laboratory experiments to reinforce theoretical concepts.");
         }else {
-            lecturersNoteTextArea.setText("No notes available for this course.");
+            //TODO:Create a some placeholder text for the lecturer's note
+            lecturersNoteTextArea.setText(currentCourse.getLecturersNote());
+            //also check if currentCourseCode.getNote() == null
+            //lecturersNoteTextArea.setText("No notes available for this course.");
         }
 
         lecturersNoteTextArea.setWrapText(true);
