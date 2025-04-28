@@ -60,6 +60,10 @@ public class Course extends Observable
         }
         this.total_course_rating = this.total_course_rating - oldRating + newRating;
         this.course_rating = Math.round((float) total_course_rating / course_rating_count);
+
+        // Notify observers about the change
+        setChanged();
+        notifyObservers();
         return true;
     }
 
@@ -73,6 +77,22 @@ public class Course extends Observable
 
     public int getTotalRating() {
         return this.total_course_rating;
+    }
+
+    public boolean revokeRating(int rating) {
+        if (rating <= 0 || rating > 10) {
+            System.out.println("Invalid rating: " + rating);
+            return false;
+        }
+        this.total_course_rating -= rating;
+        this.course_rating_count--;
+        this.course_rating = Math.round((float) total_course_rating / course_rating_count);
+
+        // Notify observers about the change
+        setChanged();
+        notifyObservers();
+
+        return true;
     }
 
 
