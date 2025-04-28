@@ -151,6 +151,7 @@ public class GuiDeneme1 implements Initializable {
         courseListContainer.getChildren().add(noResultsLabel);
     }
 
+    //TODO: find a way to utilise api by replacing getText() method usages when loading section details
     //Load course details when a course is selected
     private void loadCourseDetails(Course course, String rating) {
         // Save current course code
@@ -175,6 +176,7 @@ public class GuiDeneme1 implements Initializable {
         }
     }
 
+    //TODO: stay on the latest section when a new review is added
     //Load available sections for a course
     private void loadAvailableSections(Course course) {
         sectionsContainer.getChildren().clear();
@@ -252,7 +254,7 @@ public class GuiDeneme1 implements Initializable {
 
         String bgColor = "";
         String textColor = "";
-                                //TODO: add the colors
+                                //TODO: add the colors (please provide better colors for the ratings)
         if(review.getRating() == 10){
             bgColor = "#f3e5f5"; //should be purple
             textColor = "#6a1b9a";
@@ -266,7 +268,7 @@ public class GuiDeneme1 implements Initializable {
             bgColor = "#fff3e0"; //should be dark green
             textColor = "#e65100";
         } else if (review.getRating() == 6) {
-            bgColor = "#ffebee"; //should be yellow blue
+            bgColor = "#ffebee"; //should be yellow
             textColor = "#c62828";
         } else if (review.getRating() == 5) {
             bgColor = "#fce4ec"; //should be orange
@@ -403,7 +405,6 @@ public class GuiDeneme1 implements Initializable {
     //Load the lecturer's note
     private void loadLecturersNote() {
 
-        // TODO: Delete placeholders
         if (currentCourse.getCourse_id().equals("SEN3006")) {
             lecturersNoteTextArea.setText("This course is designed to provide students with a comprehensive understanding of software engineering principles and practices. Students will learn about software development methodologies, project management, and quality assurance.");
         }else {
