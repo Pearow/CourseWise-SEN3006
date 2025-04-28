@@ -21,6 +21,9 @@ public class CourseAdapter implements JsonSerializer<Course>, JsonDeserializer<C
         jsonObject.addProperty("type", course.getType().getIntType());
         jsonObject.addProperty("total_rating", course.getTotalRating());
         jsonObject.addProperty("rating_count", course.getRatingCount());
+        if(!course.getLecturersNote().isBlank())
+            jsonObject.addProperty("lecturers_note", course.getLecturersNote());
+
 
         return jsonObject;
     }
@@ -29,8 +32,12 @@ public class CourseAdapter implements JsonSerializer<Course>, JsonDeserializer<C
     public Course deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         JsonObject jsonObject = json.getAsJsonObject();
         Department department = null;
+        String lecturersNote = "";
         if (jsonObject.get("department_id") != null)
             department = API.getInstance().getDepartment(jsonObject.get("department_id").getAsInt());
-        return new Course(jsonObject.get("id").getAsString(), jsonObject.get("name").getAsString(), department, jsonObject.get("type").getAsInt(), jsonObject.get("total_rating").getAsInt(), jsonObject.get("rating_count").getAsInt());
+        if (jsonObject.has("lecturers_note")) {
+            lecturersNote = jsonObject.get("lecturers_note").getAsString();
+        }
+        return new Course(jsonObject.get("id").getAsString(), jsonObject.get("name").getAsString(), department, jsonObject.get("type").getAsInt(), jsonObject.get("total_rating").getAsInt(), jsonObject.get("rating_count").getAsInt(), lecturersNote);
     }
 }
