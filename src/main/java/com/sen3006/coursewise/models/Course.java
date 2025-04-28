@@ -53,14 +53,14 @@ public class Course extends Observable
         return true;
     }
 
-    public boolean updateRating(int oldRating, int newRating) {
+    public int updateRating(int oldRating, int newRating) {
         if (oldRating <= 0 || oldRating > 10 || newRating <= 0 || newRating > 10) {
             System.out.println("Invalid rating: " + oldRating + " or " + newRating);
-            return false;
+            return -1;
         }
         this.total_course_rating = this.total_course_rating - oldRating + newRating;
         this.course_rating = Math.round((float) total_course_rating / course_rating_count);
-        return true;
+        return this.course_rating;
     }
 
     public int getAvgRating() {
