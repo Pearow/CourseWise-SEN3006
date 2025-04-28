@@ -1,14 +1,10 @@
 package com.sen3006.coursewise;
 
-import com.sen3006.coursewise.models.Course;
-import com.sen3006.coursewise.models.CurrentUser;
-import com.sen3006.coursewise.models.Professor;
-import com.sen3006.coursewise.models.Section;
+import com.sen3006.coursewise.models.*;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -51,6 +47,7 @@ public class GuiDeneme1 implements Initializable {
     private String currentSectionCode;
 
     API api = API.getInstance();
+    CurrentUser currentUser = CurrentUser.getInstance();
 
 
     @Override
@@ -85,20 +82,7 @@ public class GuiDeneme1 implements Initializable {
         for (Course course : courses) {
             addCourseItemToList(course.getCourse_id(), course.getAvgRating() + "/10");
         }
-
-        // Example: Add some sample courses for now
-        //addSampleCoursesToList();
     }
-
-    //This method should be replaced with your actual API calls
-//    private void addSampleCoursesToList() {
-//        addCourseItemToList("SEN3006", "9/10");
-//        addCourseItemToList("CSE2025", "8/10");
-//        addCourseItemToList("MBG1201", "7/10");
-//        addCourseItemToList("ECON101", "8/10");
-//        addCourseItemToList("PHYS101", "7/10");
-//        addCourseItemToList("MATH241", "9/10");
-//    }
 
     //Add a course item to the list
     private void addCourseItemToList(String courseCode, String rating) {
@@ -186,13 +170,6 @@ public class GuiDeneme1 implements Initializable {
             courseTypeLabel.setText(course.getType().toString());
         }
 
-        //Example data
-//        courseTitleLabel.setText(currentCourseTitle); // From API
-//        courseRatingLabel.setText(rating); // This should come from your API
-//        courseRatingLabel.setMinWidth(40);
-//        courseCodeLabel.setText(courseCode);
-//        courseTypeLabel.setText("Lecture"); // From API
-
         // Load available sections
         loadAvailableSections(courseCode);
         loadLecturersNote();
@@ -214,25 +191,6 @@ public class GuiDeneme1 implements Initializable {
         for (Section section : sections) {
             addSectionToList(String.valueOf(section.getSection_id()));
         }
-
-        // Add sections based on course code
-//        if (courseCode.equals("SEN3006")) {
-//            addSectionToList(courseCode + "(1)");
-//            addSectionToList(courseCode + "(2)");
-//            addSectionToList(courseCode + "(3)");
-//        } else if (courseCode.equals("CSE2025")) {
-//            addSectionToList(courseCode + "(1)");
-//            addSectionToList(courseCode + "(2)");
-//        } else if (courseCode.equals("MBG1201")) {
-//            addSectionToList(courseCode + "(1)");
-//            addSectionToList(courseCode + "(2)");
-//            addSectionToList(courseCode + "(3)");
-//            addSectionToList(courseCode + "(4)");
-//        } else {
-//            // Default sections for other courses
-//            addSectionToList(courseCode + "(1)");
-//            addSectionToList(courseCode + "(2)");
-//        }
 
         // Select first section by default
         if (!sectionsContainer.getChildren().isEmpty()) {
@@ -273,43 +231,11 @@ public class GuiDeneme1 implements Initializable {
                 weekdayLabel.setText(s.getSection_day().toString());
                 durationLabel.setText(s.getStart_time().toString() + " - " + s.getEnd_time().toString());
                 roomLabel.setText(s.getClassroom().getClass_id());
-                profNameLabel.setText(s.getProfessor().getProf_name() + " " + s.getProfessor().getSurname()); // Placeholder, replace with actual professor name from API
-                profRatingLabel.setText(s.getProfessor().getAvgRating() + "/10"); // Placeholder, replace with actual rating from API TODO: this resets the rating SHOWN to 8/10 every time a new section/course is selected
-                campusLabel.setText(String.valueOf(s.getClassroom().getCampus())); // Placeholder, replace with actual campus from API
+                profNameLabel.setText(s.getProfessor().getProf_name() + " " + s.getProfessor().getSurname());
+                profRatingLabel.setText(s.getProfessor().getAvgRating() + "/10");
+                campusLabel.setText(String.valueOf(s.getClassroom().getCampus()));
             }
         }
-
-        // Example implementation
-//        if (sectionCode.endsWith("(1)")) {
-//            weekdayLabel.setText("Tuesday");
-//            durationLabel.setText("10:30 - 13:20");
-//            roomLabel.setText("G103");
-//            profNameLabel.setText("Dr. Smith");
-//            profRatingLabel.setText("9/10");
-//            campusLabel.setText("South Campus");
-//        } else if (sectionCode.endsWith("(2)")) {
-//            weekdayLabel.setText("Thursday");
-//            durationLabel.setText(" 14:00 - 16:50");
-//            roomLabel.setText("B204");
-//            profNameLabel.setText("Dr. Johnson");
-//            profRatingLabel.setText("8/10");
-//            campusLabel.setText("North Campus");
-//        } else if (sectionCode.endsWith("(3)")) {
-//            weekdayLabel.setText("Monday");
-//            durationLabel.setText("09:00 - 11:50");
-//            roomLabel.setText("C305");
-//            profNameLabel.setText("Dr. Williams");
-//            profRatingLabel.setText("7/10");
-//            campusLabel.setText("Central Campus");
-//        } else {
-//            // Default or random values for sections 4-6
-//            weekdayLabel.setText("Friday");
-//            durationLabel.setText("13:00 - 15:50");
-//            roomLabel.setText("D" + sectionCode.charAt(sectionCode.length() - 1) + "06");
-//            profNameLabel.setText("Dr. Brown");
-//            profRatingLabel.setText("8/10");
-//            campusLabel.setText("East Campus");
-//        }
 
         // Load reviews for this section
         loadReviews(currentCourseCode);
@@ -320,54 +246,86 @@ public class GuiDeneme1 implements Initializable {
         reviewsContainer.getChildren().clear();
         this.currentCourseCode = courseCode;
 
-        // TODO: Replace with your API call
-        // Review[] reviews = api.getReviews(courseCode);
-        // updateReviewCountLabel(reviews.size());
-        // for (Review review : reviews) {
-        //     addReviewToContainer(review);
-        // }
-
-        // Example implementation with sample data
-
-        if (courseCode.contentEquals("SEN3006")) {
-            updateReviewCountLabel(36);
-            addReviewToContainer("2200870", "9/10", "Highly educational course, the project assignment helped me understand the topics", "#e8f5e9", "#2e7d32");
-            addReviewToContainer("2190456", "8/10", "The professor explains concepts clearly, but assignments can be challenging.", "#e3f2fd", "#1565c0");
-            addReviewToContainer("2205123", "10/10", "Best course I've taken so far! The professor is very helpful and the material is relevant to industry standards.", "#f3e5f5", "#6a1b9a");
-        } else if (courseCode.contentEquals("CSE2025")) {
-            updateReviewCountLabel(24);
-            addReviewToContainer("2204567", "7/10", "Lectures can be a bit fast-paced, but overall good content.", "#e3f2fd", "#1565c0");
-            addReviewToContainer("2198765", "9/10", "Dr. Johnson is very knowledgeable and explains complex topics well.", "#e8f5e9", "#2e7d32");
-            addReviewToContainer("2201234", "6/10", "The course is interesting, but the assignments are too time-consuming.", "#fff3e0", "#e65100");
-        } else if (courseCode.contentEquals("MBG1201")) {
-            updateReviewCountLabel(12);
-            addReviewToContainer("2207890", "7/10", "The course is well-structured, but the exams are quite difficult.", "#fff3e0", "#e65100");
-            addReviewToContainer("2196543", "8/10", "Good course for beginners, but lacks depth in some areas.", "#e3f2fd", "#1565c0");
-        } else if (courseCode.contentEquals("ECON101")) {
-            updateReviewCountLabel(20);
-            addReviewToContainer("2202345", "9/10", "Great introduction to economics, very engaging lectures.", "#e8f5e9", "#2e7d32");
-            addReviewToContainer("2198765", "6/10", "The course is interesting, but the assignments are too time-consuming.", "#fff3e0", "#e65100");
-        } else if (courseCode.contentEquals("PHYS101")) {
-            updateReviewCountLabel(10);
-            addReviewToContainer("2205678", "7/10", "The course is well-structured, but the exams are quite difficult.", "#fff3e0", "#e65100");
-            addReviewToContainer("2194321", "8/10", "Good course for beginners, but lacks depth in some areas.", "#e3f2fd", "#1565c0");
-        } else if (courseCode.contentEquals("MATH241")) {
-            updateReviewCountLabel(18);
-            addReviewToContainer("2206789", "9/10", "Great introduction to mathematics, very engaging lectures.", "#e8f5e9", "#2e7d32");
-            addReviewToContainer("2195432", "6/10", "The course is interesting, but the assignments are too time-consuming.", "#fff3e0", "#e65100");
-        } else {
-            updateReviewCountLabel(15);
-            addReviewToContainer("2203456", "8/10", "Interesting course material but could use more practical examples.", "#e3f2fd", "#1565c0");
-            addReviewToContainer("2198765", "7/10", "The course is well-structured, but the exams are quite difficult.", "#fff3e0", "#e65100");
-        }
+         Review[] reviews = api.getReviews(courseCode);
+         updateReviewCountLabel(reviews.length);
+         for (Review review : reviews) {
+             addReviewToContainer(review);
+         }
     }
 
-    //Update the review count label
-    private void updateReviewCountLabel() {
-        String count;
-        reviewCountLabel.setText("(" + "count" + ")");
-//        Course course = api.getCourse(currentCourseCode);
-//        reviewCountLabel.setText("(" + String.valueOf(course.getRatingCount() + 1) + ")");
+    private void addReviewToContainer(Review review) {
+        String reviewer = String.valueOf(review.getUser().getId());
+        String rating = String.valueOf(review.getRating()) + "/10";
+        String comment = review.getComment();
+
+        String bgColor = "";
+        String textColor = "";
+        
+        if(review.getRating() == 10){
+            bgColor = "#f3e5f5"; 
+            textColor = "#6a1b9a";
+        }
+        else if(review.getRating() == 9){
+            bgColor = "#e8f5e9";
+            textColor = "#2e7d32";
+        }
+        else if(review.getRating() == 8){
+            bgColor = "#e3f2fd";
+            textColor = "#1565c0";
+        } else if (review.getRating() == 7) {
+            bgColor = "#fff3e0";
+            textColor = "#e65100";
+        } else if (review.getRating() == 6) {
+            bgColor = "#ffebee";
+            textColor = "#c62828";
+        } else if (review.getRating() == 5) {
+            bgColor = "#fce4ec";
+            textColor = "#ad1457";
+        } else if (review.getRating() == 4) {
+            bgColor = "#f3e5f5";
+            textColor = "#6a1b9a";
+        } else if (review.getRating() == 3) {
+            bgColor = "#ede7f6";
+            textColor = "#4527a0";
+        } else if (review.getRating() == 2) {
+            bgColor = "#e8eaf6";
+            textColor = "#283593";
+        } else if (review.getRating() == 1) {
+            bgColor = "#e3f2fd";
+            textColor = "#1565c0";
+        }
+
+        VBox reviewBox = new VBox(5);
+        reviewBox.setStyle("-fx-background-color: " + bgColor + "; -fx-background-radius: 4; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 2, 0, 0, 1);");
+        reviewBox.setPadding(new Insets(5));
+
+        HBox reviewHeader = new HBox(10);
+        reviewHeader.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+
+        Label reviewUser = new Label("→ " + reviewer + ",");
+        reviewUser.setStyle("-fx-text-fill:" + textColor + ";");
+
+        Label reviewRating = new Label(rating);
+        reviewRating.setStyle("-fx-border-color:" + textColor + "; -fx-border-radius: 10; -fx-background-color: white; -fx-background-radius: 10; -fx-text-fill: " + textColor + ";");
+        reviewRating.setPadding(new Insets(2, 5, 2, 5));
+
+        reviewHeader.getChildren().addAll(reviewUser, reviewRating);
+
+        Label reviewContent = new Label(comment);
+        reviewContent.setStyle("-fx-text-fill: #212121;");
+        reviewContent.setWrapText(true);
+
+        reviewBox.getChildren().addAll(reviewHeader, reviewContent);
+
+        reviewsContainer.getChildren().add(reviewBox);
+
+        // Add separator except for the last item
+        if (!reviewsContainer.getChildren().isEmpty() &&
+                reviewsContainer.getChildren().indexOf(reviewBox) < reviewsContainer.getChildren().size() - 1) {
+            Separator separator = new Separator();
+            separator.setStyle("-fx-background-color: #e0e0e0;");
+            reviewsContainer.getChildren().add(separator);
+        }
     }
 
     //Add a review to the reviews container
@@ -409,11 +367,9 @@ public class GuiDeneme1 implements Initializable {
     //Show dialog to add a new review
     //TODO: Check if the user has selected a section before adding a review
     //TODO: Check if the current user is a student
-    //TODO: Check if the user has already submitted a review for this course
     @FXML
     private void showAddReviewDialog(ActionEvent event) throws IOException {
         creatingNewReview = true;
-        CurrentUser currentUser = CurrentUser.getInstance();
         // Load the dialog FXML
         FXMLLoader dialogLoader = new FXMLLoader(getClass().getResource("/com/sen3006/coursewise/ReviewDialog.fxml"));
         DialogPane dialogPane = dialogLoader.load();
@@ -465,62 +421,19 @@ public class GuiDeneme1 implements Initializable {
                 alert.showAndWait();
             } else {
                 // Submit the review
-                String studentId = studentIdLabel.getText(); // Replace with actual student ID from the session
+                String studentId = String.valueOf(currentUser.getId());
                 submitReview(studentId, rating, reviewText);
-                updateCourseRating(currentCourseCode, rating); // Update course rating after review submission
                 creatingNewReview = false;
             }
         }
     }
 
-
-
-    //Update the course rating after a new review is submitted
-    private void updateCourseRating(String courseCode, int rating) {
-        // TODO: Call your API to get the updated rating
-//        Course course = api.getCourse(courseCode);
-//        course.addRating(rating);
-//        // Update the course rating label
-//        courseRatingLabel.setText(course.getAvgRating() + "/10");
-
-    }
-
     //Submit a new review to the system
-    //TODO: This method can't add a review to the system yet, it just adds it to the UI and it's not saved anywhere. Fix addReviewToContainer method.
     private void submitReview(String studentId, int rating, String reviewText) {
-        // TODO: Call your API to submit the review
-        // boolean success = yourApiService.submitReview(currentSectionCode, studentId, rating, reviewText);
+        api.addReview(currentUser, api.getCourse(currentCourseCode), reviewText, rating);
 
-        String ratingStr = rating + "/10";
-
-        // Choose color based on rating
-        String bgColor;
-        String textColor;
-
-        if (rating >= 9) {
-            bgColor = "#e8f5e9";
-            textColor = "#2e7d32";
-        } else if (rating >= 7) {
-            bgColor = "#e3f2fd";
-            textColor = "#1565c0";
-        } else if (rating >= 5) {
-            bgColor = "#fff3e0";
-            textColor = "#e65100";
-        } else {
-            bgColor = "#ffebee";
-            textColor = "#c62828";
-        }
-
-        // Add review to UI
-        addReviewToContainer(studentId, ratingStr, reviewText, bgColor, textColor);
-
-        // Update review count
-        String countText = reviewCountLabel.getText();
-        int currentCount = 0;
-        if (countText != null && countText.length() > 2) {
-            currentCount = Integer.parseInt(countText.substring(1, countText.length() - 1));
-        }
-        updateReviewCountLabel(currentCount + 1);
+        loadReviews(currentCourseCode);
+        loadCourseDetails(currentCourseCode, String.valueOf(api.getCourse(currentCourseCode).getAvgRating()));
 
         // Show success message
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -530,39 +443,7 @@ public class GuiDeneme1 implements Initializable {
         alert.showAndWait();
     }
 
-
-    // Add the review to UI container
-    //TODO: This method can't add a review to the system yet, it just adds it to the UI and it's not saved anywhere. Fix this.
-    private void addReviewToContainer(String rating, String reviewText, String bgColor, String textColor) {
-        // Create review pane
-        VBox reviewBox = new VBox(5);
-        reviewBox.setPadding(new Insets(10));
-        reviewBox.setStyle("-fx-background-color: " + bgColor + "; -fx-background-radius: 5;");
-
-        // Rating
-        HBox headerBox = new HBox(10);
-        headerBox.setAlignment(Pos.CENTER_LEFT);
-
-        Label ratingLabel = new Label("Rating: " + rating);
-        ratingLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: " + textColor + ";");
-
-        headerBox.getChildren().add(ratingLabel);
-
-        // Review text
-        Label reviewLabel = new Label(reviewText);
-        reviewLabel.setWrapText(true);
-        reviewLabel.setStyle("-fx-text-fill: " + textColor + ";");
-
-        // Add all components to review box
-        reviewBox.getChildren().addAll(headerBox, reviewLabel);
-
-        // Add to review container
-        // Assuming you have a container for reviews such as VBox reviewsContainer
-        reviewsContainer.getChildren().add(reviewBox);
-    }
-
     //Update the review count label
-    //TODO: Remove this method when implementing the non-parameterized version, it's not needed
     private void updateReviewCountLabel(int count) {
         reviewCountLabel.setText("(" + count + ")");
     }
@@ -572,6 +453,10 @@ public class GuiDeneme1 implements Initializable {
 
         //Create a some placeholder text for the lecturer's note
         //TODO: Replace with your API call
+
+        // Course currentCourse = api.getCourse(currentCourseCode)
+        // lecturersNoteTextArea.setText(currentCourse.getNote())
+        // also check if currentCourseCode.getNote() == null, if so, setText like the else statement below
         if (currentCourseCode.equals("SEN3006")) {
             lecturersNoteTextArea.setText("This course is designed to provide students with a comprehensive understanding of software engineering principles and practices. Students will learn about software development methodologies, project management, and quality assurance.");
         } else if (currentCourseCode.equals("CSE2025")) {
@@ -601,6 +486,7 @@ public class GuiDeneme1 implements Initializable {
 //            if (event.getCode().toString().equals("ENTER")) {
 //                // Save the note
 //                String note = lecturersNoteTextArea.getText();
+                  //api.getCourse(curretnCourseCode).setNote(note)
 //            }
 //            if (event.getCode().toString().equals("ESCAPE")) {
 //                // Cancel editing
@@ -631,7 +517,7 @@ public class GuiDeneme1 implements Initializable {
                 Label ratingValueLabel = (Label) dialogPane.lookup("#ratingValueLabel");
 
                 //Get the student ID from the current user session and set it to the label
-                studentIdLabel.setText(String.valueOf(CurrentUser.getInstance().getId()));
+                studentIdLabel.setText(String.valueOf(currentUser.getId()));
 
                 //Update rating value label when slider changes
                 ratingSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
@@ -683,7 +569,7 @@ public class GuiDeneme1 implements Initializable {
         // Show success message
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Success");
-        alert.setHeaderText("Review Submitted");
+        alert.setHeaderText("Rating Submitted");
         alert.setContentText("Your rating of " + profNameLabel.getText() + " has been submitted successfully.");
         alert.showAndWait();
     }
