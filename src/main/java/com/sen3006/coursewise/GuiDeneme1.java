@@ -66,10 +66,8 @@ public class GuiDeneme1 implements Initializable {
 
             //Select the first course by default
             if (!courseListContainer.getChildren().isEmpty()) {
-                HBox firstCourse = (HBox) courseListContainer.getChildren().get(0);
-                String courseCode = ((Label) firstCourse.getChildren().get(0)).getText();
-                String rating = ((Label) firstCourse.getChildren().get(1)).getText();
-                loadCourseDetails(courseCode, rating);
+                currentCourseCode = api.getCourses()[0].getCourse_id();
+                loadCourseDetails(currentCourseCode, String.valueOf(api.getCourse(currentCourseCode).getAvgRating()));
             }
         }
     }
@@ -80,7 +78,7 @@ public class GuiDeneme1 implements Initializable {
 
         Course[] courses = api.getCourses(); //this method is broken for now and returns every course in the database
         for (Course course : courses) {
-            addCourseItemToList(course.getCourse_id(), course.getAvgRating() + "/10");
+            addCourseItemToList(course.getCourse_id(), String.valueOf(course.getAvgRating()));
         }
     }
 
@@ -97,7 +95,7 @@ public class GuiDeneme1 implements Initializable {
         Label codeLabel = new Label(courseCode);
         codeLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #424242;");
 
-        Label ratingLabel = new Label(rating);
+        Label ratingLabel = new Label(rating + "/10");
         ratingLabel.setStyle("-fx-border-color: #757575; -fx-border-radius: 10; -fx-background-color: white; -fx-background-radius: 10; -fx-text-fill: #757575;");
         ratingLabel.setPadding(new Insets(2, 5, 2, 5));
         ratingLabel.setMinWidth(40);
@@ -136,7 +134,7 @@ public class GuiDeneme1 implements Initializable {
         for (Course course : courses) {
             if (course.getCourse_id().toLowerCase().contains(searchText.toLowerCase())) {
                 // Add matching course to the GUI
-                addCourseItemToList(course.getCourse_id(), course.getAvgRating() + "/10");
+                addCourseItemToList(course.getCourse_id(), String.valueOf(course.getAvgRating()));
                 foundAny = true;
             }
         }
@@ -165,7 +163,7 @@ public class GuiDeneme1 implements Initializable {
             currentCourseTitle = course.getCourse_name();
             // Update course details UI
             courseTitleLabel.setText(currentCourseTitle);
-            courseRatingLabel.setText(rating);
+            courseRatingLabel.setText(rating + "/10");
             courseCodeLabel.setText(courseCode);
             courseTypeLabel.setText(course.getType().toString());
         }
@@ -413,12 +411,10 @@ public class GuiDeneme1 implements Initializable {
             String reviewText = reviewTextArea.getText().trim();
 
             if (reviewText.isEmpty()) {
-                // Show error alert
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error");
-                alert.setHeaderText("Invalid Input");
-                alert.setContentText("Please fill in all fields.");
-                alert.showAndWait();
+                // Submit the review
+                String studentId = String.valueOf(currentUser.getId());
+                submitReview(studentId, rating, "");
+                creatingNewReview = false;
             } else {
                 // Submit the review
                 String studentId = String.valueOf(currentUser.getId());
@@ -560,11 +556,6 @@ public class GuiDeneme1 implements Initializable {
     //Submit a new rating for a professor
     //TODO: Call your API to submit the rating
     private void submitRating(String studentId, int rating, String profId) {
-        //Professor professor = api.getProfessor(profId); // Get the professor object from API
-        //professor.addRating(rating); // Add the rating to the professor
-        // Update the professor rating label
-//        String ratingStr = rating + "/10";
-//        profRatingLabel.setText(ratingStr);
 
         // Show success message
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
