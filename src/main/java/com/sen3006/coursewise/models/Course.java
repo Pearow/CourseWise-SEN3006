@@ -64,7 +64,6 @@ public class Course extends Observable
         // Notify observers about the change
         setChanged();
         notifyObservers();
-
         return true;
     }
 

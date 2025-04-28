@@ -29,7 +29,7 @@ public class Review extends Observable {
     public Course getCourse() {
         return course;
     }
-
+  
 //    public void setCourse(Course newCourse) {
 //        course.revokeRating(rating);
 //        course = newCourse;
@@ -46,7 +46,7 @@ public class Review extends Observable {
 
     public void setComment(String comment) {
         this.comment = comment;
-
+      
         // Notify observers about the change
         setChanged();
         notifyObservers();
