@@ -37,7 +37,7 @@ public class Course extends Observable
 
     }
 
-    public boolean addRating(int newRating) {
+    protected boolean addRating(int newRating) {
         if (newRating <= 0 || newRating > 10) {
             System.out.println("Invalid rating: " + newRating);
             return false;
@@ -53,7 +53,7 @@ public class Course extends Observable
         return true;
     }
 
-    public boolean updateRating(int oldRating, int newRating) {
+    protected boolean updateRating(int oldRating, int newRating) {
         if (oldRating <= 0 || oldRating > 10 || newRating <= 0 || newRating > 10) {
             System.out.println("Invalid rating: " + oldRating + " or " + newRating);
             return false;
