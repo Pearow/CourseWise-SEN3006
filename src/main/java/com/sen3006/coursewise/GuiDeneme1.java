@@ -252,38 +252,36 @@ public class GuiDeneme1 implements Initializable {
 
         String bgColor = "";
         String textColor = "";
-        
+                                //TODO: add the colors
         if(review.getRating() == 10){
-            bgColor = "#f3e5f5"; 
+            bgColor = "#f3e5f5"; //should be purple
             textColor = "#6a1b9a";
-        }
-        else if(review.getRating() == 9){
-            bgColor = "#e8f5e9";
+        } else if(review.getRating() == 9){
+            bgColor = "#e8f5e9"; //should be light green
             textColor = "#2e7d32";
-        }
-        else if(review.getRating() == 8){
-            bgColor = "#e3f2fd";
+        } else if(review.getRating() == 8){
+            bgColor = "#e3f2fd";  //should be green
             textColor = "#1565c0";
         } else if (review.getRating() == 7) {
-            bgColor = "#fff3e0";
+            bgColor = "#fff3e0"; //should be dark green
             textColor = "#e65100";
         } else if (review.getRating() == 6) {
-            bgColor = "#ffebee";
+            bgColor = "#ffebee"; //should be yellow blue
             textColor = "#c62828";
         } else if (review.getRating() == 5) {
-            bgColor = "#fce4ec";
+            bgColor = "#fce4ec"; //should be orange
             textColor = "#ad1457";
         } else if (review.getRating() == 4) {
-            bgColor = "#f3e5f5";
+            bgColor = "#f3e5f5"; //should be dark orange
             textColor = "#6a1b9a";
         } else if (review.getRating() == 3) {
-            bgColor = "#ede7f6";
+            bgColor = "#ede7f6"; //should be brown
             textColor = "#4527a0";
         } else if (review.getRating() == 2) {
-            bgColor = "#e8eaf6";
+            bgColor = "#e8eaf6"; //should be red
             textColor = "#283593";
         } else if (review.getRating() == 1) {
-            bgColor = "#e3f2fd";
+            bgColor = "#e3f2fd"; //should be light red
             textColor = "#1565c0";
         }
 
@@ -304,42 +302,6 @@ public class GuiDeneme1 implements Initializable {
         reviewHeader.getChildren().addAll(reviewUser, reviewRating);
 
         Label reviewContent = new Label(comment);
-        reviewContent.setStyle("-fx-text-fill: #212121;");
-        reviewContent.setWrapText(true);
-
-        reviewBox.getChildren().addAll(reviewHeader, reviewContent);
-
-        reviewsContainer.getChildren().add(reviewBox);
-
-        // Add separator except for the last item
-        if (!reviewsContainer.getChildren().isEmpty() &&
-                reviewsContainer.getChildren().indexOf(reviewBox) < reviewsContainer.getChildren().size() - 1) {
-            Separator separator = new Separator();
-            separator.setStyle("-fx-background-color: #e0e0e0;");
-            reviewsContainer.getChildren().add(separator);
-        }
-    }
-
-    //Add a review to the reviews container
-    //TODO: Update after Review model is implemented
-    private void addReviewToContainer(String studentId, String rating, String reviewText, String bgColor, String textColor) {
-        VBox reviewBox = new VBox(5);
-        reviewBox.setStyle("-fx-background-color: " + bgColor + "; -fx-background-radius: 4; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 2, 0, 0, 1);");
-        reviewBox.setPadding(new Insets(5));
-
-        HBox reviewHeader = new HBox(10);
-        reviewHeader.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-
-        Label reviewUser = new Label("→ " + studentId + ",");
-        reviewUser.setStyle("-fx-text-fill: " + textColor + ";");
-
-        Label reviewRating = new Label(rating);
-        reviewRating.setStyle("-fx-border-color: " + textColor + "; -fx-border-radius: 10; -fx-background-color: white; -fx-background-radius: 10; -fx-text-fill: " + textColor + ";");
-        reviewRating.setPadding(new Insets(2, 5, 2, 5));
-
-        reviewHeader.getChildren().addAll(reviewUser, reviewRating);
-
-        Label reviewContent = new Label(reviewText);
         reviewContent.setStyle("-fx-text-fill: #212121;");
         reviewContent.setWrapText(true);
 
@@ -444,7 +406,6 @@ public class GuiDeneme1 implements Initializable {
         //Create a some placeholder text for the lecturer's note
         //TODO: Replace with your API call
 
-        // Course currentCourse = api.getCourse(currentCourseCode)
         // lecturersNoteTextArea.setText(currentCourse.getNote())
         // also check if currentCourseCode.getNote() == null, if so, setText like the else statement below
         // TODO: Delete placeholders
@@ -516,7 +477,7 @@ public class GuiDeneme1 implements Initializable {
                 });
                 // Show dialog and process the result
                 Optional<ButtonType> result = dialog.showAndWait();
-                String courseCode = courseCodeLabel.getText();
+                String courseCode = currentCourse.getCourse_id();
                 String sectionCode = currentSectionCode;
 
                 int professorId = 0;
@@ -533,16 +494,9 @@ public class GuiDeneme1 implements Initializable {
                     updateProfessorRating(professorId, rating);
 
                     // Submit the review
-                    String studentId = studentIdLabel.getText(); // Replace with actual student ID from the session
-                    submitRating(studentId, rating,String.valueOf(professorId)); // Empty review text for professor rating
-                    System.out.println("Rating submitted: " + rating);
-                    System.out.println(sectionCode);
-                    profRatingLabel.setText(rating + "/10");
+                    submitRating(professorId, rating, sectionCode);
+
                 }
-
-
-
-                System.out.println("Clicked");
             }
         }
 
@@ -550,8 +504,10 @@ public class GuiDeneme1 implements Initializable {
 
     //Submit a new rating for a professor
     //TODO: Call your API to submit the rating
-    private void submitRating(String studentId, int rating, String profId) {
-
+    private void submitRating(int professorId, int rating, String sectionCode) {
+        System.out.println("Rating submitted: " + rating);
+        System.out.println(sectionCode);
+        profRatingLabel.setText(api.getProfessor(professorId).getAvgRating() + "/10");
         // Show success message
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Success");
@@ -562,8 +518,10 @@ public class GuiDeneme1 implements Initializable {
 
     private boolean updateProfessorRating(int profId, int rating) {
         Professor professor = api.getProfessor(profId);
-        return professor.addRating(rating);
+        CurrentUser currentUserId = currentUser;
 
         // Update the professor rating label
+        profRatingLabel.setText(professor.getAvgRating() + "/10");
+        return api.addRating(currentUserId, professor, rating);
     }
 }
