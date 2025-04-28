@@ -18,7 +18,7 @@ public class ReviewAdapter implements JsonDeserializer<Review>, JsonSerializer<R
         User user = api.getUser(jsonObject.get("user_id").getAsInt());
 
         // Create a new Review object using the extracted fields
-        return new Review(course, jsonObject.get("comment").getAsString(), user, jsonObject.get("rating").getAsInt());
+        return new Review(course, jsonObject.get("comment").getAsString(), user, jsonObject.get("rating").getAsInt(), false);
     }
 
     @Override

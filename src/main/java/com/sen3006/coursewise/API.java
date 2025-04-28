@@ -318,12 +318,15 @@ public class API implements Observer {
     }
 
     public boolean addReview(User user, Course course, String comment, int rating) {
-        int id = user.getId() + course.getCourse_name().hashCode();
+        int id = user.getId() + course.getCourse_id().hashCode();
+        Review review;
         if (reviews.containsKey(id)) {
-            Review reviewTemp = reviews.get(id);
-            reviewTemp.revokeRating();
+            review = reviews.get(id);
+            review.setComment(comment);
+            review.setRating(rating);
+        }else {
+            review = new Review(course, comment, user, rating);
         }
-        Review review = new Review(course, comment, user, rating);
         reviews.put(id, review);
         syncReviews();
         return true;
@@ -475,20 +478,7 @@ public class API implements Observer {
         }
     }
 
-    //TODO: Do not store ratings models other than review and rating
     public static void main(String[] args) throws IOException {
-        API api = API.getInstance();
-        User user = api.getUser(2200870);
-        Course course = api.getCourse("PHY1001");
-        System.out.println("User: " + user.getName() + " " + course.getCourse_name());
-        for (Review review : api.getReviews(course.getCourse_id())) {
-            System.out.println("Review: " + review.getComment() + " " + review.getRating());
-        }
-        for (Course course2 : api.getCourses()) {
-            if (course2.getRatingCount() > 0) {
-                System.out.println("Course: " + course2.getCourse_id() + " " + course2.getCourse_name() + " " + course2.getAvgRating() + " There are " + course2.getRatingCount() + " ratings");
-            }
-        }
     }
 }
 

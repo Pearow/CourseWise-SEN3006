@@ -19,6 +19,8 @@ public class CourseAdapter implements JsonSerializer<Course>, JsonDeserializer<C
             System.out.println("WARNING: Department is null in course object: " + course.getCourse_id() + " " + course.getCourse_name());
         }
         jsonObject.addProperty("type", course.getType().getIntType());
+        jsonObject.addProperty("total_rating", course.getTotalRating());
+        jsonObject.addProperty("rating_count", course.getRatingCount());
 
         return jsonObject;
     }
@@ -29,6 +31,6 @@ public class CourseAdapter implements JsonSerializer<Course>, JsonDeserializer<C
         Department department = null;
         if (jsonObject.get("department_id") != null)
             department = API.getInstance().getDepartment(jsonObject.get("department_id").getAsInt());
-        return new Course(jsonObject.get("id").getAsString(), jsonObject.get("name").getAsString(), department, jsonObject.get("type").getAsInt());
+        return new Course(jsonObject.get("id").getAsString(), jsonObject.get("name").getAsString(), department, jsonObject.get("type").getAsInt(), jsonObject.get("total_rating").getAsInt(), jsonObject.get("rating_count").getAsInt());
     }
 }

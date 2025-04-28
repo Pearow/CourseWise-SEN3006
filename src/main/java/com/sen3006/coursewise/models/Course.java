@@ -60,6 +60,11 @@ public class Course extends Observable
         }
         this.total_course_rating = this.total_course_rating - oldRating + newRating;
         this.course_rating = Math.round((float) total_course_rating / course_rating_count);
+
+        // Notify observers about the change
+        setChanged();
+        notifyObservers();
+
         return true;
     }
 
@@ -87,6 +92,7 @@ public class Course extends Observable
         // Notify observers about the change
         setChanged();
         notifyObservers();
+
         return true;
     }
 
