@@ -26,7 +26,7 @@ public class GuiDeneme1 implements Initializable {
     @FXML private Label courseCodeLabel;
     @FXML private Label courseRatingLabel;
     @FXML private Label courseTitleLabel;
-    @FXML private Label courseTypeLabel;
+    @FXML private Label sectionTypeLabel;
     @FXML private Label profNameLabel;
     @FXML private Label profRatingLabel;
     @FXML private Label weekdayLabel;
@@ -43,7 +43,7 @@ public class GuiDeneme1 implements Initializable {
     private ToggleGroup sectionGroup;
     private Course currentCourse;
     private static boolean creatingNewReview = false;
-    private String currentSectionCode;
+    private Section currentSection;
 
     API api = API.getInstance();
     CurrentUser currentUser = CurrentUser.getInstance();
@@ -161,7 +161,6 @@ public class GuiDeneme1 implements Initializable {
             courseTitleLabel.setText(course.getCourse_name());
             courseRatingLabel.setText(rating + "/10");
             courseCodeLabel.setText(course.getCourse_id());
-            courseTypeLabel.setText(course.getType().toString());
         }
 
         // Load available sections
@@ -172,7 +171,7 @@ public class GuiDeneme1 implements Initializable {
         if (!sectionsContainer.getChildren().isEmpty()) {
             RadioButton firstSection = (RadioButton) sectionsContainer.getChildren().get(0);
             firstSection.setSelected(true);
-            loadSectionDetails(firstSection.getText());
+            loadSectionDetails(currentSection);
         }
     }
 
@@ -184,14 +183,18 @@ public class GuiDeneme1 implements Initializable {
 
         Section[] sections = api.getSections(course.getCourse_id()); // This should return the list of sections for the course
         for (Section section : sections) {
-            addSectionToList(String.valueOf(section.getSection_id()));
+            addSectionToList(section);
+        }
+        // Set the current section to the first one in the list
+        if (sections.length > 0) {
+            currentSection = sections[0];
         }
 
         // Select first section by default
         if (!sectionsContainer.getChildren().isEmpty()) {
             RadioButton firstSection = (RadioButton) sectionsContainer.getChildren().get(0);
             firstSection.setSelected(true);
-            loadSectionDetails(firstSection.getText());
+            loadSectionDetails(currentSection);
         }
     }
 
@@ -218,20 +221,17 @@ public class GuiDeneme1 implements Initializable {
     }
 
     //Load section details when a section is selected
-    private void loadSectionDetails(String sectionCode) {
-        this.currentSectionCode = sectionCode;
+    private void loadSectionDetails(Section section) {
+        this.currentSection = section;
         courseCodeLabel.setText(currentCourse.getCourse_id());
 
-        for (Section s : api.getSections(currentCourse.getCourse_id())) {
-            if (s.getSection_id() == Integer.parseInt(sectionCode)) {
-                weekdayLabel.setText(s.getSection_day().toString());
-                durationLabel.setText(s.getStart_time().toString() + " - " + s.getEnd_time().toString());
-                roomLabel.setText(s.getClassroom().getClass_id());
-                profNameLabel.setText(s.getProfessor().getProf_name() + " " + s.getProfessor().getSurname());
-                profRatingLabel.setText(s.getProfessor().getAvgRating() + "/10");
-                campusLabel.setText(String.valueOf(s.getClassroom().getCampus()));
-            }
-        }
+        weekdayLabel.setText(currentSection.getSection_day().toString());
+        durationLabel.setText(currentSection.getStart_time().toString() + " - " + currentSection.getEnd_time().toString());
+        roomLabel.setText(currentSection.getClassroom().getClass_id());
+        profNameLabel.setText(currentSection.getProfessor().getProf_name() + " " + currentSection.getProfessor().getSurname());
+        profRatingLabel.setText(currentSection.getProfessor().getAvgRating() + "/10");
+        campusLabel.setText(String.valueOf(currentSection.getClassroom().getCampus()));
+        //sectionTypeLabel.setText(s.getType().toString());
 
         // Load reviews for this section
         loadReviews(currentCourse);
@@ -470,7 +470,7 @@ public class GuiDeneme1 implements Initializable {
                 // Show dialog and process the result
                 Optional<ButtonType> result = dialog.showAndWait();
                 String courseCode = currentCourse.getCourse_id();
-                String sectionCode = currentSectionCode;
+                String sectionCode = String.valueOf(currentSection.getSection_id());
 
                 int professorId = 0;
 
