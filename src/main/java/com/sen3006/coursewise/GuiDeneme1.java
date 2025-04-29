@@ -26,7 +26,7 @@ public class GuiDeneme1 implements Initializable {
     @FXML private Label courseCodeLabel;
     @FXML private Label courseRatingLabel;
     @FXML private Label courseTitleLabel;
-    @FXML private Label courseTypeLabel;
+    @FXML private Label sectionTypeLabel;
     @FXML private Label profNameLabel;
     @FXML private Label profRatingLabel;
     @FXML private Label weekdayLabel;
@@ -43,7 +43,7 @@ public class GuiDeneme1 implements Initializable {
     private ToggleGroup sectionGroup;
     private Course currentCourse;
     private static boolean creatingNewReview = false;
-    private String currentSectionCode;
+    private Section currentSection;
 
     API api = API.getInstance();
     CurrentUser currentUser = CurrentUser.getInstance();
@@ -151,7 +151,6 @@ public class GuiDeneme1 implements Initializable {
         courseListContainer.getChildren().add(noResultsLabel);
     }
 
-    //TODO: find a way to utilise api by replacing getText() method usages when loading section details
     //Load course details when a course is selected
     private void loadCourseDetails(Course course, String rating) {
         // Save current course code
@@ -161,7 +160,6 @@ public class GuiDeneme1 implements Initializable {
             courseTitleLabel.setText(course.getCourse_name());
             courseRatingLabel.setText(rating + "/10");
             courseCodeLabel.setText(course.getCourse_id());
-            courseTypeLabel.setText(course.getType().toString());
         }
 
         // Load available sections
@@ -172,7 +170,7 @@ public class GuiDeneme1 implements Initializable {
         if (!sectionsContainer.getChildren().isEmpty()) {
             RadioButton firstSection = (RadioButton) sectionsContainer.getChildren().get(0);
             firstSection.setSelected(true);
-            loadSectionDetails(firstSection.getText());
+            loadSectionDetails(currentSection);
         }
     }
 
@@ -184,20 +182,25 @@ public class GuiDeneme1 implements Initializable {
 
         Section[] sections = api.getSections(course.getCourse_id()); // This should return the list of sections for the course
         for (Section section : sections) {
-            addSectionToList(String.valueOf(section.getSection_id()));
+            addSectionToList(section);
+        }
+        // Set the current section to the first one in the list
+        if (sections.length > 0) {
+            currentSection = sections[0];
         }
 
         // Select first section by default
         if (!sectionsContainer.getChildren().isEmpty()) {
             RadioButton firstSection = (RadioButton) sectionsContainer.getChildren().get(0);
             firstSection.setSelected(true);
-            loadSectionDetails(firstSection.getText());
+            loadSectionDetails(currentSection);
         }
     }
 
     //Add a section to the sections list
-    private void addSectionToList(String sectionCode) {
-        RadioButton radioButton = new RadioButton(sectionCode);
+    private void addSectionToList(Section section) {
+        String sectionCode = String.valueOf(section.getSection_id());
+        RadioButton radioButton = new RadioButton(currentCourse.getCourse_id() + "(" + sectionCode + ")");
         radioButton.setToggleGroup(sectionGroup);
 
         // Style the radio button
@@ -211,26 +214,23 @@ public class GuiDeneme1 implements Initializable {
         radioButton.setPadding(new Insets(2));
 
         // Add click event
-        radioButton.setOnAction(event -> loadSectionDetails(sectionCode));
+        radioButton.setOnAction(event -> loadSectionDetails(section));
 
         sectionsContainer.getChildren().add(radioButton);
     }
 
     //Load section details when a section is selected
-    private void loadSectionDetails(String sectionCode) {
-        this.currentSectionCode = sectionCode;
+    private void loadSectionDetails(Section section) {
+        this.currentSection = section;
         courseCodeLabel.setText(currentCourse.getCourse_id());
 
-        for (Section s : api.getSections(currentCourse.getCourse_id())) {
-            if (s.getSection_id() == Integer.parseInt(sectionCode)) {
-                weekdayLabel.setText(s.getSection_day().toString());
-                durationLabel.setText(s.getStart_time().toString() + " - " + s.getEnd_time().toString());
-                roomLabel.setText(s.getClassroom().getClass_id());
-                profNameLabel.setText(s.getProfessor().getProf_name() + " " + s.getProfessor().getSurname());
-                profRatingLabel.setText(s.getProfessor().getAvgRating() + "/10");
-                campusLabel.setText(String.valueOf(s.getClassroom().getCampus()));
-            }
-        }
+        weekdayLabel.setText(currentSection.getSection_day().toString());
+        durationLabel.setText(currentSection.getStart_time().toString() + " - " + currentSection.getEnd_time().toString());
+        roomLabel.setText(currentSection.getClassroom().getClass_id());
+        profNameLabel.setText(currentSection.getProfessor().getProf_name() + " " + currentSection.getProfessor().getSurname());
+        profRatingLabel.setText(currentSection.getProfessor().getAvgRating() + "/10");
+        campusLabel.setText(String.valueOf(currentSection.getClassroom().getCampus()));
+        sectionTypeLabel.setText(currentSection.getType().toString());
 
         // Load reviews for this section
         loadReviews(currentCourse);
@@ -321,8 +321,8 @@ public class GuiDeneme1 implements Initializable {
     }
 
     //Show dialog to add a new review
-    //TODO: Check if the user has selected a section before adding a review
-    //TODO: Check if the current user is a student
+    //oldtodo: Check if the user has selected a section before adding a review (not needed as a section is selected by default)
+    //TODO: Check if the current user is a student after role implementation
     @FXML
     private void showAddReviewDialog(ActionEvent event) throws IOException {
         creatingNewReview = true;
@@ -419,8 +419,7 @@ public class GuiDeneme1 implements Initializable {
         lecturersNoteTextArea.setStyle("-fx-background-color: #f5f5f5; -fx-border-color: #e0e0e0; -fx-border-radius: 4;");
     }
 
-    //
-    //TODO: Check if the user is a Professor
+    //TODO: Check if the user is a Professor after role implementation
     private void editLecturersNote() {
         loadLecturersNote();
         lecturersNoteTextArea.setEditable(true);
@@ -439,8 +438,7 @@ public class GuiDeneme1 implements Initializable {
     }
 
     //Show dialog to rate a professor
-    //TODO: Check if the user has already rated this professor
-    //TODO: Check if the current user is a student
+    //TODO: Check if the current user is a student after role implementation
     @FXML
     private void showRateProfessorDialog(MouseEvent event) throws IOException {
         if (event.getSource() == profRatingLabel) {
@@ -469,7 +467,7 @@ public class GuiDeneme1 implements Initializable {
                 // Show dialog and process the result
                 Optional<ButtonType> result = dialog.showAndWait();
                 String courseCode = currentCourse.getCourse_id();
-                String sectionCode = currentSectionCode;
+                String sectionCode = String.valueOf(currentSection.getSection_id());
 
                 int professorId = 0;
 
@@ -494,7 +492,6 @@ public class GuiDeneme1 implements Initializable {
     }
 
     //Submit a new rating for a professor
-    //TODO: Call your API to submit the rating
     private void submitRating(int professorId, int rating, String sectionCode) {
         System.out.println("Rating submitted: " + rating);
         System.out.println(sectionCode);

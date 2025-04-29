@@ -75,7 +75,7 @@
                             </rowConstraints>
                             <children>
                                 <Label fx:id="courseCodeLabel" style="-fx-font-weight: bold; -fx-text-fill: #424242;" text="Code" />
-                                <Label fx:id="courseTypeLabel" style="-fx-font-weight: bold; -fx-text-fill: #424242;" text="Type" GridPane.rowIndex="1" />
+                                <Label fx:id="sectionTypeLabel" style="-fx-font-weight: bold; -fx-text-fill: #424242;" text="Type" GridPane.rowIndex="1" />
                                 <Label fx:id="profNameLabel" style="-fx-font-weight: bold; -fx-text-fill: #424242;" text="Prof. Name" GridPane.rowIndex="2" />
                                 <Label fx:id="weekdayLabel" style="-fx-font-weight: bold; -fx-text-fill: #424242;" text="Day" GridPane.rowIndex="3" />
                                 <Label fx:id="durationLabel" style="-fx-font-weight: bold; -fx-text-fill: #424242;" text="Duration" GridPane.rowIndex="4" />

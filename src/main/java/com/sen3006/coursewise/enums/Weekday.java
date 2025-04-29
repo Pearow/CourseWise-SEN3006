@@ -6,7 +6,7 @@ public enum Weekday {
     Wednesday,
     Thursday,
     Friday,
-    Saturday, Sunday;
+    Saturday, Sunday, Async;
 
     public int getIntWeekday() {
         switch (this) {
@@ -41,8 +41,10 @@ public enum Weekday {
         Weekday[] day = Weekday.values();
         if (index >= 0 && index < day.length) {
             return day[index];
-        }
-        throw new IllegalArgumentException("Invalid weekday index: " + index);
+        }else if (index == -1) {
+            return Async;
+        }else
+            throw new IllegalArgumentException("Invalid weekday index: " + index);
     }
 
 }
