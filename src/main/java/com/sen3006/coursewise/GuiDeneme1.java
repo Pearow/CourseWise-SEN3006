@@ -151,7 +151,6 @@ public class GuiDeneme1 implements Initializable {
         courseListContainer.getChildren().add(noResultsLabel);
     }
 
-    //TODO: find a way to utilise api by replacing getText() method usages when loading section details
     //Load course details when a course is selected
     private void loadCourseDetails(Course course, String rating) {
         // Save current course code
@@ -231,7 +230,7 @@ public class GuiDeneme1 implements Initializable {
         profNameLabel.setText(currentSection.getProfessor().getProf_name() + " " + currentSection.getProfessor().getSurname());
         profRatingLabel.setText(currentSection.getProfessor().getAvgRating() + "/10");
         campusLabel.setText(String.valueOf(currentSection.getClassroom().getCampus()));
-        //sectionTypeLabel.setText(s.getType().toString());
+        sectionTypeLabel.setText(currentSection.getType().toString());
 
         // Load reviews for this section
         loadReviews(currentCourse);
@@ -322,8 +321,8 @@ public class GuiDeneme1 implements Initializable {
     }
 
     //Show dialog to add a new review
-    //TODO: Check if the user has selected a section before adding a review
-    //TODO: Check if the current user is a student
+    //oldtodo: Check if the user has selected a section before adding a review (not needed as a section is selected by default)
+    //TODO: Check if the current user is a student after role implementation
     @FXML
     private void showAddReviewDialog(ActionEvent event) throws IOException {
         creatingNewReview = true;
@@ -420,8 +419,7 @@ public class GuiDeneme1 implements Initializable {
         lecturersNoteTextArea.setStyle("-fx-background-color: #f5f5f5; -fx-border-color: #e0e0e0; -fx-border-radius: 4;");
     }
 
-    //
-    //TODO: Check if the user is a Professor
+    //TODO: Check if the user is a Professor after role implementation
     private void editLecturersNote() {
         loadLecturersNote();
         lecturersNoteTextArea.setEditable(true);
@@ -440,8 +438,7 @@ public class GuiDeneme1 implements Initializable {
     }
 
     //Show dialog to rate a professor
-    //TODO: Check if the user has already rated this professor
-    //TODO: Check if the current user is a student
+    //TODO: Check if the current user is a student after role implementation
     @FXML
     private void showRateProfessorDialog(MouseEvent event) throws IOException {
         if (event.getSource() == profRatingLabel) {
@@ -495,7 +492,6 @@ public class GuiDeneme1 implements Initializable {
     }
 
     //Submit a new rating for a professor
-    //TODO: Call your API to submit the rating
     private void submitRating(int professorId, int rating, String sectionCode) {
         System.out.println("Rating submitted: " + rating);
         System.out.println(sectionCode);
