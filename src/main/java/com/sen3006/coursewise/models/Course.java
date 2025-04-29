@@ -1,6 +1,6 @@
 package com.sen3006.coursewise.models;
 import com.sen3006.coursewise.API;
-import com.sen3006.coursewise.enums.Type;
+import com.sen3006.coursewise.enums.CourseType;
 
 import java.util.Observable;
 
@@ -9,7 +9,7 @@ public class Course extends Observable
     private String course_id;
     private String course_name;
     private Department department;
-    private Type type;
+    private CourseType type;
     private String lecturersNote;
     private  int course_rating_count;
     private int course_rating;
@@ -24,7 +24,7 @@ public class Course extends Observable
         this.course_id = course_id;
         this.course_name = course_name;
         this.department = department;
-        this.type = Type.fromIndex(type);
+        this.type = CourseType.fromIndex(type);
         this.total_course_rating = total_rating;
         this.course_rating_count = course_rating_count;
         this.course_rating = Math.round((float) total_course_rating / course_rating_count);
@@ -105,12 +105,12 @@ public class Course extends Observable
     }
 
 
-    public Type getType() {
+    public CourseType getType() {
         return type;
     }
 
     public void setType(int type) {
-        this.type = Type.fromIndex(type);
+        this.type = CourseType.fromIndex(type);
         // Notify observers about the change
         setChanged();
         notifyObservers();
