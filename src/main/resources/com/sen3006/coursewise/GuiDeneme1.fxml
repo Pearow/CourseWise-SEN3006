@@ -81,7 +81,7 @@
                                 <Label fx:id="durationLabel" style="-fx-font-weight: bold; -fx-text-fill: #424242;" text="Duration" GridPane.rowIndex="4" />
                                 <Label fx:id="campusLabel" style="-fx-font-weight: bold; -fx-text-fill: #424242;" text="Campus" GridPane.rowIndex="5" />
                                 <Label fx:id="roomLabel" style="-fx-font-weight: bold; -fx-text-fill: #424242;" text="Room" GridPane.rowIndex="6" />
-                        <Label fx:id="profRatingLabel" alignment="CENTER_RIGHT" onMouseClicked="#showRateProfessorDialog" prefHeight="24.0" prefWidth="38.0" style="-fx-border-color: #1976d2; -fx-border-radius: 10; -fx-background-color: white; -fx-background-radius: 10; -fx-text-fill: #1976d2;" text="" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                        <Label fx:id="profRatingLabel" alignment="CENTER_RIGHT" onMouseClicked="#showRateProfessorDialog" prefHeight="24.0" prefWidth="45.0" style="-fx-border-color: #1976d2; -fx-border-radius: 10; -fx-background-color: white; -fx-background-radius: 10; -fx-text-fill: #1976d2;" text="" GridPane.columnIndex="1" GridPane.rowIndex="2">
                            <padding>
                               <Insets bottom="2.0" left="5.0" right="5.0" top="2.0" />
                            </padding>
