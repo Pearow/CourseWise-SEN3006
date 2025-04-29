@@ -196,8 +196,9 @@ public class GuiDeneme1 implements Initializable {
     }
 
     //Add a section to the sections list
-    private void addSectionToList(String sectionCode) {
-        RadioButton radioButton = new RadioButton(sectionCode);
+    private void addSectionToList(Section section) {
+        String sectionCode = String.valueOf(section.getSection_id());
+        RadioButton radioButton = new RadioButton(currentCourse.getCourse_id() + "(" + sectionCode + ")");
         radioButton.setToggleGroup(sectionGroup);
 
         // Style the radio button
@@ -211,7 +212,7 @@ public class GuiDeneme1 implements Initializable {
         radioButton.setPadding(new Insets(2));
 
         // Add click event
-        radioButton.setOnAction(event -> loadSectionDetails(sectionCode));
+        radioButton.setOnAction(event -> loadSectionDetails(section));
 
         sectionsContainer.getChildren().add(radioButton);
     }
