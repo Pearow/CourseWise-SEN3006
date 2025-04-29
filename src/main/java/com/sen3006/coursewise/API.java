@@ -75,7 +75,6 @@ public class API implements Observer {
                 }
 
                 if (!sections.containsKey(cSection.section_id)
-//                        && !cSection.classroom_name.contentEquals("ITSLEARNING1") // Sectionless lectures will be supported in the future
                 ) {
                     int type = 0;
                     if(cSection.classroom_name.contentEquals("MS TEAMS")){
@@ -83,7 +82,7 @@ public class API implements Observer {
                     } else if(cSection.classroom_name.contentEquals("ITSLEARNING1")){
                         type = 2;
                     }
-                    sections.put(cSection.section + cSection.course_code.hashCode(), new Section(cSection.section, LocalTime.parse(cSection.start_time), LocalTime.parse(cSection.end_time), cSection.day - 1, getClassroom(cSection.classroom_name), getCourse(cSection.course_code), getProfessor(cSection.instructor_id), type));
+                    sections.put(getSectionPsuedoId(cSection.section, cSection.course_code), new Section(cSection.section, LocalTime.parse(cSection.start_time), LocalTime.parse(cSection.end_time), cSection.day - 1, getClassroom(cSection.classroom_name), getCourse(cSection.course_code), getProfessor(cSection.instructor_id), type));
                     syncC++;
                 } else if (sections.containsKey(cSection.section_id)) {
                     //TODO: Find differences between duplicates
@@ -117,6 +116,14 @@ public class API implements Observer {
             //TODO: Add a proper error message
             e.printStackTrace();
         }
+    }
+
+    private int getSectionPsuedoId(int section_id, String course_id) {
+        return (section_id + course_id.hashCode()) * (course_id.hashCode() - section_id);
+    }
+
+    public int getRatingPsuedoId(int user_id, int professor_id) {
+        return (user_id + professor_id) * (professor_id - user_id);
     }
     @Deprecated
     private void saveAll() {
@@ -321,19 +328,19 @@ public class API implements Observer {
             sections = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/sections.json"), StandardCharsets.UTF_8)).readLine(), Section[].class);
             this.sections = new Hashtable<>();
             for (Section section : sections) {
-                this.sections.put(section.getSection_id() + section.getCourse().getCourse_id().hashCode(), section);
+                this.sections.put(getSectionPsuedoId(section.getSection_id(), section.getCourse().getCourse_id()), section);
             }
 
             reviews = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/reviews.json"), StandardCharsets.UTF_8)).readLine(), Review[].class);
             this.reviews = new Hashtable<>();
             for (Review review : reviews) {
-                this.reviews.put(review.getCourse().getCourse_id().hashCode() + review.getUser().getId(), review);
+                this.reviews.put(getSectionPsuedoId(review.getUser().getId(), review.getCourse().getCourse_id()), review);
             }
 
             ratings = gson.fromJson(new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/ratings.json"), StandardCharsets.UTF_8)).readLine(), Rating[].class);
             this.ratings = new Hashtable<>();
             for (Rating rating : ratings) {
-                this.ratings.put(rating.getProfessor().getId() + rating.getUser().getId(), rating);
+                this.ratings.put(getRatingPsuedoId(rating.getUser().getId(), rating.getProfessor().getId()), rating);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -361,7 +368,7 @@ public class API implements Observer {
     }
 
     public Section getSection(int id, String courseId) {
-        return sections.get(id + courseId.hashCode());
+        return sections.get(getSectionPsuedoId(id, courseId));
     }
 
     public Review getReview(int user_id, String courseId) {
@@ -373,7 +380,7 @@ public class API implements Observer {
     }
 
     public boolean addReview(User user, Course course, String comment, int rating) {
-        int id = user.getId() + course.getCourse_id().hashCode();
+        int id = getSectionPsuedoId(user.getId(), course.getCourse_id());
         Review review;
         if (reviews.containsKey(id)) {
             review = reviews.get(id);
@@ -391,7 +398,7 @@ public class API implements Observer {
     }
 
     public boolean addRating(User user, Professor professor, int rating) {
-        int id = user.getId() + professor.getId();
+        int id = getRatingPsuedoId(user.getId(), professor.getId());
         Rating ratingObj;
         if (ratings.containsKey(id)) {
             ratingObj = ratings.get(id);
@@ -564,6 +571,10 @@ public class API implements Observer {
 
     public static void main(String[] args) throws IOException {
         API api = API.getInstance();
+        api.fetchPseudoTables();
+        api.syncAll();
+
+        System.out.println("OK");
 //        User user1 = api.getUser(2200900);
 //        User user2 = api.getUser(2200870);
 //        Course course = api.getCourse("PHY1001");
