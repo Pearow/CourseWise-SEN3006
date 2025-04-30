@@ -45,7 +45,7 @@ public class Professor extends User
         this.prof_id = prof_id;
     }
 
-    public boolean addRating(int newRating) {
+    protected boolean addRating(int newRating) {
         if (newRating <= 0 || newRating > 10) {
             System.out.println("Invalid rating: " + newRating);
             return false;
@@ -60,6 +60,37 @@ public class Professor extends User
 
         return true;
     }
+
+    protected boolean updateRating(int oldRating, int newRating) {
+        if (oldRating <= 0 || oldRating > 10 || newRating <= 0 || newRating > 10) {
+            System.out.println("Invalid rating: " + oldRating + " or " + newRating);
+            return false;
+        }
+        this.total_rating = this.total_rating - oldRating + newRating;
+        this.prof_rating = Math.round((float) total_rating / prof_rating_count);
+
+        // Notify observers about the change
+        setChanged();
+        notifyObservers();
+
+        return true;
+    }
+
+//    public boolean revokeRating(int rating) {
+//        if (rating <= 0 || rating > 10) {
+//            System.out.println("Invalid rating: " + rating);
+//            return false;
+//        }
+//        this.total_rating -= rating;
+//        this.prof_rating_count--;
+//        this.prof_rating = Math.round((float) total_rating / prof_rating_count);
+//
+//        // Notify observers about the change
+//        setChanged();
+//        notifyObservers();
+//
+//        return true;
+//    }
 
     public int getAvgRating() {
         return this.prof_rating;
