@@ -45,11 +45,14 @@ public class Review extends Observable {
     }
 
     public void setComment(String comment) {
+        String oldComment = this.comment;
         this.comment = comment;
-      
-        // Notify observers about the change
-        setChanged();
-        notifyObservers();
+
+        if (oldComment != null && !oldComment.equals(comment)) {
+            // Notify observers about the change
+            setChanged();
+            notifyObservers();
+        }
     }
 
     public User getUser() {
@@ -63,6 +66,8 @@ public class Review extends Observable {
     public void setRating(int rating) {
         course.updateRating(this.rating, rating);
         this.rating = rating;
+        setChanged();
+        notifyObservers();
     }
 
 //    public void revokeRating() {

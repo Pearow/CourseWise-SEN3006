@@ -39,6 +39,8 @@ public class Rating extends Observable {
     public void setRating(int rating) {
         professor.updateRating(this.rating, rating);
         this.rating = rating;
+        setChanged();
+        notifyObservers();
     }
 
 //    public void revokeRating() {

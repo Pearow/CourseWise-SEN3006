@@ -35,11 +35,14 @@ public class User extends Observable {
             return name;
         }
         public void setName(String name) {
+            String oldName = this.name;
             this.name = name;
 
-            // Notify observers about the change
-            setChanged();
-            notifyObservers();
+            if (oldName != null && !oldName.equals(name)) {
+                // Notify observers about the change
+                setChanged();
+                notifyObservers();
+            }
         }
 
         // Getter and Setter for surname
@@ -47,11 +50,14 @@ public class User extends Observable {
             return surname;
         }
         public void setSurname(String surname) {
+            String oldSurname = this.surname;
             this.surname = surname;
 
-            // Notify observers about the change
-            setChanged();
-            notifyObservers();
+            if (oldSurname != null && !oldSurname.equals(surname)) {
+                // Notify observers about the change
+                setChanged();
+                notifyObservers();
+            }
         }
 
         // Getter and Setter for email
@@ -59,11 +65,14 @@ public class User extends Observable {
             return email;
         }
         public void setEmail(String email) {
+            String oldEmail = this.email;
             this.email = email;
 
-            // Notify observers about the change
-            setChanged();
-            notifyObservers();
+            if (oldEmail != null && !oldEmail.equals(email)) {
+                // Notify observers about the change
+                setChanged();
+                notifyObservers();
+            }
         }
     }
 

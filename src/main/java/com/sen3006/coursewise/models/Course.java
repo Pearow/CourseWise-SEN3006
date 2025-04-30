@@ -110,10 +110,13 @@ public class Course extends Observable
     }
 
     public void setType(int type) {
+        int oldTypeIndex = this.type.getIntType();
         this.type = CourseType.fromIndex(type);
-        // Notify observers about the change
-        setChanged();
-        notifyObservers();
+        if (oldTypeIndex != this.type.getIntType()) {
+            // Notify observers about the change
+            setChanged();
+            notifyObservers();
+        }
     }
 
     public Department getDepartment() {
@@ -121,11 +124,14 @@ public class Course extends Observable
     }
 
     public void setDepartment(Department department) {
+        Department oldDepartment = this.department;
         this.department = department;
 
-        // Notify observers about the change
-        setChanged();
-        notifyObservers();
+        if (oldDepartment != null && !oldDepartment.getDepartment_name().equals(department.getDepartment_name())) {
+            // Notify observers about the change
+            setChanged();
+            notifyObservers();
+        }
     }
 
     public String getCourse_name() {
@@ -133,11 +139,14 @@ public class Course extends Observable
     }
 
     public void setCourse_name(String course_name) {
+        String oldCourseName = this.course_name;
         this.course_name = course_name;
 
-        // Notify observers about the change
-        setChanged();
-        notifyObservers();
+        if (oldCourseName != null && !oldCourseName.equals(course_name)) {
+            // Notify observers about the change
+            setChanged();
+            notifyObservers();
+        }
     }
 
     public String getCourse_id() {

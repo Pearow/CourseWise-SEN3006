@@ -47,11 +47,14 @@ public class Section extends Observable
     }
 
     public void setEnd_time(LocalTime end_time) {
+        LocalTime oldEndTime = this.end_time;
         this.end_time = end_time;
 
-        // Notify observers about the change
-        setChanged();
-        notifyObservers();
+        if (oldEndTime != null && !oldEndTime.equals(end_time)) {
+            // Notify observers about the change
+            setChanged();
+            notifyObservers();
+        }
     }
 
     public LocalTime getStart_time() {
@@ -59,11 +62,14 @@ public class Section extends Observable
     }
 
     public void setStart_time(LocalTime start_time) {
+        LocalTime oldStartTime = this.start_time;
         this.start_time = start_time;
 
-        // Notify observers about the change
-        setChanged();
-        notifyObservers();
+        if (oldStartTime != null && !oldStartTime.equals(start_time)) {
+            // Notify observers about the change
+            setChanged();
+            notifyObservers();
+        }
     }
 
     public Weekday getSection_day() {
@@ -71,11 +77,14 @@ public class Section extends Observable
     }
 
     public void setSection_day(int section_day) {
+        int oldSectionDay = this.section_day.getIntWeekday();
         this.section_day = Weekday.fromIndex(section_day);
 
-        // Notify observers about the change
-        setChanged();
-        notifyObservers();
+        if (oldSectionDay != this.section_day.getIntWeekday()) {
+            // Notify observers about the change
+            setChanged();
+            notifyObservers();
+        }
     }
 
     public Classroom getClassroom() {
@@ -83,11 +92,14 @@ public class Section extends Observable
     }
 
     public void setClassroom(Classroom classroom) {
+        Classroom oldClassroom = this.classroom;
         this.classroom = classroom;
 
-        // Notify observers about the change
-        setChanged();
-        notifyObservers();
+        if (oldClassroom != null && !oldClassroom.getClass_id().equals(classroom.getClass_id())) {
+            // Notify observers about the change
+            setChanged();
+            notifyObservers();
+        }
     }
 
     public Course getCourse() {
@@ -95,11 +107,14 @@ public class Section extends Observable
     }
 
     public void setCourse(Course course) {
+        Course oldCourse = this.course;
         this.course = course;
 
         // Notify observers about the change
-        setChanged();
-        notifyObservers();
+        if (oldCourse != null && !oldCourse.getCourse_id().equals(course.getCourse_id())) {
+            setChanged();
+            notifyObservers();
+        }
     }
 
     public Professor getProfessor() {
@@ -107,11 +122,14 @@ public class Section extends Observable
     }
 
     public Professor setProfessor(Professor professor) {
+        Professor oldProfessor = this.professor;
         this.professor = professor;
 
-        // Notify observers about the change
-        setChanged();
-        notifyObservers();
+        if (oldProfessor != null && !oldProfessor.getName().equals(professor.getName())) {
+            // Notify observers about the change
+            setChanged();
+            notifyObservers();
+        }
         return professor;
     }
 
@@ -124,11 +142,14 @@ public class Section extends Observable
     }
 
     public void setType(Type type) {
+        Type oldType = this.type;
         this.type = type;
 
         // Notify observers about the change
-        setChanged();
-        notifyObservers();
+        if (oldType != null && !(oldType.getIntType() == type.getIntType())) {
+            setChanged();
+            notifyObservers();
+        }
     }
 
     public void  show_section_info()
