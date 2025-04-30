@@ -1,6 +1,7 @@
 package com.sen3006.coursewise.models;
 
 import com.sen3006.coursewise.API;
+import com.sen3006.coursewise.GUIController;
 
 import java.util.Observable;
 
@@ -18,6 +19,7 @@ public class Rating extends Observable {
         }
 
         addObserver(API.getInstance());
+        addObserver(GUIController.getInstance());
     }
 
     public Rating(Professor professor, User user, int rating) {

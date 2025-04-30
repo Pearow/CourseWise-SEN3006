@@ -21,7 +21,10 @@ import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-public class GUIController implements Initializable {
+import java.util.Observable;
+import java.util.Observer;
+
+public class GUIController implements Initializable, Observer {
 
     @FXML private TextField searchField;
     @FXML private VBox courseListContainer;
@@ -49,12 +52,29 @@ public class GUIController implements Initializable {
     private static boolean creatingNewReview = false;
     private Section currentSection;
 
+    private static GUIController instance;
+    //CurrentUser currentUser = CurrentUser.getInstance(); now instantiated lazily (when needed to workaround being called early)
     API api = API.getInstance();
-    CurrentUser currentUser = CurrentUser.getInstance();
 
+    public static GUIController getInstance() {
+        if (instance == null) {
+            instance = new GUIController();
+        }
+        return instance;
+    }
+
+    private GUIController(){
+        System.out.println("New GUIController instance created");
+//        if (instance == null) {
+//            instance = this;
+//        } else {
+//            throw new IllegalStateException("Already an instance of GUIController");
+//        }
+    }
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        // Initialize the GUI
         if (!creatingNewReview) {
             loadCourseList();
             sectionGroup = new ToggleGroup();
@@ -73,6 +93,7 @@ public class GUIController implements Initializable {
             }
         }
     }
+
     private void loadCourseList() {
         courseListContainer.getChildren().clear();
 
@@ -408,7 +429,10 @@ public class GUIController implements Initializable {
     private void showAddReviewDialog(ActionEvent event) throws IOException {
         creatingNewReview = true;
         // Load the dialog FXML
-        FXMLLoader dialogLoader = new FXMLLoader(getClass().getResource("/com/sen3006/coursewise/ReviewDialog.fxml"));
+        //FXMLLoader dialogLoader = new FXMLLoader(getClass().getResource("/com/sen3006/coursewise/ReviewDialog.fxml")); old method for when the controller was not a singleton
+        FXMLLoader dialogLoader = new FXMLLoader();
+        dialogLoader.setController(GUIController.getInstance()); // Assign the singleton instance of GUIController as the controller
+        dialogLoader.setLocation(getClass().getResource("/com/sen3006/coursewise/ReviewDialog.fxml"));
         DialogPane dialogPane = dialogLoader.load();
 
         // Create the dialog
@@ -425,7 +449,7 @@ public class GUIController implements Initializable {
         Label characterCountLabel = (Label) dialogPane.lookup("#characterCountLabel");
 
         // Get the student ID from the current user session and set it to the label
-        studentIdLabel.setText(String.valueOf(currentUser.getId()));
+        studentIdLabel.setText(String.valueOf(CurrentUser.getInstance().getId()));
 
         // Set up character limit for review text area (300 characters)
         reviewTextArea.textProperty().addListener((observable, oldValue, newValue) -> {
@@ -451,12 +475,12 @@ public class GUIController implements Initializable {
 
             if (reviewText.isEmpty()) {
                 // Submit the review
-                String studentId = String.valueOf(currentUser.getId());
+                String studentId = String.valueOf(CurrentUser.getInstance().getId());
                 submitReview(studentId, rating, "");
                 creatingNewReview = false;
             } else {
                 // Submit the review
-                String studentId = String.valueOf(currentUser.getId());
+                String studentId = String.valueOf(CurrentUser.getInstance().getId());
                 submitReview(studentId, rating, reviewText);
                 creatingNewReview = false;
             }
@@ -465,7 +489,7 @@ public class GUIController implements Initializable {
 
     //Submit a new review to the system
     private void submitReview(String studentId, int rating, String reviewText) {
-        api.addReview(currentUser, currentCourse, reviewText, rating);
+        api.addReview(CurrentUser.getInstance(), currentCourse, reviewText, rating);
 
         loadReviews(currentCourse);
         loadCourseDetails(currentCourse, String.valueOf(currentCourse.getAvgRating()));
@@ -529,7 +553,10 @@ public class GUIController implements Initializable {
             if (event.getButton() == MouseButton.PRIMARY){
                 creatingNewReview = true;
                 // Load the dialog FXML
-                FXMLLoader dialogLoader = new FXMLLoader(getClass().getResource("/com/sen3006/coursewise/RateProfessorDialog.fxml"));
+                //FXMLLoader dialogLoader = new FXMLLoader(getClass().getResource("/com/sen3006/coursewise/RateProfessorDialog.fxml")); old method for when the controller was not a singleton
+                FXMLLoader dialogLoader = new FXMLLoader();
+                dialogLoader.setController(GUIController.getInstance()); // Assign the singleton instance of GUIController as the controller
+                dialogLoader.setLocation(getClass().getResource("/com/sen3006/coursewise/RateProfessorDialog.fxml"));
                 DialogPane dialogPane = dialogLoader.load();
                 // Create the dialog
                 Dialog<ButtonType> dialog = new Dialog<>();
@@ -542,7 +569,7 @@ public class GUIController implements Initializable {
                 Label ratingValueLabel = (Label) dialogPane.lookup("#ratingValueLabel");
 
                 //Get the student ID from the current user session and set it to the label
-                studentIdLabel.setText(String.valueOf(currentUser.getId()));
+                studentIdLabel.setText(String.valueOf(CurrentUser.getInstance().getId()));
 
                 //Update rating value label when slider changes
                 ratingSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
@@ -590,10 +617,50 @@ public class GUIController implements Initializable {
 
     private boolean updateProfessorRating(int profId, int rating) {
         Professor professor = api.getProfessor(profId);
-        CurrentUser currentUserId = currentUser;
+        CurrentUser currentUserId = CurrentUser.getInstance();
 
         // Update the professor rating label
         profRatingLabel.setText(professor.getAvgRating() + "/10");
         return api.addRating(currentUserId, professor, rating);
+    }
+
+    @Override
+    public void update(Observable o, Object arg) {
+        if (o instanceof Course) {
+            Course course = (Course) o;
+            if (course.getCourse_id().equals(currentCourse.getCourse_id())) {
+                courseTitleLabel.setText(course.getCourse_name());
+                courseRatingLabel.setText(course.getAvgRating() + "/10");
+                courseCodeLabel.setText(course.getCourse_id());
+                System.out.println("Course updated: " + course.getCourse_name());
+            }
+        }
+        if (o instanceof Section) {
+            Section section = (Section) o;
+            if (section.getSection_id() == currentSection.getSection_id()) {
+                weekdayLabel.setText(section.getSection_day().toString());
+                durationLabel.setText(section.getStart_time().toString() + " - " + section.getEnd_time().toString());
+                roomLabel.setText(section.getClassroom().getClass_id());
+                profNameLabel.setText(section.getProfessor().getProf_name() + " " + section.getProfessor().getSurname());
+                campusLabel.setText(String.valueOf(section.getClassroom().getCampus()));
+                sectionTypeLabel.setText(section.getType().toString());
+                System.out.println("Section updated: " + section.getSection_day().toString());
+            }
+        }
+        if (o instanceof Review) {
+            Review review = (Review) o;
+            if (review.getCourse().getCourse_id().equals(currentCourse.getCourse_id())) {
+                loadReviews(currentCourse);
+                loadCourseDetails(currentCourse, String.valueOf(currentCourse.getAvgRating()));
+                System.out.println("Review updated: " + review.getCourse().getCourse_id());
+            }
+        }
+        if (o instanceof Rating){
+            Rating rating = (Rating) o;
+            if (rating.getProfessor().getProf_id() == currentSection.getProfessor().getProf_id()) {
+                profRatingLabel.setText(rating.getProfessor().getAvgRating() + "/10");
+                System.out.println("Rating updated: " + rating.getProfessor().getProf_id());
+            }
+        }
     }
 }
