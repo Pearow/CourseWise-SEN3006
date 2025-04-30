@@ -21,7 +21,7 @@ import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-public class GuiDeneme1 implements Initializable {
+public class GUIController implements Initializable {
 
     @FXML private TextField searchField;
     @FXML private VBox courseListContainer;
@@ -336,34 +336,34 @@ public class GuiDeneme1 implements Initializable {
         String textColor = "";
                                 //TODO: add the colors (please provide better colors for the ratings)
         if (review.getRating() == 10) {
-            bgColor = "#f3e5f5"; // açık mor
+            bgColor = "#f3e5f5"; // purple
             textColor = "#6a1b9a";
         } else if (review.getRating() == 9) {
-            bgColor = "#d0f0d9"; // mor-yeşil arası
+            bgColor = "#d0f0d9"; // green
             textColor = "#1565c0";
         } else if (review.getRating() == 8) {
-            bgColor = "#e8f5e9"; // açık yeşil
+            bgColor = "#e8f5e9"; // less gamma green
             textColor = "#2e7d32";
         } else if (review.getRating() == 7) {
-            bgColor = "#f1f8e9"; // daha açık yeşil
+            bgColor = "#f1f8e9"; // lesser gamma green
             textColor = "#558b2f";
         } else if (review.getRating() == 6) {
-            bgColor = "#fffde7"; // açık sarı
+            bgColor = "#fffde7"; // yellow
             textColor = "#f9a825";
         } else if (review.getRating() == 5) {
-            bgColor = "#fff3e0"; // açık turuncu
+            bgColor = "#fff3e0"; // orange
             textColor = "#ef6c00";
         } else if (review.getRating() == 4) {
-            bgColor = "#ffecec"; // açık kırmızımsı (çok yumuşak)
+            bgColor = "#ffecec"; // red
             textColor = "#e53935";
         } else if (review.getRating() == 3) {
-            bgColor = "#ffefef"; // en açık kırmızı
+            bgColor = "#ffefef"; // even more gamma red
             textColor = "#d32f2f";
         } else if (review.getRating() == 2) {
-            bgColor = "#ffdddd"; // daha açık kırmızı
+            bgColor = "#ffdddd"; // more gamma red
             textColor = "#c62828";
         } else if (review.getRating() == 1) {
-            bgColor = "#ffc9c9"; // en koyu kırmızımsı ama hâlâ soft
+            bgColor = "#ffc9c9"; // red
             textColor = "#b71c1c";
         }
 
@@ -512,7 +512,7 @@ public class GuiDeneme1 implements Initializable {
 //            if (event.getCode().toString().equals("ENTER")) {
 //                // Save the note
 //                String note = lecturersNoteTextArea.getText();
-                  //api.getCourse(curretnCourseCode).setNote(note)
+                  //api.getCourse(currentCourseCode).setNote(note)
 //            }
 //            if (event.getCode().toString().equals("ESCAPE")) {
 //                // Cancel editing

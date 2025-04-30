@@ -1,7 +1,6 @@
 package com.sen3006.coursewise;
 
 import com.sen3006.coursewise.models.CurrentUser;
-import com.sen3006.coursewise.models.User;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -38,11 +37,11 @@ public class LoginScreenController {
 
         if (loginState) {
             // If login is successful, proceed to the next scene
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("GuiDeneme1.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("GUI.fxml"));
             root = loader.load();
 
             // Get the controller of the next scene
-            GuiDeneme1 controller = loader.getController();
+            GUIController controller = loader.getController();
             stage = (Stage) ((Node)event.getSource()).getScene().getWindow();
             scene = new Scene(root);
             stage.setScene(scene);
@@ -63,11 +62,11 @@ public class LoginScreenController {
             errorBox.getChildren().add(errorLabel);
         }
 
-//        FXMLLoader loader = new FXMLLoader(getClass().getResource("GuiDeneme1.fxml"));
+//        FXMLLoader loader = new FXMLLoader(getClass().getResource("GUI.fxml"));
 //        root = loader.load();
 //
 //        // Get the controller of the next scene
-//        GuiDeneme1 controller = loader.getController();
+//        GUIController controller = loader.getController();
 
     }
 }
