@@ -21,11 +21,11 @@
                     </children>
                 </HBox>
                 <!-- Course List with explicit scroll bar -->
-                <Label style="-fx-font-weight: bold; -fx-text-fill: #424242; -fx-underline: true;" text="Course List" />
+                <Label fx:id="courseListLabel" style="-fx-font-weight: bold; -fx-text-fill: #424242; -fx-underline: true;" text="Course List" />
                 <VBox VBox.vgrow="ALWAYS">
-                    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-background-color: #f5f5f5; -fx-background-radius: 4; -fx-border-color: #e0e0e0; -fx-border-radius: 4;" vbarPolicy="ALWAYS" VBox.vgrow="ALWAYS">
+                    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-background-color: white; -fx-background-radius: 4; -fx-border-color: white; -fx-border-radius: 4;" vbarPolicy="ALWAYS" VBox.vgrow="ALWAYS">
                         <content>
-                            <VBox fx:id="courseListContainer" minWidth="0" spacing="5.0" style="-fx-background-color: transparent;">
+                            <VBox fx:id="courseListContainer" minWidth="0" spacing="5.0" style="-fx-background-color: white;">
                                 <!-- Course Items will be loaded dynamically -->
                             </VBox>
                         </content>

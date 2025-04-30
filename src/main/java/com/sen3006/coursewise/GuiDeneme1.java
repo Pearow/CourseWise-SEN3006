@@ -1,10 +1,12 @@
 package com.sen3006.coursewise;
 
 import com.sen3006.coursewise.models.*;
+import javafx.animation.PauseTransition;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Side;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -12,6 +14,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
 import javafx.geometry.Insets;
 import javafx.stage.Modality;
+import javafx.util.Duration;
 
 import java.io.IOException;
 import java.net.URL;
@@ -28,6 +31,7 @@ public class GuiDeneme1 implements Initializable {
     @FXML private Label courseTitleLabel;
     @FXML private Label sectionTypeLabel;
     @FXML private Label profNameLabel;
+    @FXML private Label courseListLabel;
     @FXML private Label profRatingLabel;
     @FXML private Label weekdayLabel;
     @FXML private Label durationLabel;
@@ -51,27 +55,24 @@ public class GuiDeneme1 implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-
         if (!creatingNewReview) {
-            // Load course list from API or database
             loadCourseList();
-            // Create the section toggle group
             sectionGroup = new ToggleGroup();
 
-            // Set up the search text field listener to filter courses
             searchField.textProperty().addListener((observable, oldValue, newValue) -> {
                 filterCourses(newValue);
             });
 
-            //Select the first course by default
             if (!courseListContainer.getChildren().isEmpty()) {
                 currentCourse = api.getCourses()[0];
                 loadCourseDetails(currentCourse, String.valueOf(currentCourse.getAvgRating()));
             }
+
+            if (courseListLabel != null) {
+                semesterMenu(courseListLabel);
+            }
         }
     }
-
-    //Loads course list from API or database
     private void loadCourseList() {
         courseListContainer.getChildren().clear();
 
@@ -81,6 +82,58 @@ public class GuiDeneme1 implements Initializable {
         }
     }
 
+    private void semesterMenu(Label label) {
+        label.setStyle(label.getStyle() + "; -fx-cursor: hand;");
+
+        // Add hover effect
+        label.setOnMouseEntered(e -> label.setStyle(label.getStyle() + "; -fx-underline: true;"));
+        label.setOnMouseExited(e -> label.setStyle(label.getStyle().replace("; -fx-underline: true;", "")));
+
+        ContextMenu semesterMenu = new ContextMenu();
+        semesterMenu.setStyle("-fx-background-color: #f4f4f4; -fx-border-color: #cccccc;");
+
+        // SPRING
+        Label springLabel = new Label("Spring");
+        springLabel.setStyle("-fx-font-size: 14px; -fx-padding: 8px 16px; -fx-text-fill: #333;");
+        springLabel.setOnMouseClicked(ev -> {
+            System.out.println("Spring seçildi");
+            semesterMenu.hide();
+        });
+
+        // FALL
+        Label fallLabel = new Label("Fall");
+        fallLabel.setStyle("-fx-font-size: 14px; -fx-padding: 8px 16px; -fx-text-fill: #333;");
+        fallLabel.setOnMouseClicked(ev -> {
+            System.out.println("Fall seçildi");
+            semesterMenu.hide();
+        });
+
+        // Custom Menu Items
+        CustomMenuItem springItem = new CustomMenuItem(new HBox(springLabel));
+        CustomMenuItem fallItem = new CustomMenuItem(new HBox(fallLabel));
+
+        // Set the items to be non-removable
+        springItem.setHideOnClick(false);
+        fallItem.setHideOnClick(false);
+
+        semesterMenu.getItems().addAll(springItem, fallItem);
+
+        // Show the menu when the label is clicked
+        label.setOnMouseClicked(e -> {
+            if (e.getButton() == MouseButton.PRIMARY) {
+                label.setStyle(label.getStyle() + "; -fx-background-color: #e0e0e0;");
+
+                semesterMenu.show(label, Side.BOTTOM, 0, 0);
+
+                PauseTransition pause = new PauseTransition(Duration.millis(200));
+                pause.setOnFinished(event -> label.setStyle(label.getStyle().replace("; -fx-background-color: #e0e0e0;", "")));
+                pause.play();
+            }
+        });
+    }
+    //Loads course list from API or database
+
+
     //Add a course item to the list
     private void addCourseItemToList(Course course, String rating) {
         HBox courseItem = new HBox();
@@ -89,13 +142,40 @@ public class GuiDeneme1 implements Initializable {
         courseItem.setPadding(new Insets(5));
 
         // Style for a default course item
-        courseItem.setStyle("-fx-background-color: white; -fx-background-radius: 4; -fx-border-color: #e0e0e0; -fx-border-radius: 4;");
+        if (course.getAvgRating() == 10) {
+            courseItem.setStyle("-fx-background-color: #f3e5f5; -fx-background-radius: 4; -fx-border-color: #e0e0e0; -fx-border-radius: 4;");
+        } else if (course.getAvgRating()  == 9) {
+            courseItem.setStyle("-fx-background-color: #d0f0d9; -fx-background-radius: 4; -fx-border-color: #e0e0e0; -fx-border-radius: 4;"); // mor-yeşil arası
+        } else if (course.getAvgRating() == 8) {
+            courseItem.setStyle("-fx-background-color: #e8f5e9; -fx-background-radius: 4; -fx-border-color: #e0e0e0; -fx-border-radius: 4;");
+        } else if (course.getAvgRating()== 7) {
+            courseItem.setStyle("-fx-background-color: #f1f8e9; -fx-background-radius: 4; -fx-border-color: #e0e0e0; -fx-border-radius: 4;");
+        } else if (course.getAvgRating() == 6) {
+            courseItem.setStyle("-fx-background-color: #fffde7; -fx-background-radius: 4; -fx-border-color: #e0e0e0; -fx-border-radius: 4;");
+        } else if (course.getAvgRating() == 5) {
+            courseItem.setStyle("-fx-background-color: #fff3e0; -fx-background-radius: 4; -fx-border-color: #e0e0e0; -fx-border-radius: 4;");
+        } else if (course.getAvgRating() == 4) {
+            courseItem.setStyle("-fx-background-color: #ffecec; -fx-background-radius: 4; -fx-border-color: #e0e0e0; -fx-border-radius: 4;");
+        }
+        else if (course.getAvgRating() == 3) {
+            courseItem.setStyle("-fx-background-color: #ffefef; -fx-background-radius: 4; -fx-border-color: #e0e0e0; -fx-border-radius: 4;"); // en açık kırmızı
+        }
+        else if (course.getAvgRating() == 2) {
+        courseItem.setStyle("-fx-background-color: #ffdddd; -fx-background-radius: 4; -fx-border-color: #e0e0e0; -fx-border-radius: 4;"); // daha açık kırmızı
+        }
+        else if (course.getAvgRating() == 1) {
+            courseItem.setStyle("-fx-background-color: #ffc9c9; -fx-background-radius: 4; -fx-border-color: #e0e0e0; -fx-border-radius: 4;");
+        }
+        else {
+            courseItem.setStyle("-fx-background-color: aliceblue; -fx-background-radius: 4; -fx-border-color: #e0e0e0; -fx-border-radius: 4;");
+        }
+
 
         Label codeLabel = new Label(course.getCourse_id());
-        codeLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #424242;");
+        codeLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: black;");
 
         Label ratingLabel = new Label(rating + "/10");
-        ratingLabel.setStyle("-fx-border-color: #757575; -fx-border-radius: 10; -fx-background-color: white; -fx-background-radius: 10; -fx-text-fill: #757575;");
+        ratingLabel.setStyle("-fx-border-color: black; -fx-border-radius: 10; -fx-background-color: white; -fx-background-radius: 10; -fx-text-fill: lightblue;-fx-font-weight: bold");
         ratingLabel.setPadding(new Insets(2, 5, 2, 5));
         ratingLabel.setMinWidth(40);
 
@@ -249,43 +329,44 @@ public class GuiDeneme1 implements Initializable {
 
     private void addReviewToContainer(Review review) {
         String reviewer = String.valueOf(review.getUser().getId());
-        String rating = String.valueOf(review.getRating()) + "/10";
+        String rating = (review.getRating()) + "/10";
         String comment = review.getComment();
 
         String bgColor = "";
         String textColor = "";
                                 //TODO: add the colors (please provide better colors for the ratings)
-        if(review.getRating() == 10){
-            bgColor = "#f3e5f5"; //should be purple
+        if (review.getRating() == 10) {
+            bgColor = "#f3e5f5"; // açık mor
             textColor = "#6a1b9a";
-        } else if(review.getRating() == 9){
-            bgColor = "#e8f5e9"; //should be light green
+        } else if (review.getRating() == 9) {
+            bgColor = "#d0f0d9"; // mor-yeşil arası
+            textColor = "#1565c0";
+        } else if (review.getRating() == 8) {
+            bgColor = "#e8f5e9"; // açık yeşil
             textColor = "#2e7d32";
-        } else if(review.getRating() == 8){
-            bgColor = "#e3f2fd";  //should be green
-            textColor = "#1565c0";
         } else if (review.getRating() == 7) {
-            bgColor = "#fff3e0"; //should be dark green
-            textColor = "#e65100";
+            bgColor = "#f1f8e9"; // daha açık yeşil
+            textColor = "#558b2f";
         } else if (review.getRating() == 6) {
-            bgColor = "#ffebee"; //should be yellow
-            textColor = "#c62828";
+            bgColor = "#fffde7"; // açık sarı
+            textColor = "#f9a825";
         } else if (review.getRating() == 5) {
-            bgColor = "#fce4ec"; //should be orange
-            textColor = "#ad1457";
+            bgColor = "#fff3e0"; // açık turuncu
+            textColor = "#ef6c00";
         } else if (review.getRating() == 4) {
-            bgColor = "#f3e5f5"; //should be dark orange
-            textColor = "#6a1b9a";
+            bgColor = "#ffecec"; // açık kırmızımsı (çok yumuşak)
+            textColor = "#e53935";
         } else if (review.getRating() == 3) {
-            bgColor = "#ede7f6"; //should be brown
-            textColor = "#4527a0";
+            bgColor = "#ffefef"; // en açık kırmızı
+            textColor = "#d32f2f";
         } else if (review.getRating() == 2) {
-            bgColor = "#e8eaf6"; //should be red
-            textColor = "#283593";
+            bgColor = "#ffdddd"; // daha açık kırmızı
+            textColor = "#c62828";
         } else if (review.getRating() == 1) {
-            bgColor = "#e3f2fd"; //should be light red
-            textColor = "#1565c0";
+            bgColor = "#ffc9c9"; // en koyu kırmızımsı ama hâlâ soft
+            textColor = "#b71c1c";
         }
+
 
         VBox reviewBox = new VBox(5);
         reviewBox.setStyle("-fx-background-color: " + bgColor + "; -fx-background-radius: 4; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 2, 0, 0, 1);");
@@ -395,6 +476,9 @@ public class GuiDeneme1 implements Initializable {
         alert.setHeaderText("Review Submitted");
         alert.setContentText("Your review has been submitted successfully.");
         alert.showAndWait();
+        loadCourseList();
+        filterCourses(searchField.getText());
+        //filterCourses(currentCourse.getCourse_id());
     }
 
     //Update the review count label
