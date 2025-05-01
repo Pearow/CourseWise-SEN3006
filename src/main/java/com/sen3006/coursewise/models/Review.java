@@ -1,6 +1,7 @@
 package com.sen3006.coursewise.models;
 
 import com.sen3006.coursewise.API;
+import com.sen3006.coursewise.GUIController;
 
 import java.util.Observable;
 
@@ -20,6 +21,7 @@ public class Review extends Observable {
         }
 
         addObserver(API.getInstance());
+        addObserver(GUIController.getInstance());
     }
 
     public Review(Course course, String comment, User user, int rating) {
