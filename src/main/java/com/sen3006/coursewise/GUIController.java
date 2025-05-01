@@ -65,11 +65,11 @@ public class GUIController implements Initializable, Observer {
 
     private GUIController(){
         System.out.println("New GUIController instance created");
-//        if (instance == null) {
-//            instance = this;
-//        } else {
-//            throw new IllegalStateException("Already an instance of GUIController");
-//        }
+        if (instance == null) {
+            instance = this;
+        } else {
+            throw new IllegalStateException("Already an instance of GUIController");
+        }
     }
 
     @Override
@@ -635,18 +635,6 @@ public class GUIController implements Initializable, Observer {
                 System.out.println("Course updated: " + course.getCourse_name());
             }
         }
-        if (o instanceof Section) {
-            Section section = (Section) o;
-            if (section.getSection_id() == currentSection.getSection_id()) {
-                weekdayLabel.setText(section.getSection_day().toString());
-                durationLabel.setText(section.getStart_time().toString() + " - " + section.getEnd_time().toString());
-                roomLabel.setText(section.getClassroom().getClass_id());
-                profNameLabel.setText(section.getProfessor().getProf_name() + " " + section.getProfessor().getSurname());
-                campusLabel.setText(String.valueOf(section.getClassroom().getCampus()));
-                sectionTypeLabel.setText(section.getType().toString());
-                System.out.println("Section updated: " + section.getSection_day().toString());
-            }
-        }
         if (o instanceof Review) {
             Review review = (Review) o;
             if (review.getCourse().getCourse_id().equals(currentCourse.getCourse_id())) {
@@ -655,11 +643,12 @@ public class GUIController implements Initializable, Observer {
                 System.out.println("Review updated: " + review.getCourse().getCourse_id());
             }
         }
-        if (o instanceof Rating){
-            Rating rating = (Rating) o;
-            if (rating.getProfessor().getProf_id() == currentSection.getProfessor().getProf_id()) {
-                profRatingLabel.setText(rating.getProfessor().getAvgRating() + "/10");
-                System.out.println("Rating updated: " + rating.getProfessor().getProf_id());
+        if (o instanceof Professor) {
+            Professor professor = (Professor) o;
+            if (professor.getProf_id() == currentSection.getProfessor().getProf_id()) {
+                profRatingLabel.setText(professor.getAvgRating() + "/10");
+                System.out.println("Professor updated: " + professor.getProf_name());
+                System.out.println("Rating updated: " + professor.getAvgRating());
             }
         }
     }
