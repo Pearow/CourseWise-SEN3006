@@ -4,6 +4,7 @@ module com.sen3006.coursewise {
     requires com.google.gson;
     requires java.sql;
     requires jdk.httpserver;
+    requires java.net.http;
 
 
     opens com.sen3006.coursewise.client to javafx.fxml, com.google.gson;

@@ -1,24 +1,29 @@
 package com.sen3006.coursewise.client;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.sen3006.coursewise.client.enums.Campus;
 import com.sen3006.coursewise.client.json.PearowsGson;
 import com.sen3006.coursewise.client.json.UserPassword;
 import com.sen3006.coursewise.client.models.*;
 
 import java.io.*;
+import java.net.*;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.Observable;
-import java.util.Observer;
+import java.util.*;
 
 // API class for handling all the data
 // TODO: Add reviews
 public class API implements Observer {
     private static API instance;
     private final Gson gson;
+    private HttpClient httpClient;
+    private String host = "http://localhost:3006/api";
 
     private Hashtable<String, Classroom> classrooms;
     private Hashtable<String, Course> courses;
@@ -32,6 +37,7 @@ public class API implements Observer {
     // Singleton pattern to ensure only one instance of API exists
     private API() {
         gson = PearowsGson.getGson();
+        httpClient = HttpClient.newHttpClient();
         instance = this;
         loadAll();
     }
@@ -41,6 +47,36 @@ public class API implements Observer {
             new API();
         }
         return instance;
+    }
+
+    private String sendGetRequest(String urlString) {
+        try{
+            URI uri = new URI(urlString);
+            // Create request
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(uri)
+                    .header("Accept", "application/json")
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
+            // Send request
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if(response.statusCode() == 200) {
+                return response.body();
+            }else {
+                System.out.println("Error: " + response.statusCode() + " " + response.body());
+                return null;
+            }
+        }catch (ConnectException e){
+            System.out.println("No connection to server");
+            System.out.println(e.toString());
+            return null;
+        }
+        catch (IOException | URISyntaxException | InterruptedException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Deprecated
@@ -426,8 +462,7 @@ public class API implements Observer {
     }
 
     public User[] getUsers() {
-        User[] result = new User[users.size()];
-        users.values().toArray(result);
+        User[] result = gson.fromJson(sendGetRequest(host + "/user"), UserPassword[].class);
         return result;
     }
 
@@ -570,11 +605,15 @@ public class API implements Observer {
     }
 
     public static void main(String[] args) throws IOException {
-        API api = API.getInstance();
-        api.fetchPseudoTables();
-        api.syncAll();
 
+        API api = API.getInstance();
+        for (User user : api.getUsers()) {
+            System.out.println(user.getId() + " " + user.getName() + " " + user.getSurname());
+        }
         System.out.println("OK");
+
+
+        // Test code
 //        User user1 = api.getUser(2200900);
 //        User user2 = api.getUser(2200870);
 //        Course course = api.getCourse("PHY1001");
