@@ -3,7 +3,6 @@ package com.sen3006.coursewise.server;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.sen3006.coursewise.client.json.UserPassword;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -46,7 +45,7 @@ public class Database {
     }
 
     // Fetching data from the database
-    public JsonElement fetchclassrooms(){
+    public JsonElement fetchClassrooms(){
         String query = "SELECT * FROM wise.classroom";
         try (Statement statement = conn.createStatement()) {
             ResultSet resultSet = statement.executeQuery(query);
@@ -234,6 +233,195 @@ public class Database {
             return null;
         }
     }
+
+    // Fetching single instance
+    public JsonElement fetchClassroom(String classroomName) {
+        String query = "SELECT * FROM wise.classroom WHERE name = ?";
+        try (PreparedStatement statement = conn.prepareStatement(query)) {
+            statement.setString(1, classroomName);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.addProperty("id", resultSet.getString("id"));
+                jsonObject.addProperty("name", resultSet.getString("name"));
+                jsonObject.addProperty("campus", resultSet.getInt("campus"));
+                return jsonObject;
+            }else {
+                System.out.println("Classroom not found.");
+                return null;
+            }
+        } catch (SQLException e) {
+            System.out.println("Error fetching classroom.");
+            e.printStackTrace();
+            return null;
+        }
+    }
+    public JsonElement fetchCourse(String courseId) { //TODO: Search by name
+        String query = "SELECT * FROM wise.course WHERE id = ?";
+        try (PreparedStatement statement = conn.prepareStatement(query)) {
+            statement.setString(1, courseId);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.addProperty("id", resultSet.getString("id"));
+                jsonObject.addProperty("name", resultSet.getString("name"));
+                jsonObject.addProperty("department_id", resultSet.getInt("department_id"));
+                jsonObject.addProperty("type", resultSet.getInt("type"));
+                jsonObject.addProperty("total_rating", resultSet.getInt("total_rating"));
+                jsonObject.addProperty("rating_count", resultSet.getInt("rating_count"));
+                jsonObject.addProperty("lecturers_note", resultSet.getString("lecturers_note"));
+                return jsonObject;
+            }else {
+                System.out.println("Course not found.");
+                return null;
+            }
+        } catch (SQLException e) {
+            System.out.println("Error fetching course.");
+            e.printStackTrace();
+            return null;
+        }
+    }
+    public JsonElement fetchDepartment(int departmentId) { //TODO: Search by name
+        String query = "SELECT * FROM wise.department WHERE id = ?";
+        try (PreparedStatement statement = conn.prepareStatement(query)) {
+            statement.setInt(1, departmentId);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.addProperty("id", resultSet.getInt("id"));
+                jsonObject.addProperty("name", resultSet.getString("name"));
+                jsonObject.addProperty("faculty_name", resultSet.getString("faculty_name"));
+                return jsonObject;
+            }else {
+                System.out.println("Department not found.");
+                return null;
+            }
+        } catch (SQLException e) {
+            System.out.println("Error fetching department.");
+            e.printStackTrace();
+            return null;
+        }
+    }
+    public JsonElement fetchProfessor(int professorId) {
+        String query = "SELECT * FROM wise.professor WHERE id = ?";
+        try (PreparedStatement statement = conn.prepareStatement(query)) {
+            statement.setInt(1, professorId);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.addProperty("id", resultSet.getInt("id"));
+                jsonObject.addProperty("name", resultSet.getString("name"));
+                jsonObject.addProperty("surname", resultSet.getString("surname"));
+                jsonObject.addProperty("email", resultSet.getString("email"));
+                jsonObject.addProperty("total_rating", resultSet.getInt("total_rating"));
+                jsonObject.addProperty("rating_count", resultSet.getInt("rating_count"));
+                return jsonObject;
+            }else {
+                System.out.println("Professor not found.");
+                return null;
+            }
+        } catch (SQLException e) {
+            System.out.println("Error fetching professor.");
+            e.printStackTrace();
+            return null;
+        }
+    }
+    public JsonElement fetchRating(int userId, int professorId) {
+        String query = "SELECT * FROM wise.rating WHERE user_id = ? AND professor_id = ?";
+        try (PreparedStatement statement = conn.prepareStatement(query)) {
+            statement.setInt(1, userId);
+            statement.setInt(2, professorId);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.addProperty("user_id", resultSet.getInt("user_id"));
+                jsonObject.addProperty("professor_id", resultSet.getInt("professor_id"));
+                jsonObject.addProperty("rating", resultSet.getInt("rating"));
+                return jsonObject;
+            }else {
+                System.out.println("Rating not found.");
+                return null;
+            }
+        } catch (SQLException e) {
+            System.out.println("Error fetching rating.");
+            e.printStackTrace();
+            return null;
+        }
+    }
+    public JsonElement fetchReview(int userId, String courseId) {
+        String query = "SELECT * FROM wise.review WHERE user_id = ? AND course_id = ?";
+        try (PreparedStatement statement = conn.prepareStatement(query)) {
+            statement.setInt(1, userId);
+            statement.setString(2, courseId);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.addProperty("user_id", resultSet.getInt("user_id"));
+                jsonObject.addProperty("course_id", resultSet.getString("course_id"));
+                jsonObject.addProperty("rating", resultSet.getInt("rating"));
+                jsonObject.addProperty("comment", resultSet.getString("comment"));
+                return jsonObject;
+            }else {
+                System.out.println("Review not found.");
+                return null;
+            }
+        } catch (SQLException e) {
+            System.out.println("Error fetching review.");
+            e.printStackTrace();
+            return null;
+        }
+    }
+    public JsonElement fetchSection(int sectionId, String courseId) {
+        String query = "SELECT * FROM wise.section WHERE id = ? AND course_id = ?";
+        try (PreparedStatement statement = conn.prepareStatement(query)) {
+            statement.setInt(1, sectionId);
+            statement.setString(2, courseId);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.addProperty("id", resultSet.getInt("id"));
+                jsonObject.addProperty("course_id", resultSet.getString("course_id"));
+                jsonObject.addProperty("classroom_name", resultSet.getString("classroom_name"));
+                jsonObject.addProperty("professor_id", resultSet.getInt("professor_id"));
+                jsonObject.addProperty("day", resultSet.getString("day"));
+                jsonObject.addProperty("start_time", resultSet.getString("start_time"));
+                jsonObject.addProperty("end_time", resultSet.getString("end_time"));
+                jsonObject.addProperty("type", resultSet.getInt("type"));
+                return jsonObject;
+            }else {
+                System.out.println("Section not found.");
+                return null;
+            }
+        } catch (SQLException e) {
+            System.out.println("Error fetching section.");
+            e.printStackTrace();
+            return null;
+        }
+    }
+    public JsonElement fetchUser(int userId) {
+        String query = "SELECT * FROM wise.user WHERE id = ?";
+        try (PreparedStatement statement = conn.prepareStatement(query)) {
+            statement.setInt(1, userId);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.addProperty("id", resultSet.getInt("id"));
+                jsonObject.addProperty("name", resultSet.getString("name"));
+                jsonObject.addProperty("surname", resultSet.getString("surname"));
+                jsonObject.addProperty("email", resultSet.getString("email"));
+                jsonObject.addProperty("password", resultSet.getString("password"));
+                return jsonObject;
+            }else {
+                System.out.println("User not found.");
+                return null;
+            }
+        } catch (SQLException e) {
+            System.out.println("Error fetching user.");
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 
 
     // Inserting data into the database
