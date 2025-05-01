@@ -605,7 +605,6 @@ public class GUIController implements Initializable, Observer {
     //Submit a new rating for a professor
     private void submitRating(int professorId, int rating, String sectionCode) {
         System.out.println("Rating submitted: " + rating);
-        System.out.println(sectionCode);
         profRatingLabel.setText(api.getProfessor(professorId).getAvgRating() + "/10");
         // Show success message
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
