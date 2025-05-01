@@ -10,7 +10,21 @@ import java.util.ArrayList;
 
 public class Database {
     private Connection conn;
-    private Gson gson = new Gson();
+    private final Gson gson = new Gson();
+    private static Database instance;
+
+    private Database() {
+        connect();
+        instance = this;
+    }
+
+    public static Database getInstance() {
+        if (instance == null) {
+            new Database();
+        }
+        return instance;
+    }
+
 
     public boolean connect() {
         String url = "jdbc:postgresql://172.30.106.119:5432/coursewise?currentSchema=wise";
