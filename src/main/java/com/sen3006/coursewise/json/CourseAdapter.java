@@ -15,9 +15,9 @@ public class CourseAdapter implements JsonSerializer<Course>, JsonDeserializer<C
         jsonObject.addProperty("name", course.getCourse_name());
         if (course.getDepartment() != null)
             jsonObject.addProperty("department_id", course.getDepartment().getDepartment_id());
-        else {
-            System.out.println("WARNING: Department is null in course object: " + course.getCourse_id() + " " + course.getCourse_name());
-        }
+//        else {
+//            System.out.println("WARNING: Department is null in course object: " + course.getCourse_id() + " " + course.getCourse_name());
+//        }
         jsonObject.addProperty("type", course.getType().getIntType());
         jsonObject.addProperty("total_rating", course.getTotalRating());
         jsonObject.addProperty("rating_count", course.getRatingCount());

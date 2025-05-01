@@ -1,5 +1,6 @@
 package com.sen3006.coursewise.models;
 import com.sen3006.coursewise.API;
+import com.sen3006.coursewise.GUIController;
 import com.sen3006.coursewise.enums.Type;
 import com.sen3006.coursewise.enums.Weekday;
 
@@ -32,6 +33,7 @@ public class Section extends Observable
 
         // Register this classroom as an observable to the API
         this.addObserver(API.getInstance());
+        this.addObserver(GUIController.getInstance());
     }
 
     public int getSection_id() {

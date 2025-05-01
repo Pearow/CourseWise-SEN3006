@@ -1,6 +1,7 @@
 package com.sen3006.coursewise.models;
 
 import com.sen3006.coursewise.API;
+import com.sen3006.coursewise.GUIController;
 
 public class Professor extends User
 {
@@ -19,6 +20,7 @@ public class Professor extends User
 
         // Register this classroom as an observable to the API
         this.addObserver(API.getInstance());
+        this.addObserver(GUIController.getInstance());
     }
 
     public Professor(int prof_id, String prof_name, String prof_surname, String prof_email, int total_rating, int prof_rating_count)
