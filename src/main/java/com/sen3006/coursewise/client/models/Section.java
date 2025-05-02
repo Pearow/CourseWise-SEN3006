@@ -2,6 +2,7 @@ package com.sen3006.coursewise.client.models;
 
 import com.sen3006.coursewise.client.API;
 import com.sen3006.coursewise.client.GUIController;
+import com.sen3006.coursewise.client.enums.Semester;
 import com.sen3006.coursewise.client.enums.Type;
 import com.sen3006.coursewise.client.enums.Weekday;
 
@@ -20,8 +21,9 @@ public class Section extends Observable
     private final Duration lesson_duration;
     private Professor professor;
     private Type type;
+    private Semester semester;
 
-    public Section(int section_id, LocalTime start_time, LocalTime end_time, int section_day, Classroom classroom, Course course, Professor professor, int type) {
+    public Section(int section_id, LocalTime start_time, LocalTime end_time, int section_day, Classroom classroom, Course course, Professor professor, int type, int semester) {
         this.section_id = section_id;
         this.start_time = start_time;
         this.end_time = end_time;
@@ -31,6 +33,7 @@ public class Section extends Observable
         this.lesson_duration = Duration.between(start_time,end_time);
         this.professor = professor;
         this.type = Type.fromIndex(type);
+        this.semester = Semester.fromIndex(semester);
 
         // Register this classroom as an observable to the API
         this.addObserver(API.getInstance());
@@ -128,6 +131,18 @@ public class Section extends Observable
 
     public void setType(Type type) {
         this.type = type;
+
+        // Notify observers about the change
+        setChanged();
+        notifyObservers();
+    }
+
+    public Semester getSemester() {
+        return semester;
+    }
+
+    public void setSemester(Semester semester) {
+        this.semester = semester;
 
         // Notify observers about the change
         setChanged();
