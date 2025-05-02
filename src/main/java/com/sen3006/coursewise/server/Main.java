@@ -1,6 +1,6 @@
 package com.sen3006.coursewise.server;
 
-import com.sen3006.coursewise.server.handler.UserHandler;
+import com.sen3006.coursewise.server.handler.*;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
@@ -62,13 +62,23 @@ public class Main {
     }
 
     public void createContext() {
+        // Handlers
+        server.createContext("/api/classroom", new ClassroomHandler());
+        server.createContext("/api/course", new CourseHandler());
+        server.createContext("/api/department", new DepartmentHandler());
+        server.createContext("/api/professor", new ProfessorHandler());
+        server.createContext("/api/rating", new RatingHandler());
+        server.createContext("/api/review", new ReviewHandler());
+        server.createContext("/api/section", new SectionHandler());
         server.createContext("/api/user", new UserHandler());
+
+        server.createContext("/api/login", new LoginHandler());
 
 
         // Test
         server.createContext("/api", exchange -> {
-            String response = "{\"message\": \"Welcome to CourseWise\"," +
-                    "\"status\": \"success\"}";
+            String response = "{\"message\": \"Welcome to CourseWise\", \"url\": \"" +
+                    exchange.getRequestURI().getPath() + "\", \"status\": \"success\"}";
             exchange.getResponseHeaders().set("Content-Type", "application/json");
             exchange.sendResponseHeaders(200, response.getBytes().length);
             exchange.getResponseBody().write(response.getBytes());

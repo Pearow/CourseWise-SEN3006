@@ -16,6 +16,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 // API class for handling all the data
 // TODO: Add reviews
@@ -39,7 +40,7 @@ public class API implements Observer {
         gson = PearowsGson.getGson();
         httpClient = HttpClient.newHttpClient();
         instance = this;
-        loadAll();
+//        loadAll();
     }
 
     public static API getInstance() {
@@ -79,6 +80,73 @@ public class API implements Observer {
         }
     }
 
+    private String sendPostRequest(String urlString, JsonObject jsonObject) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(urlString))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonObject.toString()))
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            return response.body();
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String sendPutRequest(String urlString, JsonObject jsonObject) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(urlString))
+                    .header("Content-Type", "application/json")
+                    .PUT(HttpRequest.BodyPublishers.ofString(jsonObject.toString()))
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            return response.body();
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String sendGetRequest(String urlString, Map<String, String> parameters){
+        try{
+            // Build query string by URL-encoding the parameters
+            String queryString = parameters.entrySet().stream()
+                    .map(entry -> URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8) + "=" +
+                            URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8))
+                    .collect(Collectors.joining("&"));
+
+            // Create request
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(host + urlString + "?" + queryString))
+                    .header("Accept", "application/json")
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
+            // Send request
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if(response.statusCode() == 200) {
+                return response.body();
+            }else {
+                System.out.println("Error: " + response.statusCode() + " " + response.body());
+                return null;
+            }
+        }catch (ConnectException e){
+            System.out.println("No connection to server");
+            System.out.println(e.toString());
+            return null;
+        }
+        catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private String removeIllegal(String input) {
+        return input.replaceAll("[^a-zA-Z0-9]", "-");
+    }
+
     @Deprecated
     private void fetchPseudoTables() {
         classrooms = new Hashtable<>();
@@ -87,15 +155,20 @@ public class API implements Observer {
         departments = new Hashtable<>();
         professors = new Hashtable<>();
         sections = new Hashtable<>();
-        int sectionC = 0, asyncC = 0, syncC = 0;
         try {
+            int i = 0;
             for (CourseSection cSection : CourseSection.getAllCourseSections()) {
+                System.out.println(i++ + "/"+ CourseSection.getAllCourseSections().length);
                 // Create and add objects to the respective arrays
                 // Use umis data to populate these objects
-                sectionC++;
+                if (cSection.semester_id == 102){
+                    System.out.println("Skipping " + cSection.course_code + " " + cSection.section);
+                    continue;
+                }
 
                 if (!classrooms.containsKey(cSection.classroom_name)) {
-                    classrooms.put(cSection.classroom_name, new Classroom(Campus.fromString(cSection.campus_name).getIntCampus(), cSection.classroom_name)); // Campus won't be found
+                    classrooms.put(cSection.classroom_name, new Classroom(Campus.fromString(cSection.campus_name).getIntCampus(), removeIllegal(cSection.classroom_name))); // Campus won't be found
+                    sendPostRequest(host + "/classroom", gson.toJsonTree(new Classroom(Campus.fromString(cSection.campus_name).getIntCampus(), removeIllegal(cSection.classroom_name))).getAsJsonObject());
                 }
 
                 if (!courses.containsKey(cSection.course_code)) {
@@ -104,36 +177,30 @@ public class API implements Observer {
                         type = 1;
                     }
                     courses.put(cSection.course_code, new Course(cSection.course_code, cSection.course_name, null, type));
+                    sendPostRequest(host + "/course", gson.toJsonTree(new Course(cSection.course_code, cSection.course_name, null, type)).getAsJsonObject());
                 }
 
                 if (!professors.containsKey(cSection.instructor_id)) {
                     professors.put(cSection.instructor_id, new Professor(cSection.instructor_id, cSection.instructor_name, cSection.instructor_surname, ""));
+                    sendPostRequest(host + "/professor", gson.toJsonTree(new Professor(cSection.instructor_id, cSection.instructor_name, cSection.instructor_surname, "")).getAsJsonObject());
                 }
 
                 if (!sections.containsKey(cSection.section_id)
                 ) {
                     int type = 0;
-                    if(cSection.classroom_name.contentEquals("MS TEAMS")){
+                    if (cSection.classroom_name.contentEquals("MS TEAMS")) {
                         type = 1;
-                    } else if(cSection.classroom_name.contentEquals("ITSLEARNING1")){
+                    } else if (cSection.classroom_name.contentEquals("ITSLEARNING1")) {
                         type = 2;
                     }
-                    sections.put(getSectionPsuedoId(cSection.section, cSection.course_code), new Section(cSection.section, LocalTime.parse(cSection.start_time), LocalTime.parse(cSection.end_time), cSection.day - 1, getClassroom(cSection.classroom_name), getCourse(cSection.course_code), getProfessor(cSection.instructor_id), type));
-                    syncC++;
-                } else if (sections.containsKey(cSection.section_id)) {
-                    //TODO: Find differences between duplicates
-                    System.out.println("Section already exists: " + cSection.section + " " + cSection.course_code + " " + cSection.classroom_name);
-                    Section dp = sections.get(cSection.section_id);
-                    System.out.println("Is duplicate of: " + dp.getSection_id() + " " + dp.getCourse().getCourse_id() + " " + dp.getClassroom().getClass_id());
-                    asyncC++;
-                } else {
-                    asyncC++;
+                    sections.put(getSectionPsuedoId(cSection.section, cSection.course_code), new Section(cSection.section, LocalTime.parse(cSection.start_time), LocalTime.parse(cSection.end_time), cSection.day - 1, getClassroom(removeIllegal(cSection.classroom_name)), getCourse(cSection.course_code), getProfessor(cSection.instructor_id), type, cSection.semester_id == 103?0:1));
+                    sendPostRequest(host + "/section", gson.toJsonTree(new Section(cSection.section, LocalTime.parse(cSection.start_time), LocalTime.parse(cSection.end_time), cSection.day - 1, getClassroom(removeIllegal(cSection.classroom_name)), getCourse(cSection.course_code), getProfessor(cSection.instructor_id), type, cSection.semester_id == 103?0:1)).getAsJsonObject());
                 }
-
                 //Extract department abbreviation
                 String dep = cSection.course_code.replaceAll("[0-9]", "");
                 if (!departments.containsKey(dep.hashCode())) {
                     departments.put(dep.hashCode(), new Department(dep.hashCode(), dep, null));
+                    sendPostRequest(host + "/department", gson.toJsonTree(new Department(dep.hashCode(), dep, null)).getAsJsonObject());
                 }
             }
             // Get user data
@@ -184,137 +251,91 @@ public class API implements Observer {
         }
     }
 
-    private void syncAll(){
-        syncClassrooms();
-        syncCourses();
-        syncUsers();
-        syncDepartments();
-        syncProfessors();
-        syncSections();
-        syncReviews();
-        syncRatings();
-    }
+    public void syncClassroom(Classroom classroom) {
+        JsonObject json = gson.fromJson("{\"data\": " + gson.toJson(classroom, Classroom.class) + "}", JsonObject.class);
+        JsonObject response = gson.fromJson(sendPutRequest(host + "/classroom/" + classroom.getClass_id(), json), JsonObject.class);
 
-    public void syncClassrooms() {
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/resources/classrooms.json"));
-            Classroom[] table = new Classroom[classrooms.size()];
-            classrooms.values().toArray(table);
-
-            String json = gson.toJson(table, Classroom[].class);
-            writer.write(json);
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (response.get("status").getAsString().contentEquals("success")) {
+            System.out.println("Classroom updated successfully");
+        } else {
+            System.out.println("Error: " + response.get("status").toString() + " " + response.get("message").getAsString());
         }
     }
 
-    public void syncCourses() {
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/resources/courses.json"));
-            Course[] table = new Course[courses.size()];
-            courses.values().toArray(table);
+    public void syncCourse(Course course) {
+        JsonObject json = gson.fromJson("{\"data\": " + gson.toJson(course, Course.class) + "}", JsonObject.class);
+        JsonObject response = gson.fromJson(sendPutRequest(host + "/course/" + course.getCourse_id(), json), JsonObject.class);
 
-            String json = gson.toJson(table, Course[].class);
-            writer.write(json);
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (response.get("status").getAsString().contentEquals("success")) {
+            System.out.println("User updated successfully");
+        } else {
+            System.out.println("Error: " + response.get("status").toString() + " " + response.get("message").getAsString());
         }
     }
 
-    public void syncUsers() {
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/resources/users.json"));
-            UserPassword[] table = new UserPassword[users.size()];
-            users.values().toArray(table);
+    public void syncUser(UserPassword user) {
+        JsonObject json = gson.fromJson("{\"data\": " + gson.toJson(user, UserPassword.class) + "}", JsonObject.class);
+        JsonObject response = gson.fromJson(sendPutRequest(host + "/user/" + user.getId(), json), JsonObject.class);
 
-            String json = gson.toJson(table, UserPassword[].class);
-            writer.write(json);
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (response.get("status").getAsString().contentEquals("success")) {
+            System.out.println("User updated successfully");
+        } else {
+            System.out.println("Error: " + response.get("status").toString() + " " + response.get("message").getAsString());
         }
     }
 
-    public void syncDepartments() {
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/resources/departments.json"));
-            Department[] table = new Department[departments.size()];
-            departments.values().toArray(table);
+    public void syncDepartment(Department department) {
+        JsonObject json = gson.fromJson("{\"data\": " + gson.toJson(department, Department.class) + "}", JsonObject.class);
+        JsonObject response = gson.fromJson(sendPutRequest(host + "/department/" + department.getDepartment_id(), json), JsonObject.class);
 
-            String json = gson.toJson(table, Department[].class);
-            writer.write(json);
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (response.get("status").getAsString().contentEquals("success")) {
+            System.out.println("User updated successfully");
+        } else {
+            System.out.println("Error: " + response.get("status").toString() + " " + response.get("message").getAsString());
         }
     }
 
-    public void syncProfessors() {
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/resources/professors.json"));
-            Professor[] table = new Professor[professors.size()];
-            professors.values().toArray(table);
+    public void syncProfessor(Professor professor) {
+        JsonObject json = gson.fromJson("{\"data\": " + gson.toJson(professor, Professor.class) + "}", JsonObject.class);
+        JsonObject response = gson.fromJson(sendPutRequest(host + "/professor/" + professor.getId(), json), JsonObject.class);
 
-            String json = gson.toJson(table, Professor[].class);
-            writer.write(json);
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (response.get("status").getAsString().contentEquals("success")) {
+            System.out.println("User updated successfully");
+        } else {
+            System.out.println("Error: " + response.get("status").toString() + " " + response.get("message").getAsString());
         }
     }
 
-    public void syncSections() {
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/resources/sections.json"));
-            Section[] table = new Section[sections.size()];
+    public void syncSection(Section section) {
+        JsonObject json = gson.fromJson("{\"data\": " + gson.toJson(section, Section.class) + "}", JsonObject.class);
+        JsonObject response = gson.fromJson(sendPutRequest(host + "/section/" + section.getCourse().getCourse_id() + "/" + section.getSection_id(), json), JsonObject.class);
 
-            sections.values().toArray(table);
-
-            String json = gson.toJson(table, Section[].class);
-            writer.write(json);
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (response.get("status").getAsString().contentEquals("success")) {
+            System.out.println("User updated successfully");
+        } else {
+            System.out.println("Error: " + response.get("status").toString() + " " + response.get("message").getAsString());
         }
     }
 
-    public void syncReviews(){
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/resources/reviews.json"));
-            Review[] table = new Review[reviews.size()];
+    public void syncReview(Review review) {
+        JsonObject json = gson.fromJson("{\"data\": " + gson.toJson(review, Review.class) + "}", JsonObject.class);
+        JsonObject response = gson.fromJson(sendPutRequest(host + "/review/" + review.getCourse().getCourse_id() + "/" + review.getUser().getId(), json), JsonObject.class);
 
-            reviews.values().toArray(table);
-
-            String json = gson.toJson(table, Review[].class);
-            writer.write(json);
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (response.get("status").getAsString().contentEquals("success")) {
+            System.out.println("User updated successfully");
+        } else {
+            System.out.println("Error: " + response.get("status").toString() + " " + response.get("message").getAsString());
         }
     }
 
-    public void syncRatings(){
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/resources/ratings.json"));
-            Rating[] table = new Rating[ratings.size()];
+    public void syncRating(Rating rating) {
+        JsonObject json = gson.fromJson("{\"data\": " + gson.toJson(rating, Section.class) + "}", JsonObject.class);
+        JsonObject response = gson.fromJson(sendPutRequest(host + "/section/" + rating.getProfessor().getId() + "/" + rating.getUser().getId(), json), JsonObject.class);
 
-            ratings.values().toArray(table);
-
-            String json = gson.toJson(table, Rating[].class);
-            writer.write(json);
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (response.get("status").getAsString().contentEquals("success")) {
+            System.out.println("User updated successfully");
+        } else {
+            System.out.println("Error: " + response.get("status").toString() + " " + response.get("message").getAsString());
         }
     }
 
@@ -384,49 +405,61 @@ public class API implements Observer {
     }
 
     public Classroom getClassroom(String id) {
-        return classrooms.get(id);
+        return gson.fromJson(gson.fromJson(sendGetRequest(host + "/classroom/" + id), JsonElement.class)
+                .getAsJsonObject().get("data"), Classroom.class);
     }
 
     public Course getCourse(String id) {
-        return courses.get(id);
+        return gson.fromJson(gson.fromJson(sendGetRequest(host + "/course/" + id), JsonElement.class)
+                .getAsJsonObject().get("data"), Course.class);
     }
 
     public User getUser(int id) {
-        return users.get(id);
+        return gson.fromJson(gson.fromJson(sendGetRequest(host + "/user/" + id), JsonElement.class)
+                .getAsJsonObject().get("data"), UserPassword.class);
     }
 
     public Department getDepartment(int id) {
-        return departments.get(id);
+        return gson.fromJson(gson.fromJson(sendGetRequest(host + "/department/" + id), JsonElement.class)
+                .getAsJsonObject().get("data"), Department.class);
     }
 
     public Professor getProfessor(int id) {
-        return professors.get(id);
+        return gson.fromJson(gson.fromJson(sendGetRequest(host + "/professor/" + id), JsonElement.class)
+                .getAsJsonObject().get("data"), Professor.class);
     }
 
     public Section getSection(int id, String courseId) {
-        return sections.get(getSectionPsuedoId(id, courseId));
+        return gson.fromJson(gson.fromJson(sendGetRequest(host + "/section/" + courseId + "/" + id), JsonElement.class)
+                .getAsJsonObject().get("data"), Section.class);
     }
 
     public Review getReview(int user_id, String courseId) {
-        return reviews.get(user_id + courseId.hashCode());
+        return gson.fromJson(gson.fromJson(sendGetRequest(host + "/review/" + courseId + "/" + user_id), JsonElement.class)
+                .getAsJsonObject().get("data"), Review.class);
     }
 
-    public Rating getRating(int user_id, String courseId) {
-        return ratings.get(user_id + courseId.hashCode());
+    public Rating getRating(int user_id, int professor_id) {
+        return gson.fromJson(gson.fromJson(sendGetRequest(host + "/rating/" + professor_id + "/" + user_id), JsonElement.class)
+                .getAsJsonObject().get("data"), Rating.class);
     }
 
     public boolean addReview(User user, Course course, String comment, int rating) {
-        int id = getSectionPsuedoId(user.getId(), course.getCourse_id());
         Review review;
-        if (reviews.containsKey(id)) {
-            review = reviews.get(id);
+        if ((review = getReview(user.getId(), course.getCourse_id())) != null) {
             review.setComment(comment);
             review.setRating(rating);
         }else {
             review = new Review(course, comment, user, rating);
+            String response = sendPostRequest(host + "/review", gson.toJsonTree(review).getAsJsonObject());
+            JsonObject jsonResponse = gson.fromJson(response, JsonObject.class);
+            if (jsonResponse.get("status").getAsString().contentEquals("success")) {
+                System.out.println("Review added successfully");
+            } else {
+                System.out.println("Error: " + jsonResponse.get("status").toString() + " " + jsonResponse.get("message").getAsString());
+                return false;
+            }
         }
-        reviews.put(id, review);
-        syncReviews();
         return true;
     }
     public boolean addReview(User user, Course course, int rating) {
@@ -434,184 +467,116 @@ public class API implements Observer {
     }
 
     public boolean addRating(User user, Professor professor, int rating) {
-        int id = getRatingPsuedoId(user.getId(), professor.getId());
         Rating ratingObj;
-        if (ratings.containsKey(id)) {
-            ratingObj = ratings.get(id);
+        if ((ratingObj = getRating(user.getId(), professor.getId())) != null) {
             ratingObj.setRating(rating);
         }else {
             ratingObj = new Rating(professor, user, rating);
         }
-        ratings.put(id, ratingObj);
-        syncRatings();
+        String response = sendPostRequest(host + "/rating", gson.toJsonTree(ratingObj).getAsJsonObject());
+        JsonObject jsonResponse = gson.fromJson(response, JsonObject.class);
+        if (jsonResponse.get("status").getAsString().contentEquals("success")) {
+            System.out.println("Rating added successfully");
+        } else {
+            System.out.println("Error: " + jsonResponse.get("status").toString() + " " + jsonResponse.get("message").getAsString());
+            return false;
+        }
         return true;
     }
 
 
     //TODO: Add pagination support
     public Classroom[] getClassrooms() {
-        Classroom[] result = new Classroom[classrooms.size()];
-        classrooms.values().toArray(result);
-        return result;
+        return gson.fromJson(gson.fromJson(sendGetRequest(host + "/classroom"), JsonObject.class)
+                .get("data"), Classroom[].class);
     }
 
     public Course[] getCourses() {
-        Course[] result = new Course[courses.size()];
-        courses.values().toArray(result);
-        return result;
+        return gson.fromJson(gson.fromJson(sendGetRequest(host + "/course"), JsonObject.class)
+                .get("data"), Course[].class);
     }
 
     public User[] getUsers() {
-        User[] result = gson.fromJson(sendGetRequest(host + "/user"), UserPassword[].class);
-        return result;
+        return gson.fromJson(gson.fromJson(sendGetRequest(host + "/user"), JsonObject.class)
+                .get("data"), UserPassword[].class);
     }
 
     public Department[] getDepartments() {
-        Department[] result = new Department[departments.size()];
-        departments.values().toArray(result);
-        return result;
+        return gson.fromJson(gson.fromJson(sendGetRequest(host + "/department"), JsonObject.class)
+                .get("data"), Department[].class);
     }
 
     public Professor[] getProfessors() {
-        Professor[] result = new Professor[professors.size()];
-        professors.values().toArray(result);
-        return result;
+        return gson.fromJson(gson.fromJson(sendGetRequest(host + "/professor"), JsonObject.class)
+                .get("data"), Professor[].class);
     }
 
     public Section[] getSections(String courseId) {
-        ArrayList<Section> results = new ArrayList<>();
-        for (Section section : sections.values()) {
-            if (section.getCourse().getCourse_id().contentEquals(courseId)) {
-                results.add(section);
-            }
-        }
-        Section[] result = new Section[results.size()];
-        results.toArray(result);
-        return result;
+        return gson.fromJson(gson.fromJson(sendGetRequest(host + "/section/" + courseId), JsonObject.class)
+                .get("data"), Section[].class);
     }
 
     public Review[] getReviews(String courseId) {
-        ArrayList<Review> results = new ArrayList<>();
-        for (Review review : reviews.values()) {
-            if (review.getCourse().getCourse_id().contentEquals(courseId)) {
-                results.add(review);
-            }
-        }
-        Review[] result = new Review[results.size()];
-        results.toArray(result);
-        return result;
+        return gson.fromJson(gson.fromJson(sendGetRequest(host + "/review/" + courseId), JsonObject.class)
+                .get("data"), Review[].class);
     }
 
     public Review[] getReviews(int user_id) {
-        ArrayList<Review> results = new ArrayList<>();
-        for (Review review : reviews.values()) {
-            if (review.getUser().getId() == user_id) {
-                results.add(review);
-            }
-        }
-        Review[] result = new Review[results.size()];
-        results.toArray(result);
-        return result;
+        //TODO: Add getting review from user_id
+        return new Review[0];
     }
 
     public Rating[] getRatings(int professorId) {
-        ArrayList<Rating> results = new ArrayList<>();
-        for (Rating rating : ratings.values()) {
-            if (rating.getProfessor().getId() == professorId) {
-                results.add(rating);
-            }
-        }
-        Rating[] result = new Rating[results.size()];
-        results.toArray(result);
-        return result;
+        return gson.fromJson(gson.fromJson(sendGetRequest(host + "/rating/" + professorId), JsonObject.class)
+                .get("data"), Rating[].class);
     }
 
     public String[] getCredentials(String email) {
         String[] result = {"", ""}; // id, password TODO: Use a class instead
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("src/main/resources/users.json"), StandardCharsets.UTF_8));
-            String line;
-            StringBuilder sb = new StringBuilder();
-            while ((line = reader.readLine()) != null) {
-                sb.append(line);
+        JsonObject json = gson.toJsonTree(sendPostRequest(host + "/login", gson.toJsonTree("{email: " + email + "}").getAsJsonObject())).getAsJsonObject();
+        UserPassword[] userArray = gson.fromJson(json.get("data").getAsJsonObject(), UserPassword[].class);
+        for (UserPassword user : userArray) {
+            if (user.getEmail().contentEquals(email)) {
+                result[0] = String.valueOf(user.getId());
+                result[1] = String.valueOf(user.getPassword());
+                break;
             }
-            String json = sb.toString();
-            UserPassword[] userArray = gson.fromJson(json, UserPassword[].class);
-            for (UserPassword user : userArray) {
-                if (user.getEmail().contentEquals(email)) {
-                    result[0] = String.valueOf(user.getId());
-                    result[1] = String.valueOf(user.getPassword());
-                    break;
-                }
-            }
-            return result;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return result;
         }
+        return result;
     }
 
     public void update(Observable o, Object arg) {
         if (o instanceof Classroom) {
             Classroom classroom = (Classroom) o;
-            if (!classrooms.containsValue(classroom)) {
-                System.out.println("Classroom not found in API");
-            }
-            syncClassrooms();
+            syncClassroom(classroom);
         }
         if (o instanceof Course) {
             Course course = (Course) o;
-            if (!courses.containsValue(course)) {
-                System.out.println("Course not found in API");
-            }
-            syncCourses();
+            syncCourse(course);
         }
         //TODO: Fix professor triggering if
-        if (o instanceof User) {
-            User user = (User) o;
-            if (!users.containsValue(user)) {
-                System.out.println("User not found in API");
-            }
-            syncUsers();
+        if (o instanceof UserPassword user) {
+            syncUser(user);
         }
-        if (o instanceof Department) {
-            Department department = (Department) o;
-            if (!departments.containsValue(department)) {
-                System.out.println("Department not found in API");
-            }
-            syncDepartments();
+        if (o instanceof Department department) {
+            syncDepartment(department);
         }
-        if (o instanceof Section) {
-            Section section = (Section) o;
-            if (!sections.containsValue(section)) {
-                System.out.println("Section not found in API");
-            }
-            syncSections();
+        if (o instanceof Section section) {
+            syncSection(section);
         }
-        if (o instanceof Professor) {
-            Professor professor = (Professor) o;
-            if (!professors.containsValue(professor)) {
-                System.out.println("Professor not found in API");
-            }
-            syncProfessors();
+        if (o instanceof Professor professor) {
+            syncProfessor(professor);
         }
-        if (o instanceof Review) {
-            Review review = (Review) o;
-            if (!reviews.containsValue(review)) {
-                System.out.println("Review not found in API");
-            }
-            syncReviews();
+        if (o instanceof Review review) {
+            syncReview(review);
         }
     }
 
     public static void main(String[] args) throws IOException {
-
         API api = API.getInstance();
-        for (User user : api.getUsers()) {
-            System.out.println(user.getId() + " " + user.getName() + " " + user.getSurname());
-        }
-        System.out.println("OK");
+        api.fetchPseudoTables();
 
+        System.out.println("OK");
 
         // Test code
 //        User user1 = api.getUser(2200900);
@@ -619,8 +584,8 @@ public class API implements Observer {
 //        Course course = api.getCourse("PHY1001");
 //        Professor professor1 = api.getProfessors()[25];
 //        Professor professor2 = api.getProfessors()[31];
-
-
+//
+//
 //        for (Course c : api.getCourses()) {
 //            if (c.getRatingCount() > 0) {
 //                System.out.println(c.getCourse_id() + " " + c.getAvgRating() + " there are " + c.getRatingCount() + " reviews");

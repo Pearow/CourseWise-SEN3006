@@ -35,7 +35,7 @@ public class CourseAdapter implements JsonSerializer<Course>, JsonDeserializer<C
         String lecturersNote = "";
         if (jsonObject.get("department_id") != null)
             department = API.getInstance().getDepartment(jsonObject.get("department_id").getAsInt());
-        if (jsonObject.has("lecturers_note")) {
+        if (jsonObject.has("lecturers_note") && !jsonObject.get("lecturers_note").isJsonNull()) {
             lecturersNote = jsonObject.get("lecturers_note").getAsString();
         }
         return new Course(jsonObject.get("id").getAsString(), jsonObject.get("name").getAsString(), department, jsonObject.get("type").getAsInt(), jsonObject.get("total_rating").getAsInt(), jsonObject.get("rating_count").getAsInt(), lecturersNote);

@@ -236,14 +236,13 @@ public class Database {
 
     // Fetching single instance
     public JsonElement fetchClassroom(String classroomName) {
-        String query = "SELECT * FROM wise.classroom WHERE name = ?";
+        String query = "SELECT * FROM wise.classroom WHERE id = ?";
         try (PreparedStatement statement = conn.prepareStatement(query)) {
             statement.setString(1, classroomName);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 JsonObject jsonObject = new JsonObject();
                 jsonObject.addProperty("id", resultSet.getString("id"));
-                jsonObject.addProperty("name", resultSet.getString("name"));
                 jsonObject.addProperty("campus", resultSet.getInt("campus"));
                 return jsonObject;
             }else {
@@ -422,6 +421,28 @@ public class Database {
         }
     }
 
+    public JsonElement fetchLogin(String email){
+        String query = "SELECT id, email, password FROM wise.user WHERE email = ?";
+        try(PreparedStatement statement = conn.prepareStatement(query)) {
+            statement.setString(1, email);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.addProperty("id", resultSet.getInt("id"));
+                jsonObject.addProperty("email", resultSet.getString("email"));
+                jsonObject.addProperty("password", resultSet.getString("password"));
+                return jsonObject;
+            }else {
+                System.out.println("User not found.");
+                return null;
+            }
+        } catch (SQLException e) {
+            System.out.println("Error fetching user.");
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 
 
     // Inserting data into the database
@@ -471,13 +492,12 @@ public class Database {
         }
     }
     public boolean insertDepartment(JsonObject department) {
-        String query = "INSERT INTO wise.department (id, name, faculty_name) VALUES (?, ?, ?)";
+        String query = "INSERT INTO wise.department (name, faculty_name) VALUES (?, ?)";
         try (PreparedStatement statement = conn.prepareStatement(query)) {
-            statement.setInt(1, department.get("id").getAsInt());
-            statement.setString(2, department.get("name").getAsString());
+            statement.setString(1, department.get("name").getAsString());
             if (department.has("faculty_name"))
-                statement.setString(3, department.get("faculty_name").getAsString());
-            else statement.setNull(3, Types.VARCHAR);
+                statement.setString(2, department.get("faculty_name").getAsString());
+            else statement.setNull(2, Types.VARCHAR);
 
             int rowsInserted = statement.executeUpdate();
             return rowsInserted > 0;
@@ -488,7 +508,7 @@ public class Database {
         }
     }
     public boolean insertProfessor(JsonObject professor) {
-        String query = "INSERT INTO wise.professor (id, name, surname, email, password, total_rating, rating_count) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO wise.professor (id, name, surname, email, total_rating, rating_count) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement statement = conn.prepareStatement(query)) {
             statement.setInt(1, professor.get("id").getAsInt());
             statement.setString(2, professor.get("name").getAsString());
@@ -547,7 +567,7 @@ public class Database {
         }
     }
     public boolean insertSection(JsonObject section) {
-        String query = "INSERT INTO wise.section (id, course_id, classroom_name, professor_id, day, start_time, end_time, type) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO wise.section (id, course_id, classroom_name, professor_id, day, start_time, end_time, type, semester) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement statement = conn.prepareStatement(query)) {
             statement.setInt(1, section.get("id").getAsInt());
             statement.setString(2, section.get("course_id").getAsString());
@@ -567,6 +587,9 @@ public class Database {
             if (section.has("type"))
                 statement.setInt(8, section.get("type").getAsInt());
             else statement.setNull(8, Types.SMALLINT);
+            if (section.has("semester"))
+                statement.setInt(9, section.get("semester").getAsInt());
+            else statement.setNull(9, Types.SMALLINT);
 
             int rowsInserted = statement.executeUpdate();
             return rowsInserted > 0;
@@ -591,6 +614,195 @@ public class Database {
             return rowsInserted > 0;
         } catch (SQLException e) {
             System.out.println("Error inserting user.");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // Updating data in the database
+    public boolean updateClassroom(String classroomName, JsonObject classroom) {
+        String query = "UPDATE wise.classroom SET " + (classroom.has("campus")?"campus = ? ":"") +
+                "WHERE name = ?";
+        try (PreparedStatement statement = conn.prepareStatement(query)) {
+            if (classroom.has("campus"))
+                statement.setInt(1, classroom.get("campus").getAsInt());
+            statement.setString(2, classroomName);
+
+            int rowsUpdated = statement.executeUpdate();
+            return rowsUpdated > 0;
+        } catch (SQLException e) {
+            System.out.println("Error updating classroom.");
+            e.printStackTrace();
+            return false;
+        }
+    }
+    //TODO: Fix false index while data adding arbitrary columns
+    public boolean updateCourse(String courseId, JsonObject course) {
+        String query = "UPDATE wise.course SET " + (course.has("name")?"name = ?, ":"") +
+                (course.has("department_id")?"department_id = ?, ":"") +
+                (course.has("type")?"type = ?, ":"") +
+                (course.has("total_rating")?"total_rating = ?, ":"") +
+                (course.has("rating_count")?"rating_count = ?, ":"") +
+                (course.has("lecturers_note")?"lecturers_note = ? ":"") +
+                (course.has("semester")?"semester = ?":"") + "WHERE id = ?";
+
+        try (PreparedStatement statement = conn.prepareStatement(query)) {
+            if (course.has("name"))
+                statement.setString(1, course.get("name").getAsString());
+            if (course.has("department_id"))
+                statement.setInt(2, course.get("department_id").getAsInt());
+            if (course.has("type"))
+                statement.setInt(3, course.get("type").getAsInt());
+            if (course.has("total_rating"))
+                statement.setInt(4, course.get("total_rating").getAsInt());
+            if (course.has("rating_count"))
+                statement.setInt(5, course.get("rating_count").getAsInt());
+            if (course.has("lecturers_note"))
+                statement.setString(6, course.get("lecturers_note").getAsString());
+            if (course.has("semester"))
+                statement.setString(7, course.get("semester").getAsString());
+            statement.setString(8, courseId);
+
+            int rowsUpdated = statement.executeUpdate();
+            return rowsUpdated > 0;
+        } catch (SQLException e) {
+            System.out.println("Error updating course.");
+            e.printStackTrace();
+            return false;
+        }
+    }
+    public boolean updateDepartment(int departmentId, JsonObject department) {
+        String query = "UPDATE wise.department SET " + (department.has("name")?"name = ?, ":"") +
+                (department.has("faculty_name")?"faculty_name = ? ":"") + "WHERE id = ?";
+        try (PreparedStatement statement = conn.prepareStatement(query)) {
+            if (department.has("name"))
+                statement.setString(1, department.get("name").getAsString());
+            if (department.has("faculty_name"))
+                statement.setString(2, department.get("faculty_name").getAsString());
+            statement.setInt(3, departmentId);
+
+            int rowsUpdated = statement.executeUpdate();
+            return rowsUpdated > 0;
+        } catch (SQLException e) {
+            System.out.println("Error updating department.");
+            e.printStackTrace();
+            return false;
+        }
+    }
+    public boolean updateProfessor(int professorId, JsonObject professor) {
+        String query = "UPDATE wise.professor SET " + (professor.has("name")?"name = ?, ":"") +
+                (professor.has("surname")?"surname = ?, ":"") +
+                (professor.has("email")?"email = ?, ":"") +
+                (professor.has("total_rating")?"total_rating = ?, ":"") +
+                (professor.has("rating_count")?"rating_count = ? ":"") + "WHERE id = ?";
+        try (PreparedStatement statement = conn.prepareStatement(query)) {
+            if (professor.has("name"))
+                statement.setString(1, professor.get("name").getAsString());
+            if (professor.has("surname"))
+                statement.setString(2, professor.get("surname").getAsString());
+            if (professor.has("email"))
+                statement.setString(3, professor.get("email").getAsString());
+            if (professor.has("total_rating"))
+                statement.setInt(4, professor.get("total_rating").getAsInt());
+            if (professor.has("rating_count"))
+                statement.setInt(5, professor.get("rating_count").getAsInt());
+            statement.setInt(6, professorId);
+
+            int rowsUpdated = statement.executeUpdate();
+            return rowsUpdated > 0;
+        } catch (SQLException e) {
+            System.out.println("Error updating professor.");
+            e.printStackTrace();
+            return false;
+        }
+    }
+    public boolean updateRating(int userId, int professorId, JsonObject rating) {
+        String query = "UPDATE wise.rating SET " + (rating.has("rating")?"rating = ? ":"") +
+                "WHERE user_id = ? AND professor_id = ?";
+        try (PreparedStatement statement = conn.prepareStatement(query)) {
+            if (rating.has("rating"))
+                statement.setInt(1, rating.get("rating").getAsInt());
+            statement.setInt(2, userId);
+            statement.setInt(3, professorId);
+
+            int rowsUpdated = statement.executeUpdate();
+            return rowsUpdated > 0;
+        } catch (SQLException e) {
+            System.out.println("Error updating rating.");
+            e.printStackTrace();
+            return false;
+        }
+    }
+    public boolean updateReview(int userId, String courseId, JsonObject review) {
+        String query = "UPDATE wise.review SET " + (review.has("rating")?"rating = ?, ":"") +
+                (review.has("comment")?"comment = ? ":"") + "WHERE user_id = ? AND course_id = ?";
+        try (PreparedStatement statement = conn.prepareStatement(query)) {
+            if (review.has("rating"))
+                statement.setInt(1, review.get("rating").getAsInt());
+            if (review.has("comment"))
+                statement.setString(2, review.get("comment").getAsString());
+            statement.setInt(3, userId);
+            statement.setString(4, courseId);
+
+            int rowsUpdated = statement.executeUpdate();
+            return rowsUpdated > 0;
+        } catch (SQLException e) {
+            System.out.println("Error updating review.");
+            e.printStackTrace();
+            return false;
+        }
+    }
+    public boolean updateSection(int sectionId, String courseId, JsonObject section) {
+        String query = "UPDATE wise.section SET " + (section.has("classroom_name")?"classroom_name = ?, ":"") +
+                (section.has("professor_id")?"professor_id = ?, ":"") +
+                (section.has("day")?"day = ?, ":"") +
+                (section.has("start_time")?"start_time = ?, ":"") +
+                (section.has("end_time")?"end_time = ?, ":"") +
+                (section.has("type")?"type = ? ":"") + "WHERE id = ? AND course_id = ?";
+        try (PreparedStatement statement = conn.prepareStatement(query)) {
+            if (section.has("classroom_name"))
+                statement.setString(1, section.get("classroom_name").getAsString());
+            if (section.has("professor_id"))
+                statement.setInt(2, section.get("professor_id").getAsInt());
+            if (section.has("day"))
+                statement.setString(3, section.get("day").getAsString());
+            if (section.has("start_time"))
+                statement.setString(4, section.get("start_time").getAsString());
+            if (section.has("end_time"))
+                statement.setString(5, section.get("end_time").getAsString());
+            if (section.has("type"))
+                statement.setInt(6, section.get("type").getAsInt());
+            statement.setInt(7, sectionId);
+            statement.setString(8, courseId);
+
+            int rowsUpdated = statement.executeUpdate();
+            return rowsUpdated > 0;
+        } catch (SQLException e) {
+            System.out.println("Error updating section.");
+            e.printStackTrace();
+            return false;
+        }
+    }
+    public boolean updateUser(int id, JsonObject user) {
+        String query = "UPDATE wise.user SET " + (user.has("name")?"name = ?, ":"") +
+                (user.has("surname")?"surname = ?, ":"") +
+                (user.has("email")?"email = ?, ":"") +
+                (user.has("password")?"password = ? ":"") + "WHERE id = ?";
+        try (PreparedStatement statement = conn.prepareStatement(query)) {
+            if (user.has("name"))
+                statement.setString(1, user.get("name").getAsString());
+            if (user.has("surname"))
+                statement.setString(2, user.get("surname").getAsString());
+            if (user.has("email"))
+                statement.setString(3, user.get("email").getAsString());
+            if (user.has("password"))
+                statement.setString(4, user.get("password").getAsString());
+            statement.setInt(5, id);
+
+            int rowsUpdated = statement.executeUpdate();
+            return rowsUpdated > 0;
+        } catch (SQLException e) {
+            System.out.println("Error updating user.");
             e.printStackTrace();
             return false;
         }
