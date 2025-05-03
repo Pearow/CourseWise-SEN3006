@@ -121,6 +121,8 @@ public class GUIController implements Initializable, Observer {
             System.out.println("Spring selected");
             selectedSemester = Semester.Spring;
             loadCourseList();
+            loadCourseDetails(currentCourse, String.valueOf(currentCourse.getAvgRating()));
+            loadAvailableSections(currentCourse);
             filterCourses(searchField.getText());
             semesterMenu.hide();
         });
@@ -132,6 +134,8 @@ public class GUIController implements Initializable, Observer {
             System.out.println("Fall selected");
             selectedSemester = Semester.Fall;
             loadCourseList();
+            loadCourseDetails(currentCourse, String.valueOf(currentCourse.getAvgRating()));
+            loadAvailableSections(currentCourse);
             filterCourses(searchField.getText());
             semesterMenu.hide();
         });
