@@ -40,7 +40,7 @@ public class LoginScreenController {
             //FXMLLoader loader = new FXMLLoader(getClass().getResource("GUI.fxml")); old method for when GUIController was not a singleton
             FXMLLoader loader = new FXMLLoader();
             loader.setController(GUIController.getInstance()); // Assign the singleton instance of GUIController as the controller
-            loader.setLocation(getClass().getResource("GUI.fxml"));// Set the current user in the GUIController
+            loader.setLocation(getClass().getResource("GUI.fxml"));
             root = loader.load();
 
             // Get the controller of the next scene

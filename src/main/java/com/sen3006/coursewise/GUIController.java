@@ -51,6 +51,7 @@ public class GUIController implements Initializable, Observer {
     private Course currentCourse;
     private static boolean creatingNewReview = false;
     private Section currentSection;
+    //private int selectedSemester = 0; // 0: Fall, 1: Spring
 
     private static GUIController instance;
     //CurrentUser currentUser = CurrentUser.getInstance(); now instantiated lazily (when needed to workaround being called early)
@@ -75,7 +76,7 @@ public class GUIController implements Initializable, Observer {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // Initialize the GUI
-        if (!creatingNewReview) {
+        if (!GUIController.creatingNewReview) {
             loadCourseList();
             sectionGroup = new ToggleGroup();
 
@@ -427,7 +428,7 @@ public class GUIController implements Initializable, Observer {
     //TODO: Check if the current user is a student after role implementation
     @FXML
     private void showAddReviewDialog(ActionEvent event) throws IOException {
-        creatingNewReview = true;
+        GUIController.creatingNewReview = true;
         // Load the dialog FXML
         //FXMLLoader dialogLoader = new FXMLLoader(getClass().getResource("/com/sen3006/coursewise/ReviewDialog.fxml")); old method for when the controller was not a singleton
         FXMLLoader dialogLoader = new FXMLLoader();
@@ -477,12 +478,12 @@ public class GUIController implements Initializable, Observer {
                 // Submit the review
                 String studentId = String.valueOf(CurrentUser.getInstance().getId());
                 submitReview(studentId, rating, "");
-                creatingNewReview = false;
+                GUIController.creatingNewReview = false;
             } else {
                 // Submit the review
                 String studentId = String.valueOf(CurrentUser.getInstance().getId());
                 submitReview(studentId, rating, reviewText);
-                creatingNewReview = false;
+                GUIController.creatingNewReview = false;
             }
         }
     }
@@ -551,7 +552,7 @@ public class GUIController implements Initializable, Observer {
     private void showRateProfessorDialog(MouseEvent event) throws IOException {
         if (event.getSource() == profRatingLabel) {
             if (event.getButton() == MouseButton.PRIMARY){
-                creatingNewReview = true;
+                GUIController.creatingNewReview = true;
                 // Load the dialog FXML
                 //FXMLLoader dialogLoader = new FXMLLoader(getClass().getResource("/com/sen3006/coursewise/RateProfessorDialog.fxml")); old method for when the controller was not a singleton
                 FXMLLoader dialogLoader = new FXMLLoader();
