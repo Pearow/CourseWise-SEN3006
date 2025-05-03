@@ -1,5 +1,6 @@
 package com.sen3006.coursewise.client;
 
+import com.sen3006.coursewise.client.enums.Semester;
 import com.sen3006.coursewise.client.models.*;
 import javafx.animation.PauseTransition;
 import javafx.event.ActionEvent;
@@ -50,7 +51,7 @@ public class GUIController implements Initializable, Observer {
     private Course currentCourse;
     private static boolean creatingNewReview = false;
     private Section currentSection;
-    //private int selectedSemester = 0; // 0: Fall, 1: Spring
+    private Semester selectedSemester = Semester.Fall; // Fall, Spring
 
     private static GUIController instance;
     //CurrentUser currentUser = CurrentUser.getInstance(); now instantiated lazily (when needed to workaround being called early)
@@ -84,7 +85,7 @@ public class GUIController implements Initializable, Observer {
             });
 
             if (!courseListContainer.getChildren().isEmpty()) {
-                currentCourse = api.getCourses()[0];
+                currentCourse = api.getCourses(selectedSemester)[0];
                 loadCourseDetails(currentCourse, String.valueOf(currentCourse.getAvgRating()));
             }
 
@@ -97,7 +98,7 @@ public class GUIController implements Initializable, Observer {
     private void loadCourseList() {
         courseListContainer.getChildren().clear();
 
-        Course[] courses = api.getCourses(); //this method is broken for now and returns every course in the database
+        Course[] courses = api.getCourses(selectedSemester); //this method is broken for now and returns every course in the database
         for (Course course : courses) {
             addCourseItemToList(course, String.valueOf(course.getAvgRating()));
         }
@@ -117,7 +118,7 @@ public class GUIController implements Initializable, Observer {
         Label springLabel = new Label("Spring");
         springLabel.setStyle("-fx-font-size: 14px; -fx-padding: 8px 16px; -fx-text-fill: #333;");
         springLabel.setOnMouseClicked(ev -> {
-            System.out.println("Spring seçildi");
+            System.out.println("Spring selected");
             semesterMenu.hide();
         });
 
@@ -125,7 +126,7 @@ public class GUIController implements Initializable, Observer {
         Label fallLabel = new Label("Fall");
         fallLabel.setStyle("-fx-font-size: 14px; -fx-padding: 8px 16px; -fx-text-fill: #333;");
         fallLabel.setOnMouseClicked(ev -> {
-            System.out.println("Fall seçildi");
+            System.out.println("Fall selected");
             semesterMenu.hide();
         });
 
@@ -224,7 +225,7 @@ public class GUIController implements Initializable, Observer {
             return;
         }
 
-        Course[] courses = api.getCourses(); // Get courses from API
+        Course[] courses = api.getCourses(selectedSemester); // Get courses from API
 
         // Clear the list first
         courseListContainer.getChildren().clear();
@@ -281,7 +282,7 @@ public class GUIController implements Initializable, Observer {
         sectionsContainer.getChildren().clear();
         sectionGroup = new ToggleGroup();
 
-        Section[] sections = api.getSections(course.getCourse_id()); // This should return the list of sections for the course
+        Section[] sections = api.getSections(course.getCourse_id(), selectedSemester); // This should return the list of sections for the course
         for (Section section : sections) {
             addSectionToList(section);
         }
@@ -582,7 +583,7 @@ public class GUIController implements Initializable, Observer {
 
                 int professorId = 0;
 
-                for (Section section : api.getSections(courseCode)) {
+                for (Section section : api.getSections(courseCode, selectedSemester)) {
                     if (section.getCourse().getCourse_id().equals(courseCode) && (String.valueOf(section.getSection_id())).equals(sectionCode)) {
                         professorId = section.getProfessor().getProf_id();
                         break;

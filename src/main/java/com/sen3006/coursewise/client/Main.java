@@ -27,7 +27,7 @@ public class Main extends Application{
             Scene scene = new Scene(root);
             stage.setTitle("Coursewise");
             stage.setResizable(false);
-            stage.getIcons().add(new Image("file:src/main/resources/com/sen3006/coursewise/icon.png"));
+            stage.getIcons().add(new Image("file:src/main/resources/com/sen3006/coursewise/client/icon.png"));
             stage.setScene(scene);
             stage.show();
 
