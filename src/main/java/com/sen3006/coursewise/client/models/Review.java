@@ -65,6 +65,10 @@ public class Review extends Observable {
     public void setRating(int rating) {
         course.updateRating(this.rating, rating);
         this.rating = rating;
+
+        // Notify observers about the change
+        setChanged();
+        notifyObservers();
     }
 
 //    public void revokeRating() {

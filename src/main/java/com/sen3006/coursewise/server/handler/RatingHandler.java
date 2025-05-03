@@ -25,7 +25,7 @@ public class RatingHandler extends AbstractHandler {
 
     @Override
     protected String update(String[] pathParts, JsonObject requestBody) {
-        if (pathParts.length == 5 && db.updateRating(Integer.parseInt(pathParts[3]), Integer.parseInt(pathParts[4]), requestBody)) {
+        if (pathParts.length == 5 && db.updateRating(Integer.parseInt(pathParts[4]), Integer.parseInt(pathParts[3]), requestBody)) {
             return "{\"message\": \"Rating updated successfully\", \"status\": \"success\"}";
         } else if (pathParts.length < 5) {
             return "{\"message\": \"Invalid request\", \"status\": \"error\"}";

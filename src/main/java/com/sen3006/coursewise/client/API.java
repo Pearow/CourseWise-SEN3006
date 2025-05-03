@@ -333,7 +333,7 @@ public class API implements Observer {
 
     public void syncRating(Rating rating) {
         JsonObject json = gson.fromJson("{\"data\": " + gson.toJson(rating, Rating.class) + "}", JsonObject.class);
-        JsonObject response = gson.fromJson(sendPutRequest(host + "/section/" + rating.getProfessor().getId() + "/" + rating.getUser().getId(), json), JsonObject.class);
+        JsonObject response = gson.fromJson(sendPutRequest(host + "/rating/" + rating.getProfessor().getId() + "/" + rating.getUser().getId(), json), JsonObject.class);
 
         if (response.get("status").getAsString().contentEquals("success")) {
             System.out.println("User updated successfully");
@@ -453,6 +453,8 @@ public class API implements Observer {
         if ((review = getReview(user.getId(), course.getCourse_id())) != null) {
             review.setComment(comment);
             review.setRating(rating);
+//            syncReview(review);//TODO: Return response or boolean
+            return true;
         }else {
             review = new Review(course, comment, user, rating);
             String response = sendPostRequest(host + "/review", gson.toJsonTree(review).getAsJsonObject());
@@ -463,8 +465,8 @@ public class API implements Observer {
                 System.out.println("Error: " + jsonResponse.get("status").toString() + " " + jsonResponse.get("message").getAsString());
                 return false;
             }
+            return true;
         }
-        return true;
     }
     public boolean addReview(User user, Course course, int rating) {
         return addReview(user, course, "", rating);
@@ -475,7 +477,7 @@ public class API implements Observer {
         String response;
         if ((ratingObj = getRating(user.getId(), professor.getId())) != null) {
             ratingObj.setRating(rating);
-            syncRating(ratingObj);//TODO: Return response or boolean
+//            syncRating(ratingObj);//TODO: Return response or boolean
             return true;
         }else {
             ratingObj = new Rating(professor, user, rating);
@@ -571,6 +573,9 @@ public class API implements Observer {
         }
         if (o instanceof Review review) {
             syncReview(review);
+        }
+        if(o instanceof Rating rating) {
+            syncRating(rating);
         }
     }
 

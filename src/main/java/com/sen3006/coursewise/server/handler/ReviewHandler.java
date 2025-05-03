@@ -25,7 +25,7 @@ public class ReviewHandler extends AbstractHandler {
 
     @Override
     protected String update(String[] pathParts, JsonObject requestBody) {
-        if (pathParts.length == 5 && db.updateReview(Integer.parseInt(pathParts[3]), pathParts[4], requestBody)) {
+        if (pathParts.length == 5 && db.updateReview(Integer.parseInt(pathParts[4]), pathParts[3], requestBody)) {
             return "{\"message\": \"Review updated successfully\", \"status\": \"success\"}";
         } else if (pathParts.length < 5) {
             return "{\"message\": \"Invalid request\", \"status\": \"error\"}";

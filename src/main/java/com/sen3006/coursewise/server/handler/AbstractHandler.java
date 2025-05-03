@@ -106,7 +106,7 @@ public abstract class AbstractHandler implements HttpHandler {
 
         requestBody = gson.fromJson(sb.toString(), JsonObject.class).get("data").getAsJsonObject();
 
-        if(pathParts.length != 4 || requestBody == null) {
+        if(pathParts.length < 4 || requestBody == null) {
             response = "{\"message\": \"Invalid request\", \"status\": \"error\"}";
             exchange.sendResponseHeaders(400, response.getBytes().length);
             return response;
