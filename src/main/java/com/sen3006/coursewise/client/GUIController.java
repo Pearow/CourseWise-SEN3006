@@ -216,7 +216,11 @@ public class GUIController implements Initializable, Observer {
         courseItem.getChildren().addAll(codeLabel, ratingLabel);
 
         // Add click event to load course details
-        courseItem.setOnMouseClicked(event -> loadCourseDetails(course));
+        courseItem.setOnMouseClicked(event -> {
+            loadCourseDetails(api.getCourse(course.getCourse_id()));
+            loadCourseList();
+            filterCourses(searchField.getText());
+        });
         courseItem.setStyle(courseItem.getStyle() + "; -fx-cursor: hand;");
 
         // Add hover effect
