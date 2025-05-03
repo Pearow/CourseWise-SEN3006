@@ -184,16 +184,17 @@ public class Database {
             return null;
         }
     }
-    public JsonElement fetchSections(int courseId) {
+    public JsonElement fetchSections(String courseId) {
         String query = "SELECT * FROM wise.section WHERE course_id = ?";
         try (PreparedStatement statement = conn.prepareStatement(query)){
-            statement.setInt(1, courseId);
+            statement.setString(1, courseId);
 
             ResultSet resultSet = statement.executeQuery();
             ArrayList<JsonObject> sections = new ArrayList<>();
             while (resultSet.next()) {
                 JsonObject jsonObject = new JsonObject();
                 jsonObject.addProperty("id", resultSet.getInt("id"));
+                jsonObject.addProperty("section_id", resultSet.getInt("section_id"));
                 jsonObject.addProperty("course_id", resultSet.getString("course_id"));
                 jsonObject.addProperty("classroom_name", resultSet.getString("classroom_name"));
                 jsonObject.addProperty("professor_id", resultSet.getInt("professor_id"));
@@ -201,6 +202,7 @@ public class Database {
                 jsonObject.addProperty("start_time", resultSet.getString("start_time"));
                 jsonObject.addProperty("end_time", resultSet.getString("end_time"));
                 jsonObject.addProperty("type", resultSet.getInt("type"));
+                jsonObject.addProperty("semester", resultSet.getInt("semester"));
 
                 sections.add(jsonObject);
             }
@@ -387,6 +389,7 @@ public class Database {
                 jsonObject.addProperty("start_time", resultSet.getString("start_time"));
                 jsonObject.addProperty("end_time", resultSet.getString("end_time"));
                 jsonObject.addProperty("type", resultSet.getInt("type"));
+                jsonObject.addProperty("semester", resultSet.getInt("semester"));
                 return jsonObject;
             }else {
                 System.out.println("Section not found.");
@@ -622,22 +625,6 @@ public class Database {
     }
 
     // Updating data in the database
-    public boolean updateClassroom(String classroomName, JsonObject classroom) {
-        String query = "UPDATE wise.classroom SET " + (classroom.has("campus")?"campus = ? ":"") +
-                "WHERE name = ?";
-        try (PreparedStatement statement = conn.prepareStatement(query)) {
-            if (classroom.has("campus"))
-                statement.setInt(1, classroom.get("campus").getAsInt());
-            statement.setString(2, classroomName);
-
-            int rowsUpdated = statement.executeUpdate();
-            return rowsUpdated > 0;
-        } catch (SQLException e) {
-            System.out.println("Error updating classroom.");
-            e.printStackTrace();
-            return false;
-        }
-    }
     //TODO: Fix false index while data adding arbitrary columns
     public boolean updateCourse(String courseId, JsonObject course) {
         String query = "UPDATE wise.course SET " + (course.has("name")?"name = ?, ":"") +
@@ -669,6 +656,22 @@ public class Database {
             return rowsUpdated > 0;
         } catch (SQLException e) {
             System.out.println("Error updating course.");
+            e.printStackTrace();
+            return false;
+        }
+    }
+    public boolean updateClassroom(String classroomName, JsonObject classroom) {
+        String query = "UPDATE wise.classroom SET " + (classroom.has("campus")?"campus = ? ":"") +
+                "WHERE name = ?";
+        try (PreparedStatement statement = conn.prepareStatement(query)) {
+            if (classroom.has("campus"))
+                statement.setInt(1, classroom.get("campus").getAsInt());
+            statement.setString(2, classroomName);
+
+            int rowsUpdated = statement.executeUpdate();
+            return rowsUpdated > 0;
+        } catch (SQLException e) {
+            System.out.println("Error updating classroom.");
             e.printStackTrace();
             return false;
         }
@@ -763,6 +766,7 @@ public class Database {
                 (section.has("type")?"type = ? ":"") +
                 (section.has("section_id")?"type = ? ":"") +
                 (section.has("course_id")?"type = ? ":"") +
+                (section.has("semester")?"semester = ? ":"") +
                 "WHERE id = ?";
         try (PreparedStatement statement = conn.prepareStatement(query)) {
             if (section.has("classroom_name"))
@@ -781,7 +785,9 @@ public class Database {
                 statement.setInt(7, section.get("section_id").getAsInt());
             if(section.has("course_id"))
                 statement.setString(8, section.get("course_id").getAsString());
-            statement.setInt(9, SectionId);
+            if(section.has("semester"))
+                statement.setInt(9, section.get("semester").getAsInt());
+            statement.setInt(10, SectionId);
 
             int rowsUpdated = statement.executeUpdate();
             return rowsUpdated > 0;

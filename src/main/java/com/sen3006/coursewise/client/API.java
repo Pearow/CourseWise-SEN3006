@@ -343,6 +343,7 @@ public class API implements Observer {
 
     //TODO: Add a base model class and collapse all the sync methods into one
 
+    @Deprecated
     private void loadAll() {
         try {
             Classroom[] classrooms;

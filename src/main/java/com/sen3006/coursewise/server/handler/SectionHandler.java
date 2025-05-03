@@ -11,7 +11,7 @@ public class SectionHandler extends AbstractHandler {
         if (query != null && query.contains("id")) {
             response = db.fetchSection(Integer.parseInt(parseQuery(query).get("id")));
         } else if (pathParts.length == 4) {
-            response = db.fetchSections(Integer.parseInt(pathParts[3]));
+            response = db.fetchSections(pathParts[3]);
         } else {
             response = null; //TODO: Find proper response for this case
         }
