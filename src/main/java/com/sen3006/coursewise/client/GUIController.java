@@ -119,6 +119,11 @@ public class GUIController implements Initializable, Observer {
         springLabel.setStyle("-fx-font-size: 14px; -fx-padding: 8px 16px; -fx-text-fill: #333;");
         springLabel.setOnMouseClicked(ev -> {
             System.out.println("Spring selected");
+            selectedSemester = Semester.Spring;
+            loadCourseList();
+            loadCourseDetails(currentCourse, String.valueOf(currentCourse.getAvgRating()));
+            loadAvailableSections(currentCourse);
+            filterCourses(searchField.getText());
             semesterMenu.hide();
         });
 
@@ -127,6 +132,11 @@ public class GUIController implements Initializable, Observer {
         fallLabel.setStyle("-fx-font-size: 14px; -fx-padding: 8px 16px; -fx-text-fill: #333;");
         fallLabel.setOnMouseClicked(ev -> {
             System.out.println("Fall selected");
+            selectedSemester = Semester.Fall;
+            loadCourseList();
+            loadCourseDetails(currentCourse, String.valueOf(currentCourse.getAvgRating()));
+            loadAvailableSections(currentCourse);
+            filterCourses(searchField.getText());
             semesterMenu.hide();
         });
 
@@ -504,6 +514,9 @@ public class GUIController implements Initializable, Observer {
         loadCourseList();
         filterCourses(searchField.getText());
         //filterCourses(currentCourse.getCourse_id());
+        loadCourseDetails(currentCourse, String.valueOf(currentCourse.getAvgRating()));
+        loadCourseList();
+        filterCourses(searchField.getText());
     }
 
     //Update the review count label
