@@ -692,6 +692,21 @@ public class Database {
 
     // Updating data in the database
     //TODO: Fix false index while data adding arbitrary columns
+    public boolean updateClassroom(String classroomName, JsonObject classroom) {
+        String query = "UPDATE wise.classroom SET campus = ? WHERE name = ?";
+
+        try (PreparedStatement statement = conn.prepareStatement(query)) {
+            statement.setInt(1, classroom.get("campus").getAsInt());
+            statement.setString(2, classroomName);
+
+            int rowsUpdated = statement.executeUpdate();
+            return rowsUpdated > 0;
+        } catch (SQLException e) {
+            System.out.println("Error updating classroom.");
+            e.printStackTrace();
+            return false;
+        }
+    }
     public boolean updateCourse(String courseId, JsonObject course) {
         int i = 1;
         String query = "UPDATE wise.course SET " + (course.has("name")?"name = ?, ":"") +
@@ -728,31 +743,19 @@ public class Database {
             return false;
         }
     }
-    public boolean updateClassroom(String classroomName, JsonObject classroom) {
-        String query = "UPDATE wise.classroom SET " + (classroom.has("campus")?"campus = ? ":"") +
-                "WHERE name = ?";
-        try (PreparedStatement statement = conn.prepareStatement(query)) {
-            if (classroom.has("campus"))
-                statement.setInt(1, classroom.get("campus").getAsInt());
-            statement.setString(2, classroomName);
-
-            int rowsUpdated = statement.executeUpdate();
-            return rowsUpdated > 0;
-        } catch (SQLException e) {
-            System.out.println("Error updating classroom.");
-            e.printStackTrace();
-            return false;
-        }
-    }
     public boolean updateDepartment(int departmentId, JsonObject department) {
+        int i = 1;
         String query = "UPDATE wise.department SET " + (department.has("name")?"name = ?, ":"") +
-                (department.has("faculty_name")?"faculty_name = ? ":"") + "WHERE id = ?";
+                (department.has("faculty_name")?"faculty_name = ?, ":"") + "WHERE id = ?";
+
+        query = query.substring(0,query.lastIndexOf(',')) + query.substring(query.lastIndexOf(',') +1);
+
         try (PreparedStatement statement = conn.prepareStatement(query)) {
             if (department.has("name"))
-                statement.setString(1, department.get("name").getAsString());
+                statement.setString(i++, department.get("name").getAsString());
             if (department.has("faculty_name"))
-                statement.setString(2, department.get("faculty_name").getAsString());
-            statement.setInt(3, departmentId);
+                statement.setString(i++, department.get("faculty_name").getAsString());
+            statement.setInt(i, departmentId);
 
             int rowsUpdated = statement.executeUpdate();
             return rowsUpdated > 0;
@@ -768,7 +771,9 @@ public class Database {
                 (professor.has("surname")?"surname = ?, ":"") +
                 (professor.has("email")?"email = ?, ":"") +
                 (professor.has("total_rating")?"total_rating = ?, ":"") +
-                (professor.has("rating_count")?"rating_count = ? ":"") + "WHERE id = ?";
+                (professor.has("rating_count")?"rating_count = ?, ":"") + "WHERE id = ?";
+        query = query.substring(0,query.lastIndexOf(',')) + query.substring(query.lastIndexOf(',') +1);
+
         try (PreparedStatement statement = conn.prepareStatement(query)) {
             if (professor.has("name"))
                 statement.setString(i++, professor.get("name").getAsString());
@@ -791,11 +796,9 @@ public class Database {
         }
     }
     public boolean updateRating(int userId, int professorId, JsonObject rating) {
-        String query = "UPDATE wise.rating SET " + (rating.has("rating")?"rating = ? ":"") +
-                "WHERE user_id = ? AND professor_id = ?";
+        String query = "UPDATE wise.rating SET rating = ? WHERE user_id = ? AND professor_id = ?";
         try (PreparedStatement statement = conn.prepareStatement(query)) {
-            if (rating.has("rating"))
-                statement.setInt(1, rating.get("rating").getAsInt());
+            statement.setInt(1, rating.get("rating").getAsInt());
             statement.setInt(2, userId);
             statement.setInt(3, professorId);
 
@@ -808,15 +811,19 @@ public class Database {
         }
     }
     public boolean updateReview(int userId, String courseId, JsonObject review) {
+        int i = 1;
         String query = "UPDATE wise.review SET " + (review.has("rating")?"rating = ?, ":"") +
-                (review.has("comment")?"comment = ? ":"") + "WHERE user_id = ? AND course_id = ?";
+                (review.has("comment")?"comment = ?, ":"") + "WHERE user_id = ? AND course_id = ?";
+
+        query = query.substring(0,query.lastIndexOf(',')) + query.substring(query.lastIndexOf(',') +1);
+
         try (PreparedStatement statement = conn.prepareStatement(query)) {
             if (review.has("rating"))
-                statement.setInt(1, review.get("rating").getAsInt());
+                statement.setInt(i++, review.get("rating").getAsInt());
             if (review.has("comment"))
-                statement.setString(2, review.get("comment").getAsString());
-            statement.setInt(3, userId);
-            statement.setString(4, courseId);
+                statement.setString(i++, review.get("comment").getAsString());
+            statement.setInt(i++, userId);
+            statement.setString(i, courseId);
 
             int rowsUpdated = statement.executeUpdate();
             return rowsUpdated > 0;
@@ -827,36 +834,40 @@ public class Database {
         }
     }
     public boolean updateSection(int SectionId, JsonObject section) {
+        int i = 1;
         String query = "UPDATE wise.section SET " + (section.has("classroom_name")?"classroom_name = ?, ":"") +
                 (section.has("professor_id")?"professor_id = ?, ":"") +
                 (section.has("day")?"day = ?, ":"") +
                 (section.has("start_time")?"start_time = ?, ":"") +
                 (section.has("end_time")?"end_time = ?, ":"") +
                 (section.has("type")?"type = ? ":"") +
-                (section.has("section_id")?"type = ? ":"") +
-                (section.has("course_id")?"type = ? ":"") +
-                (section.has("semester")?"semester = ? ":"") +
+                (section.has("section_id")?"section_id = ?, ":"") +
+                (section.has("course_id")?"course_id = ?, ":"") +
+                (section.has("semester")?"semester = ?, ":"") +
                 "WHERE id = ?";
+
+        query = query.substring(0,query.lastIndexOf(',')) + query.substring(query.lastIndexOf(',') +1);
+
         try (PreparedStatement statement = conn.prepareStatement(query)) {
             if (section.has("classroom_name"))
-                statement.setString(1, section.get("classroom_name").getAsString());
+                statement.setString(i++, section.get("classroom_name").getAsString());
             if (section.has("professor_id"))
-                statement.setInt(2, section.get("professor_id").getAsInt());
+                statement.setInt(i++, section.get("professor_id").getAsInt());
             if (section.has("day"))
-                statement.setString(3, section.get("day").getAsString());
+                statement.setString(i++, section.get("day").getAsString());
             if (section.has("start_time"))
-                statement.setString(4, section.get("start_time").getAsString());
+                statement.setString(i++, section.get("start_time").getAsString());
             if (section.has("end_time"))
-                statement.setString(5, section.get("end_time").getAsString());
+                statement.setString(i++, section.get("end_time").getAsString());
             if (section.has("type"))
-                statement.setInt(6, section.get("type").getAsInt());
+                statement.setInt(i++, section.get("type").getAsInt());
             if(section.has("section_id"))
-                statement.setInt(7, section.get("section_id").getAsInt());
+                statement.setInt(i++, section.get("section_id").getAsInt());
             if(section.has("course_id"))
-                statement.setString(8, section.get("course_id").getAsString());
+                statement.setString(i++, section.get("course_id").getAsString());
             if(section.has("semester"))
-                statement.setInt(9, section.get("semester").getAsInt());
-            statement.setInt(10, SectionId);
+                statement.setInt(i++, section.get("semester").getAsInt());
+            statement.setInt(i, SectionId);
 
             int rowsUpdated = statement.executeUpdate();
             return rowsUpdated > 0;
@@ -867,20 +878,23 @@ public class Database {
         }
     }
     public boolean updateUser(int id, JsonObject user) {
+        int i = 1;
         String query = "UPDATE wise.user SET " + (user.has("name")?"name = ?, ":"") +
                 (user.has("surname")?"surname = ?, ":"") +
                 (user.has("email")?"email = ?, ":"") +
-                (user.has("password")?"password = ? ":"") + "WHERE id = ?";
+                (user.has("password")?"password = ?, ":"") + "WHERE id = ?";
+        query = query.substring(0,query.lastIndexOf(',')) + query.substring(query.lastIndexOf(',') +1);
+
         try (PreparedStatement statement = conn.prepareStatement(query)) {
             if (user.has("name"))
-                statement.setString(1, user.get("name").getAsString());
+                statement.setString(i++, user.get("name").getAsString());
             if (user.has("surname"))
-                statement.setString(2, user.get("surname").getAsString());
+                statement.setString(i++, user.get("surname").getAsString());
             if (user.has("email"))
-                statement.setString(3, user.get("email").getAsString());
+                statement.setString(i++, user.get("email").getAsString());
             if (user.has("password"))
-                statement.setString(4, user.get("password").getAsString());
-            statement.setInt(5, id);
+                statement.setString(i++, user.get("password").getAsString());
+            statement.setInt(i, id);
 
             int rowsUpdated = statement.executeUpdate();
             return rowsUpdated > 0;
