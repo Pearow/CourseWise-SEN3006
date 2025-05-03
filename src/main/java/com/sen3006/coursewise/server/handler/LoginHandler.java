@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.stream.Stream;
 
+//TODO: Fix error after wrong password
 public class LoginHandler implements HttpHandler {
     protected final Gson gson = new Gson();
     protected final Database db = Database.getInstance();

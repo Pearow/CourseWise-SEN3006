@@ -69,7 +69,7 @@ public class Database {
         }
     }
     public JsonElement fetchCourses(){
-        String query = "SELECT * FROM wise.course";
+        String query = "SELECT * FROM wise.course order by rating_count desc, total_rating desc, id";
         try (Statement statement = conn.createStatement()) {
             ResultSet resultSet = statement.executeQuery(query);
             ArrayList<JsonObject> courses = new ArrayList<>();
@@ -270,7 +270,7 @@ public class Database {
     }
 
     public JsonElement fetchCourses(int semester){
-        String query = "SELECT * FROM wise.course where (select count(*) from wise.section where course_id = course.id and semester = %s) > 0;";
+        String query = "SELECT * FROM wise.course where (select count(*) from wise.section where course_id = course.id and semester = %s) > 0 order by rating_count desc, total_rating desc, id;";
         query = query.formatted(semester);
         try (Statement statement = conn.createStatement()) {
             ResultSet resultSet = statement.executeQuery(query);
