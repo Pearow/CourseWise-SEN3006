@@ -2,10 +2,13 @@ module com.sen3006.coursewise {
     requires javafx.controls;
     requires javafx.fxml;
     requires com.google.gson;
+    requires java.sql;
+    requires jdk.httpserver;
+    requires java.net.http;
 
 
-    opens com.sen3006.coursewise to javafx.fxml, com.google.gson;
-    opens com.sen3006.coursewise.models to com.google.gson;
-    opens com.sen3006.coursewise.enums to com.google.gson;
-    exports com.sen3006.coursewise;
+    opens com.sen3006.coursewise.client to javafx.fxml, com.google.gson;
+    opens com.sen3006.coursewise.client.models to com.google.gson;
+    opens com.sen3006.coursewise.client.enums to com.google.gson;
+    exports com.sen3006.coursewise.client;
 }
