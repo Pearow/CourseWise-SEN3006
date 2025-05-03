@@ -94,7 +94,11 @@ public class Main {
         Main server = new Main();
         System.out.printf("Listening on port %d\n", server.getPort());
         server.createContext();
-        System.out.println("Server is ready.");
+        System.out.println("Server paths are defined.");
+        if(Database.getInstance().recalculateRatings())
+            System.out.println("Ratings recalculated.");
+        else
+            System.out.println("Ratings  recalculated.");
         server.start();
         System.out.println("Server is running.");
     }
