@@ -326,7 +326,6 @@ public class Database {
             return null;
         }
     }
-    //TODO: Find the problem
     public JsonElement fetchDepartment(int departmentId) { //TODO: Search by name
         String query = "SELECT * FROM wise.department WHERE id = ?";
         try (PreparedStatement statement = conn.prepareStatement(query)) {
@@ -691,7 +690,6 @@ public class Database {
     }
 
     // Updating data in the database
-    //TODO: Fix false index while data adding arbitrary columns
     public boolean updateClassroom(String classroomName, JsonObject classroom) {
         String query = "UPDATE wise.classroom SET campus = ? WHERE name = ?";
 
@@ -917,7 +915,6 @@ public class Database {
         }
     }
 
-    // TODO: Test all the datatypes by adding and fetching data
     public static void main(String[] args) throws SQLException {
         Database db = new Database();
         db.connect();

@@ -19,7 +19,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 // API class for handling all the data
-// TODO: Add reviews
 public class API implements Observer {
     private static API instance;
     private final Gson gson;
@@ -582,33 +581,7 @@ public class API implements Observer {
     public static void main(String[] args) throws IOException {
         API api = API.getInstance();
 
-        // Test code
-        User user1 = api.getUser(2200900);
-        User user2 = api.getUser(2200870);
-        Course course = api.getCourse("PHY1001");
-        Professor professor1 = api.getProfessors()[25];
-        Professor professor2 = api.getProfessors()[31];
 
-
-        // Add review
-        api.addReview(user1, course, "Great course", 5);
-        api.addReview(user2, course, "Bad course", 1);
-        // Add rating
-        api.addRating(user1, professor1, 3);
-        api.addRating(user2, professor2, 7);
-        api.addRating(user1, professor2, 5);
-
-        for (Course c : api.getCourses()) {
-            if (c.getRatingCount() > 0) {
-                System.out.println(c.getCourse_id() + " " + c.getAvgRating() + " there are " + c.getRatingCount() + " reviews");
-            }
-        }
-
-        for (Professor professor: api.getProfessors()) {
-            if (professor.getRatingCount() > 0) {
-                System.out.println(professor.getName() + " " + professor.getAvgRating() + " there are " + professor.getRatingCount() + " ratings");
-            }
-        }
     }
 }
 
