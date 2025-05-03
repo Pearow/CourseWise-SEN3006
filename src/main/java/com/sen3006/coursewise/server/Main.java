@@ -74,6 +74,8 @@ public class Main {
 
         server.createContext("/api/login", new LoginHandler());
 
+        server.createContext("/api/courses", new CourseHandler());
+
 
         // Test
         server.createContext("/api", exchange -> {

@@ -4,12 +4,19 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class CourseHandler extends AbstractHandler {
+    // host/api/courses/{semester}
     @Override
     protected String fetch(String[] pathParts, String query) {
         JsonElement response;
         if (query != null && query.contains("id")) {
             response = db.fetchCourse(parseQuery(query).get("id"));
-        } else if (pathParts.length == 4) {
+        } else if (pathParts[2].contentEquals("courses")) {
+            if (pathParts.length != 4){
+                return "{\"message\": \"Invalid path\", \"status\": \"error\"}";
+            }
+            response = db.fetchCourses(Integer.parseInt(pathParts[3]));
+        }
+        else if (pathParts.length == 4) {
             response = db.fetchCourse(pathParts[3]);
         } else {
             response = db.fetchCourses();

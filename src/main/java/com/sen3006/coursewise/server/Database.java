@@ -204,10 +204,11 @@ public class Database {
             return null;
         }
     }
-    public JsonElement fetchSections(String courseId) {
-        String query = "SELECT * FROM wise.section WHERE course_id = ?";
+    public JsonElement fetchSections(String courseId, int semester) {
+        String query = "SELECT * FROM wise.section WHERE course_id = ? AND semester = ?";
         try (PreparedStatement statement = conn.prepareStatement(query)){
             statement.setString(1, courseId);
+            statement.setInt(2, semester);
 
             ResultSet resultSet = statement.executeQuery();
             ArrayList<JsonObject> sections = new ArrayList<>();
@@ -266,6 +267,45 @@ public class Database {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public JsonElement fetchCourses(int semester){
+        String query = "SELECT * FROM wise.course where (select count(*) from wise.section where course_id = course.id and semester = ?) > 0;";
+        try (PreparedStatement statement = conn.prepareStatement(query)) {
+            statement.setInt(1, semester);
+
+            ResultSet resultSet = statement.executeQuery(query);
+            ArrayList<JsonObject> courses = new ArrayList<>();
+
+            while (resultSet.next()) {
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.addProperty("id", resultSet.getString("id"));
+                jsonObject.addProperty("name", resultSet.getString("name"));
+                int dep = resultSet.getInt("department_id");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("department_id", dep);
+                int type = resultSet.getInt("type");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("type", type);
+                int totalRating = resultSet.getInt("total_rating");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("total_rating", totalRating);
+                int ratingCount = resultSet.getInt("rating_count");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("rating_count", ratingCount);
+                String lecturersNote = resultSet.getString("lecturers_note");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("lecturers_note", lecturersNote);
+
+                courses.add(jsonObject);
+            }
+
+            return gson.toJsonTree(courses);
+
+        }catch (SQLException e) {
+            System.out.println("Error fetching courses.");
+            e.printStackTrace();}
+        return null;
     }
 
     // Fetching single instance

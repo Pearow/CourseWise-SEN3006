@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.sen3006.coursewise.client.enums.Campus;
+import com.sen3006.coursewise.client.enums.Semester;
 import com.sen3006.coursewise.client.json.PearowsGson;
 import com.sen3006.coursewise.client.json.UserPassword;
 import com.sen3006.coursewise.client.models.*;
@@ -498,8 +499,8 @@ public class API implements Observer {
                 .get("data"), Classroom[].class);
     }
 
-    public Course[] getCourses() {
-        return gson.fromJson(gson.fromJson(sendGetRequest(host + "/course"), JsonObject.class)
+    public Course[] getCourses(Semester semester) {
+        return gson.fromJson(gson.fromJson(sendGetRequest(host + "/courses/" + semester.getIntSemester()), JsonObject.class)
                 .get("data"), Course[].class);
     }
 
@@ -518,8 +519,8 @@ public class API implements Observer {
                 .get("data"), Professor[].class);
     }
 
-    public Section[] getSections(String courseId) {
-        return gson.fromJson(gson.fromJson(sendGetRequest(host + "/section/" + courseId), JsonObject.class)
+    public Section[] getSections(String courseId, Semester semester) {
+        return gson.fromJson(gson.fromJson(sendGetRequest(host + "/section/" + courseId + "/" + semester.getIntSemester()), JsonObject.class)
                 .get("data"), Section[].class);
     }
 
