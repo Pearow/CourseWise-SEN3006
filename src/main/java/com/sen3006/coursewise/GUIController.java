@@ -334,7 +334,7 @@ public class GUIController implements Initializable, Observer {
         campusLabel.setText(String.valueOf(currentSection.getClassroom().getCampus()));
         sectionTypeLabel.setText(currentSection.getType().toString());
 
-        // Load reviews for this section
+        // Load reviews for this course
         loadReviews(currentCourse);
     }
 
