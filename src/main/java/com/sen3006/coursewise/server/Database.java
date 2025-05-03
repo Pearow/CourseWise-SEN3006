@@ -76,7 +76,9 @@ public class Database {
                 JsonObject jsonObject = new JsonObject();
                 jsonObject.addProperty("id", resultSet.getString("id"));
                 jsonObject.addProperty("name", resultSet.getString("name"));
-                jsonObject.addProperty("department_id", resultSet.getInt("department_id"));
+                int dep = resultSet.getInt("department_id");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("department_id", dep);
                 jsonObject.addProperty("type", resultSet.getInt("type"));
                 jsonObject.addProperty("total_rating", resultSet.getInt("total_rating"));
                 jsonObject.addProperty("rating_count", resultSet.getInt("rating_count"));
@@ -125,7 +127,6 @@ public class Database {
                 jsonObject.addProperty("name", resultSet.getString("name"));
                 jsonObject.addProperty("surname", resultSet.getString("surname"));
                 jsonObject.addProperty("email", resultSet.getString("email"));
-                jsonObject.addProperty("password", resultSet.getString("password"));
                 jsonObject.addProperty("total_rating", resultSet.getInt("total_rating"));
                 jsonObject.addProperty("rating_count", resultSet.getInt("rating_count"));
 
@@ -370,15 +371,15 @@ public class Database {
             return null;
         }
     }
-    public JsonElement fetchSection(int sectionId, String courseId) {
-        String query = "SELECT * FROM wise.section WHERE id = ? AND course_id = ?";
+    public JsonElement fetchSection(int id) {
+        String query = "SELECT * FROM wise.section WHERE id = ?";
         try (PreparedStatement statement = conn.prepareStatement(query)) {
-            statement.setInt(1, sectionId);
-            statement.setString(2, courseId);
+            statement.setInt(1, id);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 JsonObject jsonObject = new JsonObject();
                 jsonObject.addProperty("id", resultSet.getInt("id"));
+                jsonObject.addProperty("section_id", resultSet.getInt("section_id"));
                 jsonObject.addProperty("course_id", resultSet.getString("course_id"));
                 jsonObject.addProperty("classroom_name", resultSet.getString("classroom_name"));
                 jsonObject.addProperty("professor_id", resultSet.getInt("professor_id"));
@@ -567,29 +568,30 @@ public class Database {
         }
     }
     public boolean insertSection(JsonObject section) {
-        String query = "INSERT INTO wise.section (id, course_id, classroom_name, professor_id, day, start_time, end_time, type, semester) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO wise.section (id, section_id, course_id, classroom_name, professor_id, day, start_time, end_time, type, semester) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement statement = conn.prepareStatement(query)) {
             statement.setInt(1, section.get("id").getAsInt());
-            statement.setString(2, section.get("course_id").getAsString());
+            statement.setInt(2, section.get("section_id").getAsInt());
+            statement.setString(3, section.get("course_id").getAsString());
             if (section.has("classroom_name"))
-                statement.setString(3, section.get("classroom_name").getAsString());
-            else statement.setNull(3, Types.VARCHAR);
-            statement.setInt(4, section.get("professor_id").getAsInt());
+                statement.setString(4, section.get("classroom_name").getAsString());
+            else statement.setNull(4, Types.VARCHAR);
+            statement.setInt(5, section.get("professor_id").getAsInt());
             if (section.has("day"))
-                statement.setInt(5, section.get("day").getAsInt());
-            else statement.setNull(5, Types.VARCHAR);
-            if (section.has("start_time"))
-            statement.setString(6, section.get("start_time").getAsString());
+                statement.setInt(6, section.get("day").getAsInt());
             else statement.setNull(6, Types.VARCHAR);
-            if (section.has("end_time"))
-                statement.setString(7, section.get("end_time").getAsString());
+            if (section.has("start_time"))
+            statement.setString(7, section.get("start_time").getAsString());
             else statement.setNull(7, Types.VARCHAR);
+            if (section.has("end_time"))
+                statement.setString(8, section.get("end_time").getAsString());
+            else statement.setNull(8, Types.VARCHAR);
             if (section.has("type"))
-                statement.setInt(8, section.get("type").getAsInt());
-            else statement.setNull(8, Types.SMALLINT);
-            if (section.has("semester"))
-                statement.setInt(9, section.get("semester").getAsInt());
+                statement.setInt(9, section.get("type").getAsInt());
             else statement.setNull(9, Types.SMALLINT);
+            if (section.has("semester"))
+                statement.setInt(10, section.get("semester").getAsInt());
+            else statement.setNull(10, Types.SMALLINT);
 
             int rowsInserted = statement.executeUpdate();
             return rowsInserted > 0;
@@ -752,13 +754,16 @@ public class Database {
             return false;
         }
     }
-    public boolean updateSection(int sectionId, String courseId, JsonObject section) {
+    public boolean updateSection(int SectionId, JsonObject section) {
         String query = "UPDATE wise.section SET " + (section.has("classroom_name")?"classroom_name = ?, ":"") +
                 (section.has("professor_id")?"professor_id = ?, ":"") +
                 (section.has("day")?"day = ?, ":"") +
                 (section.has("start_time")?"start_time = ?, ":"") +
                 (section.has("end_time")?"end_time = ?, ":"") +
-                (section.has("type")?"type = ? ":"") + "WHERE id = ? AND course_id = ?";
+                (section.has("type")?"type = ? ":"") +
+                (section.has("section_id")?"type = ? ":"") +
+                (section.has("course_id")?"type = ? ":"") +
+                "WHERE id = ?";
         try (PreparedStatement statement = conn.prepareStatement(query)) {
             if (section.has("classroom_name"))
                 statement.setString(1, section.get("classroom_name").getAsString());
@@ -772,8 +777,11 @@ public class Database {
                 statement.setString(5, section.get("end_time").getAsString());
             if (section.has("type"))
                 statement.setInt(6, section.get("type").getAsInt());
-            statement.setInt(7, sectionId);
-            statement.setString(8, courseId);
+            if(section.has("section_id"))
+                statement.setInt(7, section.get("section_id").getAsInt());
+            if(section.has("course_id"))
+                statement.setString(8, section.get("course_id").getAsString());
+            statement.setInt(9, SectionId);
 
             int rowsUpdated = statement.executeUpdate();
             return rowsUpdated > 0;

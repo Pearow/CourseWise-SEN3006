@@ -14,7 +14,8 @@ public class SectionAdapter implements JsonSerializer<Section>, JsonDeserializer
     @Override
     public JsonElement serialize(Section section, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("id", section.getSection_id());
+        jsonObject.addProperty("id", section.getId());
+        jsonObject.addProperty("section_id", section.getSection_id());
         jsonObject.addProperty("course_id", section.getCourse().getCourse_id());
         jsonObject.addProperty("professor_id", section.getProfessor().getId());
         jsonObject.addProperty("start_time", section.getStart_time().toString());
@@ -33,6 +34,6 @@ public class SectionAdapter implements JsonSerializer<Section>, JsonDeserializer
         Classroom classroom = API.getInstance().getClassroom(jsonObject.get("classroom_name").getAsString());
         Course course = API.getInstance().getCourse(jsonObject.get("course_id").getAsString());
         Professor professor = API.getInstance().getProfessor(jsonObject.get("professor_id").getAsInt());
-        return new Section(jsonObject.get("id").getAsInt(), LocalTime.parse(jsonObject.get("start_time").getAsString()), LocalTime.parse(jsonObject.get("end_time").getAsString()), jsonObject.get("day").getAsInt(), classroom, course, professor, jsonObject.get("type").getAsInt(), jsonObject.get("semester").getAsInt());
+        return new Section(jsonObject.get("id").getAsInt(), jsonObject.get("section_id").getAsInt(), LocalTime.parse(jsonObject.get("start_time").getAsString()), LocalTime.parse(jsonObject.get("end_time").getAsString()), jsonObject.get("day").getAsInt(), classroom, course, professor, jsonObject.get("type").getAsInt(), jsonObject.get("semester").getAsInt());
     }
 }

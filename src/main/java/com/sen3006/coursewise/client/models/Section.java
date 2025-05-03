@@ -12,6 +12,7 @@ import java.util.Observable;
 
 public class Section extends Observable
 {
+    private int id;
     private int section_id;
     private LocalTime start_time;
     private LocalTime end_time;
@@ -23,7 +24,8 @@ public class Section extends Observable
     private Type type;
     private Semester semester;
 
-    public Section(int section_id, LocalTime start_time, LocalTime end_time, int section_day, Classroom classroom, Course course, Professor professor, int type, int semester) {
+    public Section(int id, int section_id, LocalTime start_time, LocalTime end_time, int section_day, Classroom classroom, Course course, Professor professor, int type, int semester) {
+        this.id = id;
         this.section_id = section_id;
         this.start_time = start_time;
         this.end_time = end_time;
@@ -38,6 +40,10 @@ public class Section extends Observable
         // Register this classroom as an observable to the API
         this.addObserver(API.getInstance());
         this.addObserver(GUIController.getInstance());
+    }
+
+    public int getId() {
+        return id;
     }
 
     public int getSection_id() {
