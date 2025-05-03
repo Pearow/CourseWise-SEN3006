@@ -943,10 +943,10 @@ public class Database {
     }
 
     public boolean recalculateRatings(){
-        String query1 = "UPDATE wise.course \"c\" SET total_rating = (select SUM(rating) from wise.review \"r\" where r.course_id = c.id);";
-        String query2 = "UPDATE wise.course \"c\" SET rating_count = (select COUNT(*) from wise.review \"r\" where r.course_id = c.id);";
-        String query3 = "UPDATE wise.professor \"p\" SET total_rating = (select SUM(rating) from wise.rating \"r\" where r.professor_id = p.id);";
-        String query4 = "UPDATE wise.professor \"p\" SET rating_count = (select COUNT(*) from wise.rating \"r\" where r.professor_id = p.id);";
+        String query1 = "UPDATE wise.course \"c\" SET rating_count = COALESCE((select COUNT(*) from wise.review \"r\" where r.course_id = c.id), 0);";
+        String query2 = "UPDATE wise.course \"c\" SET total_rating = COALESCE((select SUM(rating) from wise.review \"r\" where r.course_id = c.id), 0);";
+        String query3 = "UPDATE wise.professor \"p\" SET rating_count = COALESCE((select COUNT(*) from wise.rating \"r\" where r.professor_id = p.id), 0);";
+        String query4 = "UPDATE wise.professor \"p\" SET total_rating = COALESCE((select SUM(rating) from wise.rating \"r\" where r.professor_id = p.id), 0);";
 
         try (Statement statement = conn.createStatement()){
             statement.executeUpdate(query1);
