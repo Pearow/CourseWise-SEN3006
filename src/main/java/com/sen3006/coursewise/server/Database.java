@@ -270,10 +270,9 @@ public class Database {
     }
 
     public JsonElement fetchCourses(int semester){
-        String query = "SELECT * FROM wise.course where (select count(*) from wise.section where course_id = course.id and semester = ?) > 0;";
-        try (PreparedStatement statement = conn.prepareStatement(query)) {
-            statement.setInt(1, semester);
-
+        String query = "SELECT * FROM wise.course where (select count(*) from wise.section where course_id = course.id and semester = %s) > 0;";
+        query = query.formatted(semester);
+        try (Statement statement = conn.createStatement()) {
             ResultSet resultSet = statement.executeQuery(query);
             ArrayList<JsonObject> courses = new ArrayList<>();
 
