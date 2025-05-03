@@ -1,6 +1,7 @@
 package com.sen3006.coursewise.server.handler;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.sen3006.coursewise.server.Database;
 import com.sun.net.httpserver.HttpHandler;
@@ -11,7 +12,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.stream.Stream;
 
-//TODO: Fix error after wrong password
+
 public class LoginHandler implements HttpHandler {
     protected final Gson gson = new Gson();
     protected final Database db = Database.getInstance();
@@ -23,15 +24,14 @@ public class LoginHandler implements HttpHandler {
                 response = handlePost(exchange);
             } else {
                 response = "Method not allowed";
-                exchange.sendResponseHeaders(405, response.length());
+                exchange.sendResponseHeaders(405, response.getBytes().length);
             }
 
             try(OutputStream os = exchange.getResponseBody()) {
                 if (response == null){
                     response = "No content";
-                    exchange.sendResponseHeaders(500, response.length());
+                    exchange.sendResponseHeaders(500, response.getBytes().length);
                 }
-                exchange.sendResponseHeaders(200, response.length());
                 os.write(response.getBytes());
             }
         } catch (Exception e) {
@@ -58,13 +58,16 @@ public class LoginHandler implements HttpHandler {
             exchange.sendResponseHeaders(400, response.getBytes().length);
             return response;
         }
-        JsonObject data = db.fetchLogin(requestBody.get("email").getAsString()).getAsJsonObject();
+
+        JsonElement data = db.fetchLogin(requestBody.get("email").getAsString());
         if(data == null) {
             response = "{\"message\": \"User not found\", \"status\": \"error\"}";
             exchange.sendResponseHeaders(404, response.getBytes().length);
             return response;
-        }else
+        }else {
+            exchange.sendResponseHeaders(200, data.toString().getBytes().length);
             response = "{\"data\": " + data + ", \"status\": \"success\"}";
+        }
 
         return response;
     }
