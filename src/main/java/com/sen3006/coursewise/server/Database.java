@@ -838,7 +838,7 @@ public class Database {
                 (section.has("day")?"day = ?, ":"") +
                 (section.has("start_time")?"start_time = ?, ":"") +
                 (section.has("end_time")?"end_time = ?, ":"") +
-                (section.has("type")?"type = ? ":"") +
+                (section.has("type")?"type = ?, ":"") +
                 (section.has("section_id")?"section_id = ?, ":"") +
                 (section.has("course_id")?"course_id = ?, ":"") +
                 (section.has("semester")?"semester = ?, ":"") +
@@ -852,7 +852,7 @@ public class Database {
             if (section.has("professor_id"))
                 statement.setInt(i++, section.get("professor_id").getAsInt());
             if (section.has("day"))
-                statement.setString(i++, section.get("day").getAsString());
+                statement.setInt(i++, section.get("day").getAsInt());
             if (section.has("start_time"))
                 statement.setString(i++, section.get("start_time").getAsString());
             if (section.has("end_time"))

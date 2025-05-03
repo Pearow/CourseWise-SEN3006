@@ -306,7 +306,6 @@ public class API implements Observer {
             System.out.println("Error: " + response.get("status").toString() + " " + response.get("message").getAsString());
         }
     }
-    //TODO: Fix
     public void syncSection(Section section) {
         JsonObject json = gson.fromJson("{\"data\": " + gson.toJson(section, Section.class) + "}", JsonObject.class);
         JsonObject response = gson.fromJson(sendPutRequest(host + "/section/" + section.getId(), json), JsonObject.class);
@@ -579,9 +578,6 @@ public class API implements Observer {
     }
 
     public static void main(String[] args) throws IOException {
-        API api = API.getInstance();
-
-
     }
 }
 

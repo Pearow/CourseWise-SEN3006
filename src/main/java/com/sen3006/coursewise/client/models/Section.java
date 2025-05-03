@@ -39,7 +39,7 @@ public class Section extends Observable
 
         // Register this classroom as an observable to the API
         this.addObserver(API.getInstance());
-        this.addObserver(GUIController.getInstance());
+//        this.addObserver(GUIController.getInstance());
     }
 
     public int getId() {
