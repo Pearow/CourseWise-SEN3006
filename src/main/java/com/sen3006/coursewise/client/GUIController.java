@@ -86,7 +86,7 @@ public class GUIController implements Initializable, Observer {
 
             if (!courseListContainer.getChildren().isEmpty()) {
                 currentCourse = api.getCourses(selectedSemester)[0];
-                loadCourseDetails(currentCourse, String.valueOf(currentCourse.getAvgRating()));
+                loadCourseDetails(currentCourse);
             }
 
             if (courseListLabel != null) {
@@ -98,8 +98,10 @@ public class GUIController implements Initializable, Observer {
     private void loadCourseList() {
         courseListContainer.getChildren().clear();
 
-        Course[] courses = api.getCourses(selectedSemester); //this method is broken for now and returns every course in the database
+        Course[] courses = api.getCourses(selectedSemester);
         for (Course course : courses) {
+            if(currentCourse != null && course.getCourse_id().contentEquals(currentCourse.getCourse_id()))
+                currentCourse = course;
             addCourseItemToList(course, String.valueOf(course.getAvgRating()));
         }
     }
@@ -121,7 +123,7 @@ public class GUIController implements Initializable, Observer {
             System.out.println("Spring selected");
             selectedSemester = Semester.Spring;
             loadCourseList();
-            loadCourseDetails(currentCourse, String.valueOf(currentCourse.getAvgRating()));
+            loadCourseDetails(currentCourse);
             loadAvailableSections(currentCourse);
             filterCourses(searchField.getText());
             semesterMenu.hide();
@@ -134,7 +136,7 @@ public class GUIController implements Initializable, Observer {
             System.out.println("Fall selected");
             selectedSemester = Semester.Fall;
             loadCourseList();
-            loadCourseDetails(currentCourse, String.valueOf(currentCourse.getAvgRating()));
+            loadCourseDetails(currentCourse);
             loadAvailableSections(currentCourse);
             filterCourses(searchField.getText());
             semesterMenu.hide();
@@ -214,7 +216,7 @@ public class GUIController implements Initializable, Observer {
         courseItem.getChildren().addAll(codeLabel, ratingLabel);
 
         // Add click event to load course details
-        courseItem.setOnMouseClicked(event -> loadCourseDetails(course, rating));
+        courseItem.setOnMouseClicked(event -> loadCourseDetails(course));
         courseItem.setStyle(courseItem.getStyle() + "; -fx-cursor: hand;");
 
         // Add hover effect
@@ -264,13 +266,13 @@ public class GUIController implements Initializable, Observer {
     }
 
     //Load course details when a course is selected
-    private void loadCourseDetails(Course course, String rating) {
+    private void loadCourseDetails(Course course) {
         // Save current course code
         currentCourse = course;
         if (course != null) {
             // Update course details UI
             courseTitleLabel.setText(course.getCourse_name());
-            courseRatingLabel.setText(rating + "/10");
+            courseRatingLabel.setText(course.getAvgRating() + "/10");
             courseCodeLabel.setText(course.getCourse_id());
         }
 
@@ -401,17 +403,17 @@ public class GUIController implements Initializable, Observer {
 
 
         VBox reviewBox = new VBox(5);
-        reviewBox.setStyle("-fx-background-color: " + bgColor + "; -fx-background-radius: 4; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 2, 0, 0, 1);");
+        reviewBox.setStyle("-fx-background-color: %s; -fx-background-radius: 4; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 2, 0, 0, 1);".formatted(bgColor));
         reviewBox.setPadding(new Insets(5));
 
         HBox reviewHeader = new HBox(10);
         reviewHeader.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
 
         Label reviewUser = new Label("→ " + reviewer + ",");
-        reviewUser.setStyle("-fx-text-fill:" + textColor + ";");
+        reviewUser.setStyle("-fx-text-fill:%s;".formatted(textColor));
 
         Label reviewRating = new Label(rating);
-        reviewRating.setStyle("-fx-border-color:" + textColor + "; -fx-border-radius: 10; -fx-background-color: white; -fx-background-radius: 10; -fx-text-fill: " + textColor + ";");
+        reviewRating.setStyle("-fx-border-color:%s; -fx-border-radius: 10; -fx-background-color: white; -fx-background-radius: 10; -fx-text-fill: %s;".formatted(textColor, textColor));
         reviewRating.setPadding(new Insets(2, 5, 2, 5));
 
         reviewHeader.getChildren().addAll(reviewUser, reviewRating);
@@ -503,7 +505,6 @@ public class GUIController implements Initializable, Observer {
         api.addReview(CurrentUser.getInstance(), currentCourse, reviewText, rating);
 
         loadReviews(currentCourse);
-        loadCourseDetails(currentCourse, String.valueOf(currentCourse.getAvgRating()));
 
         // Show success message
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -511,10 +512,10 @@ public class GUIController implements Initializable, Observer {
         alert.setHeaderText("Review Submitted");
         alert.setContentText("Your review has been submitted successfully.");
         alert.showAndWait();
-        loadCourseList();
         filterCourses(searchField.getText());
         //filterCourses(currentCourse.getCourse_id());
-        loadCourseDetails(currentCourse, String.valueOf(currentCourse.getAvgRating()));
+        currentCourse = api.getCourse(currentCourse.getCourse_id());
+        loadCourseDetails(currentCourse);
         loadCourseList();
         filterCourses(searchField.getText());
     }
@@ -641,7 +642,7 @@ public class GUIController implements Initializable, Observer {
     public void update(Observable o, Object arg) {
         if (o instanceof Course) {
             Course course = (Course) o;
-            if (course.getCourse_id().equals(currentCourse.getCourse_id())) {
+            if (course.equals(currentCourse)) {
                 courseTitleLabel.setText(course.getCourse_name());
                 courseRatingLabel.setText(course.getAvgRating() + "/10");
                 courseCodeLabel.setText(course.getCourse_id());
@@ -652,7 +653,7 @@ public class GUIController implements Initializable, Observer {
             Review review = (Review) o;
             if (review.getCourse().getCourse_id().equals(currentCourse.getCourse_id())) {
                 loadReviews(currentCourse);
-                loadCourseDetails(currentCourse, String.valueOf(currentCourse.getAvgRating()));
+                loadCourseDetails(currentCourse);
                 System.out.println("Review updated: " + review.getCourse().getCourse_id());
             }
         }
