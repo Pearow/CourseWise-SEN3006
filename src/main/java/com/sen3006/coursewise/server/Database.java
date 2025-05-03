@@ -627,30 +627,32 @@ public class Database {
     // Updating data in the database
     //TODO: Fix false index while data adding arbitrary columns
     public boolean updateCourse(String courseId, JsonObject course) {
+        int i = 1;
         String query = "UPDATE wise.course SET " + (course.has("name")?"name = ?, ":"") +
                 (course.has("department_id")?"department_id = ?, ":"") +
                 (course.has("type")?"type = ?, ":"") +
                 (course.has("total_rating")?"total_rating = ?, ":"") +
                 (course.has("rating_count")?"rating_count = ?, ":"") +
-                (course.has("lecturers_note")?"lecturers_note = ? ":"") +
-                (course.has("semester")?"semester = ?":"") + "WHERE id = ?";
+                (course.has("lecturers_note")?"lecturers_note = ?, ":"") +
+                "WHERE id = ?";
+        query = query.substring(0,query.lastIndexOf(',')) + query.substring(query.lastIndexOf(',') +1);
 
         try (PreparedStatement statement = conn.prepareStatement(query)) {
             if (course.has("name"))
-                statement.setString(1, course.get("name").getAsString());
+                statement.setString(i++, course.get("name").getAsString());
             if (course.has("department_id"))
-                statement.setInt(2, course.get("department_id").getAsInt());
+                statement.setInt(i++, course.get("department_id").getAsInt());
             if (course.has("type"))
-                statement.setInt(3, course.get("type").getAsInt());
+                statement.setInt(i++, course.get("type").getAsInt());
             if (course.has("total_rating"))
-                statement.setInt(4, course.get("total_rating").getAsInt());
+                statement.setInt(i++, course.get("total_rating").getAsInt());
             if (course.has("rating_count"))
-                statement.setInt(5, course.get("rating_count").getAsInt());
+                statement.setInt(i++, course.get("rating_count").getAsInt());
             if (course.has("lecturers_note"))
-                statement.setString(6, course.get("lecturers_note").getAsString());
+                statement.setString(i++, course.get("lecturers_note").getAsString());
             if (course.has("semester"))
-                statement.setString(7, course.get("semester").getAsString());
-            statement.setString(8, courseId);
+                statement.setString(i++, course.get("semester").getAsString());
+            statement.setString(i, courseId);
 
             int rowsUpdated = statement.executeUpdate();
             return rowsUpdated > 0;
@@ -695,6 +697,7 @@ public class Database {
         }
     }
     public boolean updateProfessor(int professorId, JsonObject professor) {
+        int i = 1;
         String query = "UPDATE wise.professor SET " + (professor.has("name")?"name = ?, ":"") +
                 (professor.has("surname")?"surname = ?, ":"") +
                 (professor.has("email")?"email = ?, ":"") +
@@ -702,16 +705,16 @@ public class Database {
                 (professor.has("rating_count")?"rating_count = ? ":"") + "WHERE id = ?";
         try (PreparedStatement statement = conn.prepareStatement(query)) {
             if (professor.has("name"))
-                statement.setString(1, professor.get("name").getAsString());
+                statement.setString(i++, professor.get("name").getAsString());
             if (professor.has("surname"))
-                statement.setString(2, professor.get("surname").getAsString());
+                statement.setString(i++, professor.get("surname").getAsString());
             if (professor.has("email"))
-                statement.setString(3, professor.get("email").getAsString());
+                statement.setString(i++, professor.get("email").getAsString());
             if (professor.has("total_rating"))
-                statement.setInt(4, professor.get("total_rating").getAsInt());
+                statement.setInt(i++, professor.get("total_rating").getAsInt());
             if (professor.has("rating_count"))
-                statement.setInt(5, professor.get("rating_count").getAsInt());
-            statement.setInt(6, professorId);
+                statement.setInt(i++, professor.get("rating_count").getAsInt());
+            statement.setInt(i, professorId);
 
             int rowsUpdated = statement.executeUpdate();
             return rowsUpdated > 0;
