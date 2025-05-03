@@ -4,7 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class RatingHandler extends AbstractHandler {
-    // host/api/{course_id}/{rating_id}
+    // host/api/{professor_id}/{user_id}
     @Override
     protected String fetch(String[] pathParts, String query) {
         JsonElement response;
@@ -13,14 +13,14 @@ public class RatingHandler extends AbstractHandler {
         } else if (pathParts.length == 4) {
             response = db.fetchRatings(Integer.parseInt(pathParts[3]));
         } else if (pathParts.length == 5) {
-            response = db.fetchRating(Integer.parseInt(pathParts[3]), Integer.parseInt(pathParts[4]));
+            response = db.fetchRating(Integer.parseInt(pathParts[4]), Integer.parseInt(pathParts[3]));
         } else {
-            return "{status : \"error\", message: \"Invalid request\"}";
+            return "{\"status\" : \"error\", message: \"Invalid request\"}";
         }
         if (response != null)
-            return response.toString();
+            return "{\"data\": %s,\"status\": \"success\"}".formatted(response.toString());
         else
-            return "{status : \"error\", message: \"Rating not found\"}";
+            return "{\"status\" : \"error\", message: \"Rating not found\"}";
     }
 
     @Override

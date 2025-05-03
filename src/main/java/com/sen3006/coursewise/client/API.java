@@ -332,7 +332,7 @@ public class API implements Observer {
     }
 
     public void syncRating(Rating rating) {
-        JsonObject json = gson.fromJson("{\"data\": " + gson.toJson(rating, Section.class) + "}", JsonObject.class);
+        JsonObject json = gson.fromJson("{\"data\": " + gson.toJson(rating, Rating.class) + "}", JsonObject.class);
         JsonObject response = gson.fromJson(sendPutRequest(host + "/section/" + rating.getProfessor().getId() + "/" + rating.getUser().getId(), json), JsonObject.class);
 
         if (response.get("status").getAsString().contentEquals("success")) {
@@ -445,8 +445,7 @@ public class API implements Observer {
     }
 
     public Rating getRating(int user_id, int professor_id) {
-        return gson.fromJson(gson.fromJson(sendGetRequest(host + "/rating/" + professor_id + "/" + user_id), JsonElement.class)
-                .getAsJsonObject().get("data"), Rating.class);
+        return gson.fromJson(gson.fromJson(sendGetRequest(host + "/rating/" + professor_id + "/" + user_id), JsonObject.class).get("data"), Rating.class);
     }
 
     public boolean addReview(User user, Course course, String comment, int rating) {
@@ -473,12 +472,15 @@ public class API implements Observer {
 
     public boolean addRating(User user, Professor professor, int rating) {
         Rating ratingObj;
+        String response;
         if ((ratingObj = getRating(user.getId(), professor.getId())) != null) {
             ratingObj.setRating(rating);
+            syncRating(ratingObj);//TODO: Return response or boolean
+            return true;
         }else {
             ratingObj = new Rating(professor, user, rating);
+            response = sendPostRequest(host + "/rating", gson.toJsonTree(ratingObj).getAsJsonObject());
         }
-        String response = sendPostRequest(host + "/rating", gson.toJsonTree(ratingObj).getAsJsonObject());
         JsonObject jsonResponse = gson.fromJson(response, JsonObject.class);
         if (jsonResponse.get("status").getAsString().contentEquals("success")) {
             System.out.println("Rating added successfully");
