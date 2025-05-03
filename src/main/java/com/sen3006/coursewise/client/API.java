@@ -26,6 +26,7 @@ public class API implements Observer {
     private HttpClient httpClient;
     private String host = "http://localhost:3006/api";
 
+    //TODO: Add cache
     private Hashtable<String, Classroom> classrooms;
     private Hashtable<String, Course> courses;
     private Hashtable<Integer, UserPassword> users;

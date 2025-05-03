@@ -55,7 +55,9 @@ public class Database {
                 JsonObject jsonObject = new JsonObject();
                 jsonObject.addProperty("id", resultSet.getString("id"));
                 jsonObject.addProperty("name", resultSet.getString("name"));
-                jsonObject.addProperty("campus", resultSet.getInt("campus"));
+                int campus = resultSet.getInt("campus");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("campus", campus);
 
                 classrooms.add(jsonObject);
             }
@@ -79,10 +81,18 @@ public class Database {
                 int dep = resultSet.getInt("department_id");
                 if (!resultSet.wasNull())
                     jsonObject.addProperty("department_id", dep);
-                jsonObject.addProperty("type", resultSet.getInt("type"));
-                jsonObject.addProperty("total_rating", resultSet.getInt("total_rating"));
-                jsonObject.addProperty("rating_count", resultSet.getInt("rating_count"));
-                jsonObject.addProperty("lecturers_note", resultSet.getString("lecturers_note"));
+                int type = resultSet.getInt("type");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("type", type);
+                int totalRating = resultSet.getInt("total_rating");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("total_rating", totalRating);
+                int ratingCount = resultSet.getInt("rating_count");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("rating_count", ratingCount);
+                String lecturersNote = resultSet.getString("lecturers_note");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("lecturers_note", lecturersNote);
 
                 courses.add(jsonObject);
             }
@@ -104,7 +114,8 @@ public class Database {
                 JsonObject jsonObject = new JsonObject();
                 jsonObject.addProperty("id", resultSet.getInt("id"));
                 jsonObject.addProperty("name", resultSet.getString("name"));
-                jsonObject.addProperty("faculty_name", resultSet.getString("faculty_name"));
+                int facultyName = resultSet.getInt("faculty_name");
+                    jsonObject.addProperty("faculty_name", facultyName);
 
                 departments.add(jsonObject);
             }
@@ -125,10 +136,18 @@ public class Database {
                 JsonObject jsonObject = new JsonObject();
                 jsonObject.addProperty("id", resultSet.getInt("id"));
                 jsonObject.addProperty("name", resultSet.getString("name"));
-                jsonObject.addProperty("surname", resultSet.getString("surname"));
-                jsonObject.addProperty("email", resultSet.getString("email"));
-                jsonObject.addProperty("total_rating", resultSet.getInt("total_rating"));
-                jsonObject.addProperty("rating_count", resultSet.getInt("rating_count"));
+                String surname = resultSet.getString("surname");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("surname", surname);
+                String email = resultSet.getString("email");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("email", email);
+                int totalRating = resultSet.getInt("total_rating");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("total_rating", totalRating);
+                int ratingCount = resultSet.getInt("rating_count");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("rating_count", ratingCount);
 
                 professors.add(jsonObject);
             }
@@ -173,8 +192,9 @@ public class Database {
                 jsonObject.addProperty("user_id", resultSet.getInt("user_id"));
                 jsonObject.addProperty("course_id", resultSet.getString("course_id"));
                 jsonObject.addProperty("rating", resultSet.getInt("rating"));
-                jsonObject.addProperty("comment", resultSet.getString("comment"));
-
+                String comment = resultSet.getString("comment");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("comment", comment);
                 reviews.add(jsonObject);
             }
             return gson.toJsonTree(reviews);
@@ -196,11 +216,20 @@ public class Database {
                 jsonObject.addProperty("id", resultSet.getInt("id"));
                 jsonObject.addProperty("section_id", resultSet.getInt("section_id"));
                 jsonObject.addProperty("course_id", resultSet.getString("course_id"));
-                jsonObject.addProperty("classroom_name", resultSet.getString("classroom_name"));
                 jsonObject.addProperty("professor_id", resultSet.getInt("professor_id"));
-                jsonObject.addProperty("day", resultSet.getString("day"));
-                jsonObject.addProperty("start_time", resultSet.getString("start_time"));
-                jsonObject.addProperty("end_time", resultSet.getString("end_time"));
+                String startTime = resultSet.getString("start_time");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("start_time", startTime);
+                String endTime = resultSet.getString("end_time");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("end_time", endTime);
+                int day = resultSet.getInt("day");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("day", day);
+                String classroomName = resultSet.getString("classroom_name");
+                if (!resultSet.wasNull()) {
+                    jsonObject.addProperty("classroom_name", classroomName);
+                }
                 jsonObject.addProperty("type", resultSet.getInt("type"));
                 jsonObject.addProperty("semester", resultSet.getInt("semester"));
 
@@ -223,7 +252,9 @@ public class Database {
                 JsonObject jsonObject = new JsonObject();
                 jsonObject.addProperty("id", resultSet.getInt("id"));
                 jsonObject.addProperty("name", resultSet.getString("name"));
-                jsonObject.addProperty("surname", resultSet.getString("surname"));
+                String surname = resultSet.getString("surname");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("surname", surname);
                 jsonObject.addProperty("email", resultSet.getString("email"));
                 jsonObject.addProperty("password", resultSet.getString("password"));
 
@@ -246,7 +277,9 @@ public class Database {
             if (resultSet.next()) {
                 JsonObject jsonObject = new JsonObject();
                 jsonObject.addProperty("id", resultSet.getString("id"));
-                jsonObject.addProperty("campus", resultSet.getInt("campus"));
+                int campus = resultSet.getInt("campus");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("campus", campus);
                 return jsonObject;
             }else {
                 System.out.println("Classroom not found.");
@@ -267,11 +300,21 @@ public class Database {
                 JsonObject jsonObject = new JsonObject();
                 jsonObject.addProperty("id", resultSet.getString("id"));
                 jsonObject.addProperty("name", resultSet.getString("name"));
-                jsonObject.addProperty("department_id", resultSet.getInt("department_id"));
-                jsonObject.addProperty("type", resultSet.getInt("type"));
-                jsonObject.addProperty("total_rating", resultSet.getInt("total_rating"));
-                jsonObject.addProperty("rating_count", resultSet.getInt("rating_count"));
-                jsonObject.addProperty("lecturers_note", resultSet.getString("lecturers_note"));
+                int departmentId = resultSet.getInt("department_id");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("department_id", departmentId);
+                int type = resultSet.getInt("type");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("type", type);
+                int totalRating = resultSet.getInt("total_rating");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("total_rating", totalRating);
+                int ratingCount = resultSet.getInt("rating_count");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("rating_count", ratingCount);
+                String lecturersNote = resultSet.getString("lecturers_note");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("lecturers_note", lecturersNote);
                 return jsonObject;
             }else {
                 System.out.println("Course not found.");
@@ -283,6 +326,7 @@ public class Database {
             return null;
         }
     }
+    //TODO: Find the problem
     public JsonElement fetchDepartment(int departmentId) { //TODO: Search by name
         String query = "SELECT * FROM wise.department WHERE id = ?";
         try (PreparedStatement statement = conn.prepareStatement(query)) {
@@ -292,7 +336,9 @@ public class Database {
                 JsonObject jsonObject = new JsonObject();
                 jsonObject.addProperty("id", resultSet.getInt("id"));
                 jsonObject.addProperty("name", resultSet.getString("name"));
-                jsonObject.addProperty("faculty_name", resultSet.getString("faculty_name"));
+                String facultyName = resultSet.getString("faculty_name");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("faculty_name", facultyName);
                 return jsonObject;
             }else {
                 System.out.println("Department not found.");
@@ -313,10 +359,18 @@ public class Database {
                 JsonObject jsonObject = new JsonObject();
                 jsonObject.addProperty("id", resultSet.getInt("id"));
                 jsonObject.addProperty("name", resultSet.getString("name"));
-                jsonObject.addProperty("surname", resultSet.getString("surname"));
-                jsonObject.addProperty("email", resultSet.getString("email"));
-                jsonObject.addProperty("total_rating", resultSet.getInt("total_rating"));
-                jsonObject.addProperty("rating_count", resultSet.getInt("rating_count"));
+                String surname = resultSet.getString("surname");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("surname", surname);
+                String email = resultSet.getString("email");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("email", email);
+                int totalRating = resultSet.getInt("total_rating");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("total_rating", totalRating);
+                int ratingCount = resultSet.getInt("rating_count");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("rating_count", ratingCount);
                 return jsonObject;
             }else {
                 System.out.println("Professor not found.");
@@ -361,7 +415,9 @@ public class Database {
                 jsonObject.addProperty("user_id", resultSet.getInt("user_id"));
                 jsonObject.addProperty("course_id", resultSet.getString("course_id"));
                 jsonObject.addProperty("rating", resultSet.getInt("rating"));
-                jsonObject.addProperty("comment", resultSet.getString("comment"));
+                String comment = resultSet.getString("comment");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("comment", comment);
                 return jsonObject;
             }else {
                 System.out.println("Review not found.");
@@ -383,11 +439,19 @@ public class Database {
                 jsonObject.addProperty("id", resultSet.getInt("id"));
                 jsonObject.addProperty("section_id", resultSet.getInt("section_id"));
                 jsonObject.addProperty("course_id", resultSet.getString("course_id"));
-                jsonObject.addProperty("classroom_name", resultSet.getString("classroom_name"));
                 jsonObject.addProperty("professor_id", resultSet.getInt("professor_id"));
-                jsonObject.addProperty("day", resultSet.getString("day"));
-                jsonObject.addProperty("start_time", resultSet.getString("start_time"));
-                jsonObject.addProperty("end_time", resultSet.getString("end_time"));
+                String startTime = resultSet.getString("start_time");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("start_time", startTime);
+                String endTime = resultSet.getString("end_time");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("end_time", endTime);
+                int day = resultSet.getInt("day");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("day", day);
+                String classroomName = resultSet.getString("classroom_name");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("classroom_name", classroomName);
                 jsonObject.addProperty("type", resultSet.getInt("type"));
                 jsonObject.addProperty("semester", resultSet.getInt("semester"));
                 return jsonObject;
@@ -410,7 +474,9 @@ public class Database {
                 JsonObject jsonObject = new JsonObject();
                 jsonObject.addProperty("id", resultSet.getInt("id"));
                 jsonObject.addProperty("name", resultSet.getString("name"));
-                jsonObject.addProperty("surname", resultSet.getString("surname"));
+                String surname = resultSet.getString("surname");
+                if (!resultSet.wasNull())
+                    jsonObject.addProperty("surname", surname);
                 jsonObject.addProperty("email", resultSet.getString("email"));
                 jsonObject.addProperty("password", resultSet.getString("password"));
                 return jsonObject;
