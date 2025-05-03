@@ -13,7 +13,7 @@ public class SectionHandler extends AbstractHandler {
         } else if (pathParts.length == 4) {
             response = db.fetchSections(pathParts[3]);
         } else {
-            response = null; //TODO: Find proper response for this case
+            return "{\"message\": Fetching all sections do not supported,\"status\": \"error\"}";
         }
         if (response != null)
             return "{\"data\": %s,\"status\": \"success\"}".formatted(response.toString());
