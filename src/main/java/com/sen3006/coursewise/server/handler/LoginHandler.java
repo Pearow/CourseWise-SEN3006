@@ -65,8 +65,8 @@ public class LoginHandler implements HttpHandler {
             exchange.sendResponseHeaders(404, response.getBytes().length);
             return response;
         }else {
-            exchange.sendResponseHeaders(200, data.toString().getBytes().length);
             response = "{\"data\": " + data + ", \"status\": \"success\"}";
+            exchange.sendResponseHeaders(200, data.toString().getBytes().length);
         }
 
         return response;
