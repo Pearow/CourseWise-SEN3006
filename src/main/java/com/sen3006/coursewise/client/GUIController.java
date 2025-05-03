@@ -225,6 +225,7 @@ public class GUIController implements Initializable, Observer {
                 courseItem.setStyle(courseItem.getStyle().replace("-fx-background-color: #f5f5f5;", "-fx-background-color: white;")));
 
         courseListContainer.getChildren().add(courseItem);
+        ratingLabel.setText(String.valueOf(course.getAvgRating()) + "/10");
     }
 
     //Filter courses based on search text
@@ -247,6 +248,7 @@ public class GUIController implements Initializable, Observer {
                 // Add matching course to the GUI
                 addCourseItemToList(course, String.valueOf(course.getAvgRating()));
                 foundAny = true;
+                loadCourseList();
             }
         }
 
@@ -270,7 +272,7 @@ public class GUIController implements Initializable, Observer {
         if (course != null) {
             // Update course details UI
             courseTitleLabel.setText(course.getCourse_name());
-            courseRatingLabel.setText(rating + "/10");
+            courseRatingLabel.setText(currentCourse.getAvgRating() + "/10");
             courseCodeLabel.setText(course.getCourse_id());
         }
 
@@ -500,6 +502,7 @@ public class GUIController implements Initializable, Observer {
 
     //Submit a new review to the system
     private void submitReview(String studentId, int rating, String reviewText) {
+        currentCourse = api.getCourse(currentCourse.getCourse_id());
         api.addReview(CurrentUser.getInstance(), currentCourse, reviewText, rating);
 
         loadReviews(currentCourse);
@@ -516,6 +519,7 @@ public class GUIController implements Initializable, Observer {
         //filterCourses(currentCourse.getCourse_id());
         loadCourseDetails(currentCourse, String.valueOf(currentCourse.getAvgRating()));
         loadCourseList();
+        courseRatingLabel.setText(currentCourse.getAvgRating() + "/10");
         filterCourses(searchField.getText());
     }
 
