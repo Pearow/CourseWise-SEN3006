@@ -25,7 +25,7 @@ public class Main {
     }
 
     public Main() {
-        this("localhost", 3006);
+        this("", 3006);
     }
 
     public String getHost() {

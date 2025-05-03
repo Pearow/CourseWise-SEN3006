@@ -161,10 +161,10 @@ public class Database {
             return null;
         }
     }
-    public JsonElement fetchReviews(int courseId) {
+    public JsonElement fetchReviews(String courseId) {
         String query = "SELECT * FROM wise.review WHERE course_id = ?";
         try (PreparedStatement statement = conn.prepareStatement(query)){
-            statement.setInt(1, courseId);
+            statement.setString(1, courseId);
 
             ResultSet resultSet = statement.executeQuery();
             ArrayList<JsonObject> reviews = new ArrayList<>();

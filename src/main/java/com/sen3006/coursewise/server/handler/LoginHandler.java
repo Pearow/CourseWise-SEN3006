@@ -30,6 +30,7 @@ public class LoginHandler implements HttpHandler {
                     response = "No content";
                     exchange.sendResponseHeaders(500, response.length());
                 }
+                exchange.sendResponseHeaders(200, response.length());
                 os.write(response.getBytes());
             }
         } catch (Exception e) {
@@ -49,7 +50,7 @@ public class LoginHandler implements HttpHandler {
         StringBuilder sb = new StringBuilder();
         stream.forEach(sb::append);
 
-        requestBody = gson.fromJson(sb.toString(), JsonObject.class).get("email").getAsJsonObject();
+        requestBody = gson.fromJson(sb.toString(), JsonObject.class);
 
         if(requestBody == null || requestBody.get("email") == null) {
             response = "{\"message\": \"Invalid request\", \"status\": \"error\"}";
@@ -62,7 +63,7 @@ public class LoginHandler implements HttpHandler {
             exchange.sendResponseHeaders(404, response.getBytes().length);
             return response;
         }else
-            response = "{\"data\": " + data.getAsString() + ", \"status\": \"success\"}";
+            response = "{\"data\": " + data + ", \"status\": \"success\"}";
 
         return response;
     }

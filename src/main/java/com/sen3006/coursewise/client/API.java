@@ -536,15 +536,10 @@ public class API implements Observer {
 
     public String[] getCredentials(String email) {
         String[] result = {"", ""}; // id, password TODO: Use a class instead
-        JsonObject json = gson.toJsonTree(sendPostRequest(host + "/login", gson.toJsonTree("{email: " + email + "}").getAsJsonObject())).getAsJsonObject();
-        UserPassword[] userArray = gson.fromJson(json.get("data").getAsJsonObject(), UserPassword[].class);
-        for (UserPassword user : userArray) {
-            if (user.getEmail().contentEquals(email)) {
-                result[0] = String.valueOf(user.getId());
-                result[1] = String.valueOf(user.getPassword());
-                break;
-            }
-        }
+        JsonObject json = gson.fromJson(sendPostRequest(host + "/login", gson.fromJson("{\"email\": \"" + email + "\"}", JsonObject.class)), JsonObject.class);
+        JsonObject user = gson.fromJson(json.get("data"), JsonObject.class);
+        result[1] = user.get("password").getAsString();
+        result[0] = user.get("id").getAsString();
         return result;
     }
 
