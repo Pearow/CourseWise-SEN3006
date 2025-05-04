@@ -92,6 +92,8 @@ public class GUIController implements Initializable, Observer {
             if (courseListLabel != null) {
                 semesterMenu(courseListLabel);
             }
+            semesterLabel.setStyle("-fx-background-color: #f3e5f5; -fx-background-radius: 4; -fx-border-color: #e0e0e0; -fx-border-radius: 4;");
+            semesterLabel.setText("FALL");
         }
     }
 
@@ -240,11 +242,7 @@ public class GUIController implements Initializable, Observer {
     //Filter courses based on search text
     private void filterCourses(String searchText) {
         // Filtering will be done when the user types at least 3 characters
-        if (searchText.length() < 3) {
-            if(searchText.length() == 2) {
-                courseListContainer.getChildren().clear();
-                loadCourseList();
-            }
+        if (searchText.length() < 3 && !searchText.isEmpty()) {
             return;
         }
 
