@@ -44,9 +44,7 @@ public class LoginScreenController {
             stage = (Stage) ((Node)event.getSource()).getScene().getWindow();
             scene = new Scene(root);
             stage.setScene(scene);
-            if(email.contentEquals("murat.serter@bahcesehir.edu.tr")){
-                stage.setTitle("THE BOZZER!!!!");
-            } else stage.setTitle("Coursewise - " + email);
+            stage.setTitle("Coursewise - " + email);
             stage.setResizable(false);
             Rectangle2D primScreenBounds = javafx.stage.Screen.getPrimary().getVisualBounds();
             stage.setX((primScreenBounds.getWidth() - stage.getWidth()) / 2);
