@@ -41,6 +41,7 @@ public class GUIController implements Initializable, Observer {
     @FXML private Label campusLabel;
     @FXML private Label roomLabel;
     @FXML private Label reviewCountLabel;
+    @FXML private Label semesterLabel;
 
     @FXML private VBox reviewsContainer;
     @FXML private VBox sectionsContainer;
@@ -122,6 +123,8 @@ public class GUIController implements Initializable, Observer {
         springLabel.setOnMouseClicked(ev -> {
             System.out.println("Spring selected");
             selectedSemester = Semester.Spring;
+            semesterLabel.setStyle("-fx-background-color: #d0f0d9; -fx-background-radius: 4; -fx-border-color: #e0e0e0; -fx-border-radius: 4;");
+            semesterLabel.setText("SPRING");
             loadCourseList();
             loadCourseDetails(currentCourse);
             loadAvailableSections(currentCourse);
@@ -135,6 +138,8 @@ public class GUIController implements Initializable, Observer {
         fallLabel.setOnMouseClicked(ev -> {
             System.out.println("Fall selected");
             selectedSemester = Semester.Fall;
+            semesterLabel.setStyle("-fx-background-color: #f3e5f5; -fx-background-radius: 4; -fx-border-color: #e0e0e0; -fx-border-radius: 4;");
+            semesterLabel.setText("FALL");
             loadCourseList();
             loadCourseDetails(currentCourse);
             loadAvailableSections(currentCourse);
@@ -531,15 +536,10 @@ public class GUIController implements Initializable, Observer {
 
     //Load the lecturer's note
     private void loadLecturersNote() {
-
-        if (currentCourse.getCourse_id().equals("SEN3006")) {
-            lecturersNoteTextArea.setText("This course is designed to provide students with a comprehensive understanding of software engineering principles and practices. Students will learn about software development methodologies, project management, and quality assurance.");
-        }else {
-            //TODO:Create a some placeholder text for the lecturer's note
-            lecturersNoteTextArea.setText(currentCourse.getLecturersNote());
-            //also check if currentCourseCode.getNote() == null
-            //lecturersNoteTextArea.setText("No notes available for this course.");
-        }
+        //TODO:Create a some placeholder text for the lecturer's note
+        lecturersNoteTextArea.setText(currentCourse.getLecturersNote());
+        //also check if currentCourseCode.getNote() == null
+        //lecturersNoteTextArea.setText("No notes available for this course.");
 
         lecturersNoteTextArea.setWrapText(true);
         lecturersNoteTextArea.setEditable(false);
