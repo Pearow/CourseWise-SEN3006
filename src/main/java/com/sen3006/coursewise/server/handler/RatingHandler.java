@@ -4,7 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class RatingHandler extends AbstractHandler {
-    // host/api/{professor_id}/{user_id}
+
     @Override
     protected String fetch(String[] pathParts, String query) {
         JsonElement response;

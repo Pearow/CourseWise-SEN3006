@@ -432,11 +432,6 @@ public class API implements Observer {
                 .getAsJsonObject().get("data"), Professor.class);
     }
 
-    //TODO: Add getSection
-//    public Section getSection(int id, String courseId) {
-//        return gson.fromJson(gson.fromJson(sendGetRequest(host + "/section/" + courseId + "/" + id), JsonElement.class)
-//                .getAsJsonObject().get("data"), Section.class);
-//    }
 
     public Review getReview(int user_id, String courseId) {
         return gson.fromJson(gson.fromJson(sendGetRequest(host + "/review/" + courseId + "/" + user_id), JsonElement.class)
@@ -540,7 +535,7 @@ public class API implements Observer {
     }
 
     public String[] getCredentials(String email) {
-        String[] result = {"", ""}; // id, password TODO: Use a class instead
+        String[] result = {"", ""}; // id, password
         JsonObject json = gson.fromJson(sendPostRequest(host + "/login", gson.fromJson("{\"email\": \"" + email + "\"}", JsonObject.class)), JsonObject.class);
         if(json.get("status").getAsString().contentEquals("success")) {
             JsonObject user = gson.fromJson(json.get("data"), JsonObject.class);

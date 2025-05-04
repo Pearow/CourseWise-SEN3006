@@ -23,11 +23,14 @@ public class Classroom extends Observable
     }
 
     public void setCampus(int campus) {
+        int oldCampus = this.campus.getIntCampus();
         this.campus = Campus.fromIndex(campus);
 
-        // Notify observers about the change
-        setChanged();
-        notifyObservers();
+        if (oldCampus != this.campus.getIntCampus()) {
+            // Notify observers about the change
+            setChanged();
+            notifyObservers();
+        }
     }
 
     public String getClass_id() {

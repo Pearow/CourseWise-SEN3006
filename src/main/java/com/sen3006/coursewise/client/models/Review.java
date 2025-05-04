@@ -70,18 +70,4 @@ public class Review extends Observable {
         setChanged();
         notifyObservers();
     }
-
-//    public void revokeRating() {
-//        if (rating == -1){
-//            System.out.println("Already revoked");
-//            return;
-//        }
-//        course.revokeRating(rating);
-//        course = null;
-//        rating = -1;
-//
-//        // Notify observers about the change
-//        setChanged();
-//        notifyObservers();
-//    }
 }

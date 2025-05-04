@@ -4,7 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class SectionHandler extends AbstractHandler {
-    // host/api/section/{course_id}/{semester}
+
     @Override
     protected String fetch(String[] pathParts, String query) {
         JsonElement response;

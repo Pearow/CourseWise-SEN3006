@@ -4,7 +4,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class CourseHandler extends AbstractHandler {
-    // host/api/courses/{semester}
     @Override
     protected String fetch(String[] pathParts, String query) {
         JsonElement response;

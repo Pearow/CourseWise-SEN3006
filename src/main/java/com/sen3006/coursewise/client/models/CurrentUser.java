@@ -20,23 +20,11 @@ public class CurrentUser extends User {
         return currentUser;
     }
 
-//    public int getRole() {
-//        return role;
-//    }
-//
-//    public void setRole(int role) {
-//         this.role = role;
-//    }
-
-    //        users[0] = new UserPassword(2200900, "Salim Mert", "Uçar", "salim.ucar@bahcesehir.edu.tr", String.valueOf("123".hashCode()));
-//        users[1] = new UserPassword(2200780, "Azizcan", "Tam", "azizcan.tam@bahcesehir.edu.tr", String.valueOf("223".hashCode()));
-//        users[2] = new UserPassword(2200870, "Murat Kerem", "Serter", "murat.serter@bahcesehir.edu.tr", String.valueOf("323".hashCode()));
 
     public static boolean validateEmailFormat(String email) {
         String emailRegex = "[a-z0-9!#$%&'+/=?^`{|}~-]+(?:.[a-z0-9!#$%&'+/=?^`{|}~-]+)@(?:[a-z0-9](?:[a-z0-9-][a-z0-9])?.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])+(?:.[a-z0-9!#$%&'+/=?^`{|}~-]+)(?:.[a-z0-9!#$%&'+/=?^`{|}~-]+)";
 
         if (email == null || !email.matches(emailRegex)) {
-            //throw new IllegalArgumentException("Invalid email format");
             System.out.println("Invalid email format");
             return false;
         } else {
@@ -52,7 +40,6 @@ public class CurrentUser extends User {
 
         String[] credentials = api.getCredentials(email);
         if (credentials[0].isBlank()) {
-            //throw new IllegalArgumentException("User not found");
             System.out.println("User not found");
             return false;
         }
@@ -63,12 +50,10 @@ public class CurrentUser extends User {
         String passwordFromAPI = credentials[1];
 
         if (!validateEmailFormat(email)) {
-            //throw new IllegalArgumentException("Invalid email format");
             return false;
         }
 
         if (!password.contentEquals(passwordFromAPI)) {
-            //throw new IllegalArgumentException("Invalid password");
             System.out.println("Invalid password");
             return false;
         }

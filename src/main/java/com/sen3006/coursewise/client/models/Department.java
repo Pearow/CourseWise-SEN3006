@@ -32,11 +32,14 @@ public class Department extends Observable
     }
 
     public void setDepartment_name(String department_name) {
+        String oldDepartmentName = this.department_name;
         this.department_name = department_name;
 
-        // Notify observers about the change
-        setChanged();
-        notifyObservers();
+        if (oldDepartmentName != null && !oldDepartmentName.equals(department_name)) {
+            // Notify observers about the change
+            setChanged();
+            notifyObservers();
+        }
     }
 
     public String getFaculty_name() {
@@ -44,11 +47,14 @@ public class Department extends Observable
     }
 
     public void setFaculty_name(String faculty_name) {
+        String oldFacultyName = this.faculty_name;
         this.faculty_name = faculty_name;
 
         // Notify observers about the change
-        setChanged();
-        notifyObservers();
+        if (oldFacultyName != null && !oldFacultyName.equals(faculty_name)) {
+            setChanged();
+            notifyObservers();
+        }
     }
 
     public void show_department_info()
