@@ -241,7 +241,10 @@ public class GUIController implements Initializable, Observer {
     private void filterCourses(String searchText) {
         // Filtering will be done when the user types at least 3 characters
         if (searchText.length() < 3) {
-            loadCourseList(); // Show all courses if less than 3 characters
+            if(searchText.length() == 2) {
+                courseListContainer.getChildren().clear();
+                loadCourseList();
+            }
             return;
         }
 
@@ -492,20 +495,18 @@ public class GUIController implements Initializable, Observer {
 
             if (reviewText.isEmpty()) {
                 // Submit the review
-                String studentId = String.valueOf(CurrentUser.getInstance().getId());
-                submitReview(studentId, rating, "");
+                submitReview(rating, "");
                 GUIController.creatingNewReview = false;
             } else {
                 // Submit the review
-                String studentId = String.valueOf(CurrentUser.getInstance().getId());
-                submitReview(studentId, rating, reviewText);
+                submitReview(rating, reviewText);
                 GUIController.creatingNewReview = false;
             }
         }
     }
 
     //Submit a new review to the system
-    private void submitReview(String studentId, int rating, String reviewText) {
+    private void submitReview( int rating, String reviewText) {
         api.addReview(CurrentUser.getInstance(), currentCourse, reviewText, rating);
 
         loadReviews(currentCourse);
@@ -592,7 +593,7 @@ public class GUIController implements Initializable, Observer {
                     updateProfessorRating(professorId, rating);
 
                     // Submit the review
-                    submitRating(professorId, rating, sectionCode);
+                    submitRating(professorId, rating);
 
                 }
             }
@@ -601,7 +602,7 @@ public class GUIController implements Initializable, Observer {
     }
 
     //Submit a new rating for a professor
-    private void submitRating(int professorId, int rating, String sectionCode) {
+    private void submitRating(int professorId, int rating) {
         System.out.println("Rating submitted: " + rating);
         profRatingLabel.setText(api.getProfessor(professorId).getAvgRating() + "/10");
         // Show success message
