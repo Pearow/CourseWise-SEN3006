@@ -54,7 +54,6 @@ public class GUIController implements Initializable, Observer {
     private Semester selectedSemester = Semester.Fall; // Fall, Spring
 
     private static GUIController instance;
-    //CurrentUser currentUser = CurrentUser.getInstance(); now instantiated lazily (when needed to workaround being called early)
     API api = API.getInstance();
 
     public static GUIController getInstance() {
@@ -288,7 +287,6 @@ public class GUIController implements Initializable, Observer {
         }
     }
 
-    //TODO: stay on the latest section when a new review is added
     //Load available sections for a course
     private void loadAvailableSections(Course course) {
         sectionsContainer.getChildren().clear();
@@ -368,7 +366,7 @@ public class GUIController implements Initializable, Observer {
 
         String bgColor = "";
         String textColor = "";
-                                //TODO: add the colors (please provide better colors for the ratings)
+
         if (review.getRating() == 10) {
             bgColor = "#f3e5f5"; // purple
             textColor = "#6a1b9a";
@@ -436,13 +434,10 @@ public class GUIController implements Initializable, Observer {
     }
 
     //Show dialog to add a new review
-    //oldtodo: Check if the user has selected a section before adding a review (not needed as a section is selected by default)
-    //TODO: Check if the current user is a student after role implementation
     @FXML
     private void showAddReviewDialog(ActionEvent event) throws IOException {
         GUIController.creatingNewReview = true;
-        // Load the dialog FXML
-        //FXMLLoader dialogLoader = new FXMLLoader(getClass().getResource("/com/sen3006/coursewise/ReviewDialog.fxml")); old method for when the controller was not a singleton
+
         FXMLLoader dialogLoader = new FXMLLoader();
         dialogLoader.setController(GUIController.getInstance()); // Assign the singleton instance of GUIController as the controller
         dialogLoader.setLocation(getClass().getResource("/com/sen3006/coursewise/client/ReviewDialog.fxml"));
@@ -513,7 +508,6 @@ public class GUIController implements Initializable, Observer {
         alert.setContentText("Your review has been submitted successfully.");
         alert.showAndWait();
         filterCourses(searchField.getText());
-        //filterCourses(currentCourse.getCourse_id());
         currentCourse = api.getCourse(currentCourse.getCourse_id());
         loadCourseDetails(currentCourse);
         loadCourseList();
@@ -531,10 +525,7 @@ public class GUIController implements Initializable, Observer {
         if (currentCourse.getCourse_id().equals("SEN3006")) {
             lecturersNoteTextArea.setText("This course is designed to provide students with a comprehensive understanding of software engineering principles and practices. Students will learn about software development methodologies, project management, and quality assurance.");
         }else {
-            //TODO:Create a some placeholder text for the lecturer's note
             lecturersNoteTextArea.setText(currentCourse.getLecturersNote());
-            //also check if currentCourseCode.getNote() == null
-            //lecturersNoteTextArea.setText("No notes available for this course.");
         }
 
         lecturersNoteTextArea.setWrapText(true);
@@ -542,33 +533,21 @@ public class GUIController implements Initializable, Observer {
         lecturersNoteTextArea.setStyle("-fx-background-color: #f5f5f5; -fx-border-color: #e0e0e0; -fx-border-radius: 4;");
     }
 
-    //TODO: Check if the user is a Professor after role implementation
+
     private void editLecturersNote() {
         loadLecturersNote();
         lecturersNoteTextArea.setEditable(true);
         lecturersNoteTextArea.setStyle("-fx-background-color: #ffffff; -fx-border-color: #e0e0e0; -fx-border-radius: 4;");
-//        lecturersNoteTextArea.setOnKeyPressed(event -> {
-//            if (event.getCode().toString().equals("ENTER")) {
-//                // Save the note
-//                String note = lecturersNoteTextArea.getText();
-                  //api.getCourse(currentCourseCode).setNote(note)
-//            }
-//            if (event.getCode().toString().equals("ESCAPE")) {
-//                // Cancel editing
-//                loadLecturersNote();
-//            }
-//        });
-    }
+      }
 
     //Show dialog to rate a professor
-    //TODO: Check if the current user is a student after role implementation
+
     @FXML
     private void showRateProfessorDialog(MouseEvent event) throws IOException {
         if (event.getSource() == profRatingLabel) {
             if (event.getButton() == MouseButton.PRIMARY){
                 GUIController.creatingNewReview = true;
-                // Load the dialog FXML
-                //FXMLLoader dialogLoader = new FXMLLoader(getClass().getResource("/com/sen3006/coursewise/RateProfessorDialog.fxml")); old method for when the controller was not a singleton
+
                 FXMLLoader dialogLoader = new FXMLLoader();
                 dialogLoader.setController(GUIController.getInstance()); // Assign the singleton instance of GUIController as the controller
                 dialogLoader.setLocation(getClass().getResource("/com/sen3006/coursewise/client/RateProfessorDialog.fxml"));

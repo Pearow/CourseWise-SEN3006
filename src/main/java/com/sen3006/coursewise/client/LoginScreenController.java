@@ -36,15 +36,11 @@ public class LoginScreenController {
         boolean loginState = CurrentUser.login(password, email);
 
         if (loginState) {
-            // If login is successful, proceed to the next scene
-            //FXMLLoader loader = new FXMLLoader(getClass().getResource("GUI.fxml")); old method for when GUIController was not a singleton
             FXMLLoader loader = new FXMLLoader();
             loader.setController(GUIController.getInstance()); // Assign the singleton instance of GUIController as the controller
             loader.setLocation(getClass().getResource("GUI.fxml"));
             root = loader.load();
 
-            // Get the controller of the next scene
-            //GUIController controller = loader.getController();
             stage = (Stage) ((Node)event.getSource()).getScene().getWindow();
             scene = new Scene(root);
             stage.setScene(scene);
@@ -65,11 +61,6 @@ public class LoginScreenController {
             errorBox.getChildren().add(errorLabel);
         }
 
-//        FXMLLoader loader = new FXMLLoader(getClass().getResource("GUI.fxml"));
-//        root = loader.load();
-//
-//        // Get the controller of the next scene
-//        GUIController controller = loader.getController();
 
     }
 }
