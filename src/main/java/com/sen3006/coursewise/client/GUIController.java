@@ -41,6 +41,7 @@ public class GUIController implements Initializable, Observer {
     @FXML private Label campusLabel;
     @FXML private Label roomLabel;
     @FXML private Label reviewCountLabel;
+    @FXML private Label semesterLabel;
 
     @FXML private VBox reviewsContainer;
     @FXML private VBox sectionsContainer;
@@ -121,6 +122,8 @@ public class GUIController implements Initializable, Observer {
         springLabel.setOnMouseClicked(ev -> {
             System.out.println("Spring selected");
             selectedSemester = Semester.Spring;
+            semesterLabel.setStyle("-fx-background-color: #d0f0d9; -fx-background-radius: 4; -fx-border-color: #e0e0e0; -fx-border-radius: 4;");
+            semesterLabel.setText("SPRING");
             loadCourseList();
             loadCourseDetails(currentCourse);
             loadAvailableSections(currentCourse);
@@ -134,6 +137,8 @@ public class GUIController implements Initializable, Observer {
         fallLabel.setOnMouseClicked(ev -> {
             System.out.println("Fall selected");
             selectedSemester = Semester.Fall;
+            semesterLabel.setStyle("-fx-background-color: #f3e5f5; -fx-background-radius: 4; -fx-border-color: #e0e0e0; -fx-border-radius: 4;");
+            semesterLabel.setText("FALL");
             loadCourseList();
             loadCourseDetails(currentCourse);
             loadAvailableSections(currentCourse);
@@ -215,7 +220,11 @@ public class GUIController implements Initializable, Observer {
         courseItem.getChildren().addAll(codeLabel, ratingLabel);
 
         // Add click event to load course details
-        courseItem.setOnMouseClicked(event -> loadCourseDetails(course));
+        courseItem.setOnMouseClicked(event -> {
+            loadCourseDetails(api.getCourse(course.getCourse_id()));
+            loadCourseList();
+            filterCourses(searchField.getText());
+        });
         courseItem.setStyle(courseItem.getStyle() + "; -fx-cursor: hand;");
 
         // Add hover effect
@@ -521,12 +530,7 @@ public class GUIController implements Initializable, Observer {
 
     //Load the lecturer's note
     private void loadLecturersNote() {
-
-        if (currentCourse.getCourse_id().equals("SEN3006")) {
-            lecturersNoteTextArea.setText("This course is designed to provide students with a comprehensive understanding of software engineering principles and practices. Students will learn about software development methodologies, project management, and quality assurance.");
-        }else {
-            lecturersNoteTextArea.setText(currentCourse.getLecturersNote());
-        }
+        lecturersNoteTextArea.setText(currentCourse.getLecturersNote());
 
         lecturersNoteTextArea.setWrapText(true);
         lecturersNoteTextArea.setEditable(false);
